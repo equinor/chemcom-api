@@ -1,0 +1,33 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: asaqc-api
+spec:
+  environments:
+    - name: dev
+      build:
+        from: chore/initial-branch
+  components:
+    - name: api
+      src: ./src/ChemDec.Api
+      ports:
+        - name: http
+          port: 5000
+      publicPort: http
+      secrets:
+        - azure__ClientSecret
+        - azure__ClientId
+      environmentConfig:
+        - environment: dev
+          runAsNonRoot: true
+          variables:
+            ASPNETCORE_URLS: "http://*:5000"
+          replicas: 2
+          monitoring: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
