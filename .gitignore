@@ -1,4 +1,7 @@
-/src/Chemcom.Api/bin
-/src/Chemcom.Api/obj
+bin
+obj
 .idea
 .vs
+/src/ChemDec.Api/appsettings.Development.json
+/src/ChemDec.Api/*.user
+/src/ChemDec.Api/.dockerignore

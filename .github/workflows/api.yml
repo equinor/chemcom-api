@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - chemcom-api/src/ChemDec.Api/*
+  pull_request:
+    branches: [main]
+    paths:
+      - chemcom-api/src/ChemDec.Api/*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Docker login
+    - uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_URL }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    # Builds the Chemcom API
+    - name: docker build
+      run: |
+        docker build src -t ${{ secrets.ACR_URL }}/chemcom-api:latest
+        docker push ${{ secrets.ACR_URL }}/chemcom-api:latest
