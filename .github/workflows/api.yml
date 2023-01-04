@@ -7,12 +7,12 @@ on:
     paths:
       - src/ChemDec.Api/*
       - .github/workflows/api.yml
-      - src/ChemDec.Api/Dockerfile
+      - src/Dockerfile
   push:
     paths:
       - src/ChemDec.Api/*
       - .github/workflows/api.yml
-      - src/ChemDec.Api/Dockerfile
+      - src/Dockerfile
 
 jobs:
   build:

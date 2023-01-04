@@ -5,7 +5,7 @@ WORKDIR /app
 # TODO: Copy only csproj
 COPY . .
 
-RUN dotnet restore ChemDec.Api.csproj
+RUN dotnet restore ChemDec.Api/ChemDec.Api.csproj
 
 # Copy everything else and build
 # TODO: Copy rest of files
