@@ -5,7 +5,7 @@ WORKDIR /app
 # TODO: Copy only csproj
 COPY . .
 
-RUN dotnet restore ChemDec.Api.csproj
+RUN dotnet restore ChemDec.Api/ChemDec.Api.csproj
 
 # Copy everything else and build
 # TODO: Copy rest of files
@@ -22,5 +22,5 @@ RUN adduser --uid 1001 --gid 1001 radix-non-root-user
 
 USER 1001
 
-EXPOSE 3000
+EXPOSE 5000
 ENTRYPOINT ["dotnet", "ChemDec.Api.dll"]
