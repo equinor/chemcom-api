@@ -4,15 +4,9 @@ on:
   pull_request:
     branches: 
       - main
-    paths:
-      - src/ChemDec.Api/*
-      - .github/workflows/api.yml
-      - src/Dockerfile
   push:
-    paths:
-      - src/ChemDec.Api/*
-      - .github/workflows/api.yml
-      - src/Dockerfile
+    branches:
+      - main
 
 jobs:
   build:
