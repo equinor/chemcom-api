@@ -6,7 +6,7 @@ spec:
   environments:
     - name: dev
       build:
-        from: ci/configure-github-actions
+        from: main
   components:
     - name: api
       src: ./src/ChemDec.Api
