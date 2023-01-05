@@ -18,6 +18,8 @@ spec:
       secrets:
         - azure__ClientSecret
         - azure__ClientId
+        - ConnectionStrings__chemcomdb
+        - ClientSecret
       environmentConfig:
         - environment: dev
           runAsNonRoot: true
