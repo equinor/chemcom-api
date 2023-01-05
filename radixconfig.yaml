@@ -4,12 +4,13 @@ metadata:
   name: asaqc-api
 spec:
   environments:
+    - name: prod
     - name: dev
       build:
-        from: main
+        from: ci/configure-radix
   components:
     - name: api
-      src: ./src/ChemDec.Api
+      src: ./src
       ports:
         - name: http
           port: 5000
