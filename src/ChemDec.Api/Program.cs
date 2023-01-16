@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using System.Net.Http;
 using ChemDec.Api;
+using ChemDec.Api.GraphApi;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -33,19 +34,19 @@ builder.Services.AddDbContext<ChemContext>(options =>
 
 //builder.Services.AddMicrosoftIdentityWebApiAuthentication(configuration, "azure");
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddMicrosoftIdentityWebApi(optionsA => { }, optionsB =>
-//    {
-//        configuration.Bind("azure", optionsB);
-//        var defaultBackChannel = new HttpClient();
-//        defaultBackChannel.DefaultRequestHeaders.Add("Origin", "chemcom");
-//        optionsB.Backchannel = defaultBackChannel;
-//    }).EnableTokenAcquisitionToCallDownstreamApi(e => { })
-//    .AddInMemoryTokenCaches();
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(configuration, "azure");
-   
+    .AddMicrosoftIdentityWebApi(optionsA => { }, optionsB =>
+    {
+        configuration.Bind("azure", optionsB);
+        var defaultBackChannel = new HttpClient();
+        defaultBackChannel.DefaultRequestHeaders.Add("Origin", "chemcom");
+        optionsB.Backchannel = defaultBackChannel;
+    }).EnableTokenAcquisitionToCallDownstreamApi(e => { })
+    .AddInMemoryTokenCaches();
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddMicrosoftIdentityWebApi(configuration, "azure");
+
 
 builder.Services.AddAuthorization(options =>
 {
@@ -79,6 +80,7 @@ builder.Services.AddTransient<AuthorizationHandler>();
 builder.Services.AddTransient<ConfigurationHelper>();
 builder.Services.AddTransient<MailSender>();
 builder.Services.AddTransient<LoggerHelper>();
+builder.Services.AddScoped<IGraphServiceProvider, GraphServiceProvider>();
 builder.Services.AddMemoryCache();
 
 SwaggerSetup.ConfigureServices(builder.Configuration, builder.Services);
