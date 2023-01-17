@@ -23,7 +23,8 @@ using ChemDec.Api.GraphApi;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
-// Add services to the container.
+string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var corsDomainsFromConfig = Utils.GetCommaSeparatedConfigValue(configuration, "AllowCorsDomains");
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -60,6 +61,20 @@ builder.Services.AddAuthorization(options =>
     {
         policy.RequireAuthenticatedUser();
         policy.Requirements.Add(new ChemAuthenticationRequirement { MustBeTreatmentPlant = true });
+    });
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+    builder =>
+    {
+        var domainsAsArray = new string[corsDomainsFromConfig.Count];
+        corsDomainsFromConfig.CopyTo(domainsAsArray);
+
+        builder.WithOrigins(domainsAsArray);
+        builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+        builder.AllowAnyHeader().AllowAnyMethod();
     });
 });
 
@@ -105,6 +120,7 @@ else
     app.UseExceptionHandler("/Error");
 }
 
+app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
