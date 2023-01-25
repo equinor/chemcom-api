@@ -131,7 +131,7 @@ namespace ChemDec.Api.Controllers
             {
                 return BadRequest(new { error = new List<string> {"groupBy must be hour, day, month or year "} });
             }
-            var res = await handler.GetSummaryForGraph(fromInstallationId, toInstallationId, from, to, timeZone, excludeDraft, groupBy, exceptShipment);
+            var res = await handler.GetSummary(fromInstallationId, toInstallationId, from, to, timeZone, excludeDraft, groupBy, exceptShipment);
 
             return res;
         }

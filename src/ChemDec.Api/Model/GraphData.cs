@@ -2,9 +2,15 @@
 
 namespace ChemDec.Api.Model
 {
-    public class GraphData {
-        public List<GraphLabel> ShipmentDates { get; set; }
-        public List<GraphItem> Chemicals { get; set; }
+    public class GraphData
+    {
+        public List<GraphLabel> ShipmentDates { get; set; }       
+        public Toc Toc { get; set; }
+        public TocPending TocPending { get; set; }
+        public Water Water { get; set; }
+        public WaterPending WaterPending { get; set; }
+        public Nitrogen Nitrogen { get; set; }
+        public NitrogenPending NitrogenPending { get; set; }
     }
     public class GraphLabel
     {
@@ -16,7 +22,7 @@ namespace ChemDec.Api.Model
         public double Y { get; set; }
         public bool HasBiocides { get; set; }
 
-        public string Metric { get; set; } 
+        public string Metric { get; set; }
     }
     public class GraphItem
     {
@@ -35,7 +41,7 @@ namespace ChemDec.Api.Model
         public int Month { get; set; }
         public int Day { get; set; }
         public int Hour { get; set; } = -1;
-        public string Date => Year == 0 ? "Total" : string.Join('.',new[] {Day,Month,Year}) + (Hour>=0 ? ":"+Hour : string.Empty);
+        public string Date => Year == 0 ? "Total" : string.Join('.', new[] { Day, Month, Year }) + (Hour >= 0 ? ":" + Hour : string.Empty);
         public double Toc { get; set; }
         public double Nitrogen { get; set; }
         public double Water { get; set; }
