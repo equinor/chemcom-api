@@ -20,6 +20,7 @@ using Microsoft.Identity.Web;
 using System.Net.Http;
 using ChemDec.Api;
 using ChemDec.Api.GraphApi;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -63,19 +64,18 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new ChemAuthenticationRequirement { MustBeTreatmentPlant = true });
     });
 });
+var domainsAsArray = new string[corsDomainsFromConfig.Count];
+corsDomainsFromConfig.CopyTo(domainsAsArray);
+CorsPolicy corsPolicy = new CorsPolicyBuilder(domainsAsArray)
+                                 .AllowCredentials()
+                                 .AllowAnyHeader()
+                                 .AllowAnyMethod()
+                                 .SetPreflightMaxAge(TimeSpan.FromSeconds(600))
+                                 .Build();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(MyAllowSpecificOrigins,
-    builder =>
-    {
-        var domainsAsArray = new string[corsDomainsFromConfig.Count];
-        corsDomainsFromConfig.CopyTo(domainsAsArray);
-
-        builder.WithOrigins(domainsAsArray);
-        builder.SetIsOriginAllowedToAllowWildcardSubdomains();
-        builder.AllowAnyHeader().AllowAnyMethod();
-    });
+    options.AddPolicy(MyAllowSpecificOrigins, corsPolicy);
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -108,8 +108,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = services.GetRequiredService<ChemContext>();
     dbContext.CheckMigrations();
 }
-
-// Configure the HTTP request pipeline.
+app.UseCors(MyAllowSpecificOrigins);
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -120,7 +119,6 @@ else
     app.UseExceptionHandler("/Error");
 }
 
-app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -25,7 +25,7 @@ spec:
           runAsNonRoot: true
           variables:
             ASPNETCORE_URLS: "http://*:5000"
-            AllowCorsDomains: "https://frontend-chemcom-dev.radix.equinor.com/"
+            AllowCorsDomains: "https://frontend-chemcom-dev.radix.equinor.com,http://localhost:3000"
           replicas: 2
           monitoring: true
           resources:
