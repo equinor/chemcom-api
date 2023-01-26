@@ -64,18 +64,21 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new ChemAuthenticationRequirement { MustBeTreatmentPlant = true });
     });
 });
-var domainsAsArray = new string[corsDomainsFromConfig.Count];
-corsDomainsFromConfig.CopyTo(domainsAsArray);
-CorsPolicy corsPolicy = new CorsPolicyBuilder(domainsAsArray)
-                                 .AllowCredentials()
-                                 .AllowAnyHeader()
-                                 .AllowAnyMethod()
-                                 .SetPreflightMaxAge(TimeSpan.FromSeconds(600))
-                                 .Build();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(MyAllowSpecificOrigins, corsPolicy);
+    options.AddPolicy(MyAllowSpecificOrigins,
+    builder =>
+    {
+        //var domainsAsArray = new string[corsDomainsFromConfig.Count];
+        //corsDomainsFromConfig.CopyTo(domainsAsArray);
+
+        //builder.WithOrigins(domainsAsArray);
+        builder.AllowAnyOrigin()
+        .SetIsOriginAllowedToAllowWildcardSubdomains()
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
