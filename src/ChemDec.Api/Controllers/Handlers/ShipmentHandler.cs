@@ -73,231 +73,201 @@ namespace ChemDec.Api.Controllers.Handlers
             return otherGraph;
         }
 
-        //public async Task<GraphData> GetSummary(Guid? fromInstallationId, Guid? toInstallationId, DateTime? from, DateTime? to, string timeZone, bool excludeDraft = true, string groupBy = "day", Guid? exceptShipment = null)
-        //{
-        //    int timeDiff = GetTimeDiff(timeZone);
+        public async Task<GraphData> GetSummary(Guid? fromInstallationId, Guid? toInstallationId, DateTime? from, DateTime? to, string timeZone, bool excludeDraft = true, string groupBy = "day", Guid? exceptShipment = null)
+        {
+            int timeDiff = GetTimeDiff(timeZone);
 
-        //    if (from != null) from = new DateTime(from.Value.Year, from.Value.Month, from.Value.Day, 0, 0, 0);
-        //    if (to != null) to = new DateTime(to.Value.Year, to.Value.Month, to.Value.Day, 23, 59, 59);
-
-
-
-        //    var res = db.ShipmentChemicals.AsQueryable();
-        //    var resWater = db.ShipmentParts.AsQueryable();
-
-        //    if (fromInstallationId != null)
-        //    {
-        //        res = res.Where(w => w.Shipment.SenderId == fromInstallationId);
-        //        resWater = resWater.Where(w => w.Shipment.SenderId == fromInstallationId);
-        //    }
-
-        //    if (exceptShipment != null)
-        //    {
-        //        res = res.Where(w => w.ShipmentId != exceptShipment);
-        //        resWater = resWater.Where(w => w.ShipmentId != exceptShipment);
-        //    }
-
-        //    if (toInstallationId != null)
-        //    {
-        //        res = res.Where(w => w.Shipment.Receiver.Id == toInstallationId);
-        //        resWater = resWater.Where(w => w.Shipment.Receiver.Id == toInstallationId);
-        //    }
-
-        //    if (from != null)
-        //    {
-        //        res = res.Where(w => w.Shipment.PlannedExecutionFrom.AddHours(timeDiff) >= from);
-        //        resWater = resWater.Where(w => w.Shipped.AddHours(timeDiff) >= from);
-        //    }
-
-        //    if (to != null)
-        //    {
-        //        res = res.Where(w => w.Shipment.PlannedExecutionFrom.AddHours(timeDiff) <= to);
-        //        resWater = resWater.Where(w => w.Shipped.AddHours(timeDiff) <= to);
-        //    }
-
-        //    GraphData data = null;
-        //    List<GraphFlat> chemicals = null;
-        //    List<GraphFlat> water = null;
-        //    List<GraphFlat> pendingWater = null;
-
-        //    if (excludeDraft)
-        //    {
-        //        res = res.Where(w => w.Shipment.Status != Statuses.Draft);
-        //        resWater = resWater.Where(w => w.Shipment.Status != Statuses.Draft);
-        //    }
-        //    //TODO: How to show declined in graph? Hiding them for now
-        //    var approved = res.Where(w => w.Shipment.Status == Statuses.Approved);
-        //    var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined);
-
-        //    var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved);
-        //    var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined);
-
-        //    // The following sections are very verbose. The reason for this it's that it is very easy
-        //    // to break EF GroupBy at SQL-level. All attempts at refactoring this has resulted in in-memory grouping 
-        //    // (which will be very expensive). Take care when adding to the sections below and check the result SQL
-
-        //    if (groupBy == "day")
-        //    {
-
-        //        chemicals = await approved.GroupBy(g => new { g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Year, g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Month, g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Day })
-        //            .Select(g => new GraphFlat
-        //            {
-        //                Year = g.Key.Year,
-        //                Month = g.Key.Month,
-        //                Day = g.Key.Day,
-        //                Toc = g.Sum(x => x.CalculatedToc),
-        //                Nitrogen = g.Sum(x => x.CalculatedNitrogen),
-        //                Biocides = g.Sum(x => x.CalculatedBiocides),
-        //            }).ToListAsync();
+            if (from != null) from = new DateTime(from.Value.Year, from.Value.Month, from.Value.Day, 0, 0, 0);
+            if (to != null) to = new DateTime(to.Value.Year, to.Value.Month, to.Value.Day, 23, 59, 59);
 
 
+            var res = db.ShipmentChemicals.AsQueryable();
+            var resWater = db.ShipmentParts.AsQueryable();
+
+            if (fromInstallationId != null)
+            {
+                res = res.Where(w => w.Shipment.SenderId == fromInstallationId);
+                resWater = resWater.Where(w => w.Shipment.SenderId == fromInstallationId);
+            }
+
+            if (exceptShipment != null)
+            {
+                res = res.Where(w => w.ShipmentId != exceptShipment);
+                resWater = resWater.Where(w => w.ShipmentId != exceptShipment);
+            }
+
+            if (toInstallationId != null)
+            {
+                res = res.Where(w => w.Shipment.Receiver.Id == toInstallationId);
+                resWater = resWater.Where(w => w.Shipment.Receiver.Id == toInstallationId);
+            }
+
+            if (from != null)
+            {
+                res = res.Where(w => w.Shipment.PlannedExecutionFrom.AddHours(timeDiff) >= from);
+                resWater = resWater.Where(w => w.Shipped.AddHours(timeDiff) >= from);
+            }
+
+            if (to != null)
+            {
+                res = res.Where(w => w.Shipment.PlannedExecutionFrom.AddHours(timeDiff) <= to);
+                resWater = resWater.Where(w => w.Shipped.AddHours(timeDiff) <= to);
+            }
+
+            GraphData data = null;
+            List<GraphFlat> chemicals = null;
+            List<GraphFlat> water = null;
+            List<GraphFlat> pendingWater = null;
+
+            if (excludeDraft)
+            {
+                res = res.Where(w => w.Shipment.Status != Statuses.Draft);
+                resWater = resWater.Where(w => w.Shipment.Status != Statuses.Draft);
+            }
+            //TODO: How to show declined in graph? Hiding them for now
+            var approved = res.Where(w => w.Shipment.Status == Statuses.Approved);
+            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined);
+
+            var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved);
+            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined);
+
+            // The following sections are very verbose. The reason for this it's that it is very easy
+            // to break EF GroupBy at SQL-level. All attempts at refactoring this has resulted in in-memory grouping 
+            // (which will be very expensive). Take care when adding to the sections below and check the result SQL
+
+            if (groupBy == "day")
+            {
+                chemicals = await approved.GroupBy(g => new { g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Year, g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Month, g.Shipment.PlannedExecutionFrom.AddHours(timeDiff).Day })
+                    .Select(g => new GraphFlat
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Day = g.Key.Day,
+                        Toc = g.Sum(x => x.CalculatedToc),
+                        Nitrogen = g.Sum(x => x.CalculatedNitrogen),
+                        Biocides = g.Sum(x => x.CalculatedBiocides),
+                    }).ToListAsync();
+
+                water = await approvedTotalWater.GroupBy(g => new { g.Shipped.AddHours(timeDiff).Year, g.Shipped.AddHours(timeDiff).Month, g.Shipped.AddHours(timeDiff).Day })
+                    .Select(g => new GraphFlat
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Day = g.Key.Day,
+                        Water = g.Sum(x => x.Water),
+                    }).ToListAsync();
+
+                pendingWater = await pendingTotalWater.GroupBy(g => new { g.Shipped.AddHours(timeDiff).Year, g.Shipped.AddHours(timeDiff).Month, g.Shipped.AddHours(timeDiff).Day })
+                    .Select(g => new GraphFlat
+                    {
+                        Year = g.Key.Year,
+                        Month = g.Key.Month,
+                        Day = g.Key.Day,
+                        PendingWater = g.Sum(x => x.Water),
+                    }).ToListAsync();
+
+                if (from != null && to != null) //Add "empty" days
+                {
+                    chemicals = addEmptyItems(from.Value, to.Value, chemicals, (f, t) => (t - f).Days + 1, (d, s) => { var newDate = d.AddDays(s); return new GraphFlat { Year = newDate.Year, Month = newDate.Month, Day = newDate.Day }; });
+                }
+
+                Func<GraphFlat, Func<GraphFlat, double>, DataItem> getData = (g, getter) => new DataItem { Y = getter(g), HasBiocides = g.Biocides > 0.0 || g.BiocidesPending > 0.0, Metric = "kg" };
+                Func<GraphFlat, Func<GraphFlat, double>, string, DataItem> getDataWithMetric = (g, getter, metric) => new DataItem { Y = getter(g), HasBiocides = g.Biocides > 0.0 || g.BiocidesPending > 0.0, Metric = metric };
+
+                var tocPending = chemicals.Select(s => getData(s, i => i.TocPending)).ToList();
+                var tocPendingChemicalData = new List<ChemicalData>();
+                foreach (var item in tocPending)
+                {
+                    tocPendingChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                var toc = chemicals.Select(s => getData(s, i => i.Toc)).ToList();
+                var tocChemicalData = new List<ChemicalData>();
+                foreach (var item in toc)
+                {
+                    tocChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                var nitrogen = chemicals.Select(s => getData(s, i => i.Nitrogen)).ToList();
+                var nitrogenChemicalData = new List<ChemicalData>();
+                foreach (var item in nitrogen)
+                {
+                    nitrogenChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                var nitrogenPending = chemicals.Select(s => getData(s, i => i.NitrogenPending)).ToList();
+                var nitrogenPendingChemicalData = new List<ChemicalData>();
+                foreach (var item in nitrogenPending)
+                {
+                    nitrogenPendingChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                var waterC = chemicals.Select(s => getDataWithMetric(s, i => i.Water, "m³")).ToList();
+                var waterChemicalData = new List<ChemicalData>();
+                foreach (var item in waterC)
+                {
+                    waterChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                var waterCPending = chemicals.Select(s => getDataWithMetric(s, i => i.PendingWater, "m³")).ToList();
+                var waterPendingChemicalData = new List<ChemicalData>();
+                foreach (var item in waterC)
+                {
+                    waterPendingChemicalData.Add(new ChemicalData
+                    {
+                        Y = item.Y,
+                        HasBiocides = item.HasBiocides,
+                        Metric = item.Metric,
+                    });
+                }
+
+                data = new GraphData
+                {
+                    ShipmentDates = chemicals.Select(s => new GraphLabel { Label = s.Date }).ToList(),
+                    TocPending = new TocPending
+                    {
+                        Data = tocPendingChemicalData,
+                        YAxis = 1,
+                        MaxPointWidth = 30
+                    },
+                    Toc = new Toc { Data = tocChemicalData, YAxis = 1, MaxPointWidth = 30 },
+                    Nitrogen = new Nitrogen { Data = nitrogenChemicalData, MaxPointWidth = 30 },
+                    NitrogenPending = new NitrogenPending { Data = nitrogenPendingChemicalData, MaxPointWidth = 30 },
+                    Water = new Water { Data = waterChemicalData, YAxis = 1, MaxPointWidth = 30 },
+                    WaterPending = new WaterPending { Data = waterPendingChemicalData, YAxis = 1, MaxPointWidth = 30 }
+                };
+            }
+
+         
 
 
-        //        water = await approvedTotalWater.GroupBy(g => new { g.Shipped.AddHours(timeDiff).Year, g.Shipped.AddHours(timeDiff).Month, g.Shipped.AddHours(timeDiff).Day })
-        //            .Select(g => new GraphFlat
-        //            {
-        //                Year = g.Key.Year,
-        //                Month = g.Key.Month,
-        //                Day = g.Key.Day,
-        //                Water = g.Sum(x => x.Water),
-        //            }).ToListAsync();
-
-        //        pendingWater = await pendingTotalWater.GroupBy(g => new { g.Shipped.AddHours(timeDiff).Year, g.Shipped.AddHours(timeDiff).Month, g.Shipped.AddHours(timeDiff).Day })
-        //            .Select(g => new GraphFlat
-        //            {
-        //                Year = g.Key.Year,
-        //                Month = g.Key.Month,
-        //                Day = g.Key.Day,
-        //                PendingWater = g.Sum(x => x.Water),
-        //            }).ToListAsync();
-
-        //        if (from != null && to != null) //Add "empty" days
-        //        {
-        //            chemicals = addEmptyItems(from.Value, to.Value, chemicals, (f, t) => (t - f).Days + 1, (d, s) => { var newDate = d.AddDays(s); return new GraphFlat { Year = newDate.Year, Month = newDate.Month, Day = newDate.Day }; });
-        //        }
-
-        //        Func<GraphFlat, Func<GraphFlat, double>, DataItem> getData = (g, getter) => new DataItem { Y = getter(g), HasBiocides = (g.Biocides > 0.0 || g.BiocidesPending > 0.0), Metric = "kg" };
-        //        Func<GraphFlat, Func<GraphFlat, double>, string, DataItem> getDataWithMetric = (g, getter, metric) => new DataItem { Y = getter(g), HasBiocides = (g.Biocides > 0.0 || g.BiocidesPending > 0.0), Metric = metric };
-
-        //        var tocPending = chemicals.Select(s => getData(s, i => i.TocPending)).ToList();
-        //        var tocPendingChemicalData = new List<ChemicalData>();
-        //        foreach (var item in tocPending)
-        //        {
-        //            tocPendingChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        var toc = chemicals.Select(s => getData(s, i => i.Toc)).ToList();
-        //        var tocChemicalData = new List<ChemicalData>();
-        //        foreach (var item in toc)
-        //        {
-        //            tocChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        var nitrogen = chemicals.Select(s => getData(s, i => i.Nitrogen)).ToList();
-        //        var nitrogenChemicalData = new List<ChemicalData>();
-        //        foreach (var item in nitrogen)
-        //        {
-        //            nitrogenChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        var nitrogenPending = chemicals.Select(s => getData(s, i => i.NitrogenPending)).ToList();
-        //        var nitrogenPendingChemicalData = new List<ChemicalData>();
-        //        foreach (var item in nitrogenPending)
-        //        {
-        //            nitrogenPendingChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        var waterC = chemicals.Select(s => getDataWithMetric(s, i => i.Water, "m³")).ToList();
-        //        var waterChemicalData = new List<ChemicalData>();
-        //        foreach (var item in waterC)
-        //        {
-        //            waterChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        var waterCPending = chemicals.Select(s => getDataWithMetric(s, i => i.PendingWater, "m³")).ToList();
-        //        var waterPendingChemicalData = new List<ChemicalData>();
-        //        foreach (var item in waterC)
-        //        {
-        //            waterPendingChemicalData.Add(new ChemicalData
-        //            {
-        //                Y = item.Y,
-        //                HasBiocides = item.HasBiocides,
-        //                Metric = item.Metric,
-        //            });
-        //        }
-
-        //        data = new GraphData
-        //        {
-        //            ShipmentDates = chemicals.Select(s => new GraphLabel { Label = s.Date }).ToList(),
-        //            TocPending = new TocPending
-        //            {
-        //                Data = tocPendingChemicalData,
-        //                YAxis = 1,
-        //                MaxPointWidth = 30
-        //            },
-        //            Toc = new Toc { Data = tocChemicalData, YAxis = 1, MaxPointWidth = 30 },
-        //            Nitrogen = new Nitrogen { Data = nitrogenChemicalData, MaxPointWidth = 30 },
-        //            NitrogenPending = new NitrogenPending { Data = nitrogenPendingChemicalData, MaxPointWidth = 30 },
-        //            Water = new Water { Data = waterChemicalData, YAxis = 1, MaxPointWidth = 30 },
-        //            WaterPending = new WaterPending { Data = waterPendingChemicalData, YAxis = 1, MaxPointWidth = 30 }
-        //        };
-        //    }
-
-        //    if (groupBy == "total")
-        //    {
-
-        //        chemicals = new List<GraphFlat>
-        //        {
-        //            new GraphFlat{
-        //                Toc = await approved.SumAsync(s => s.CalculatedToc),
-        //                Nitrogen = await approved.SumAsync(s => s.CalculatedNitrogen),
-        //                Biocides = await approved.SumAsync(s => s.CalculatedBiocides)
-        //            }
-        //        };
-
-
-        //        data = new GraphData
-        //        {
-        //            ShipmentDates = chemicals.Select(s => new GraphLabel { Label = s.Date }).ToList(),
-        //            TocPending = new TocPending
-        //            {
-        //                Total = chemicals.FirstOrDefault().TocPending
-        //            },
-        //            Toc = new Toc { Total = chemicals.FirstOrDefault().Toc },
-        //            Nitrogen = new Nitrogen { Total = chemicals.FirstOrDefault().Nitrogen },
-        //            NitrogenPending = new NitrogenPending { Total = chemicals.FirstOrDefault().NitrogenPending },
-        //            Water = new Water { Total = chemicals.FirstOrDefault().Water },
-        //            WaterPending = new WaterPending { Total = chemicals.FirstOrDefault().PendingWater }
-        //        };
-        //    }
-          
-        //    return data;
-        //}
+            return data;
+        }
 
         public async Task<GraphData> GetSummaryForGraph(Guid? fromInstallationId, Guid? toInstallationId, DateTime? from, DateTime? to, string timeZone, bool excludeDraft = true, string groupBy = "day", Guid? exceptShipment = null)
         {
@@ -552,7 +522,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 if (from != null && to != null) //Add "empty" years
                 {
-                    chemicals = addEmptyItems(from.Value, to.Value, chemicals, (f, t) => (t.Year - f.Year) + 1, (d, s) => { var newDate = d.AddYears(s); return new GraphFlat { Year = newDate.Year }; });
+                    chemicals = addEmptyItems(from.Value, to.Value, chemicals, (f, t) => t.Year - f.Year + 1, (d, s) => { var newDate = d.AddYears(s); return new GraphFlat { Year = newDate.Year }; });
                 }
 
             }
@@ -622,8 +592,8 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
             }
 
-            Func<GraphFlat, Func<GraphFlat, double>, DataItem> getData = (g, getter) => new DataItem { Y = getter(g), HasBiocides = (g.Biocides > 0.0 || g.BiocidesPending > 0.0), Metric = "kg" };
-            Func<GraphFlat, Func<GraphFlat, double>, string, DataItem> getDataWithMetric = (g, getter, metric) => new DataItem { Y = getter(g), HasBiocides = (g.Biocides > 0.0 || g.BiocidesPending > 0.0), Metric = metric };
+            Func<GraphFlat, Func<GraphFlat, double>, DataItem> getData = (g, getter) => new DataItem { Y = getter(g), HasBiocides = g.Biocides > 0.0 || g.BiocidesPending > 0.0, Metric = "kg" };
+            Func<GraphFlat, Func<GraphFlat, double>, string, DataItem> getDataWithMetric = (g, getter, metric) => new DataItem { Y = getter(g), HasBiocides = g.Biocides > 0.0 || g.BiocidesPending > 0.0, Metric = metric };
             data = new GraphData
             {
                 ShipmentDates = chemicals.Select(s => new GraphLabel { Label = s.Date }).ToList(),
@@ -807,7 +777,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private string CheckIfShipmentCanBeChanged(string status, Operation operation, Shipment shipment)
         {
-            if (status == null && (operation != Operation.Change && operation != Operation.Submit))
+            if (status == null && operation != Operation.Change && operation != Operation.Submit)
             {
                 return "Shipment must be submitted before " + operation.ToString();
             }
