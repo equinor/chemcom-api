@@ -44,14 +44,14 @@ namespace ChemDec.Api.Controllers
                 res = res.Where(w => w.InstallationType != "platform");
             }
 
-         
+
             return new InstallationResponse
             {
                 Total = res.Count(),
                 Skipped = skip.Value,
                 Installations = await res.OrderBy(o => o.Code).Skip(skip.Value).Take(take.Value).ToListAsync()
             };
-          
+
         }
 
         [HttpPost]
@@ -72,14 +72,14 @@ namespace ChemDec.Api.Controllers
         public async Task<ActionResult> GetReservoirData(Guid plantId)
         {
 
-            (var toc, var nitrogen, var water, var validationErrors) = await handler.GetReservoirData(plantId);
+            (var toc, var nitrogen, var water, var tocPending, var nitrogenPending, var waterPending, var validationErrors) = await handler.GetReservoirData(plantId);
 
             if (validationErrors != null)
             {
                 return BadRequest(new { error = validationErrors });
             }
 
-            return Ok(new { Res = new { Toc = toc, Nitrogen = nitrogen, Water = water } });
+            return Ok(new { Res = new { Toc = toc, Nitrogen = nitrogen, Water = water, TocPending = tocPending, NitrogenPending = nitrogenPending, WaterPending = waterPending } });
         }
 
         [HttpPost]

@@ -8,6 +8,7 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using static ChemDec.Api.Controllers.Handlers.ShipmentHandler;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -34,8 +35,8 @@ namespace ChemDec.Api.Controllers.Handlers
         public async Task<(bool, IEnumerable<string>)> SaveReservoirData(Guid plantId, double? toc, double? nitrogen, double? water)
         {
             var user = await userService.GetCurrentUser();
-            if (user.Roles.Any(a => a.Installation?.Id == plantId)==false)
-                return  (false,new List<string> { "User don't have access to change this shipment" });
+            if (user.Roles.Any(a => a.Installation?.Id == plantId) == false)
+                return (false, new List<string> { "User don't have access to change this shipment" });
 
             var installation = await db.Installations.FirstOrDefaultAsync(w => w.Id == plantId);
             if (installation == null)
@@ -48,24 +49,32 @@ namespace ChemDec.Api.Controllers.Handlers
             return (true, null);
 
         }
-        public async Task<(double, double, double, IEnumerable<string>)> GetReservoirData(Guid plantId)
+        public async Task<(double, double, double, double, double, double, IEnumerable<string>)> GetReservoirData(Guid plantId)
         {
             var user = await userService.GetCurrentUser();
             if (user.Roles.Any(a => a.Installation?.Id == plantId) == false)
-                return (0,0,0, new List<string> { "User don't have access to change this shipment" });
+                return (0, 0, 0, 0, 0, 0, new List<string> { "User don't have access to change this shipment" });
 
             var installation = await db.Installations.FirstOrDefaultAsync(w => w.Id == plantId);
             if (installation == null)
-                return (0, 0, 0, new List<string> { "Plant does not exist" });
+                return (0, 0, 0, 0, 0, 0, new List<string> { "Plant does not exist" });
 
-            return (installation.Toc, installation.Nitrogen, installation.Water, null);
+            var res = db.ShipmentChemicals.AsQueryable();
+            var resWater = db.ShipmentParts.AsQueryable();
+            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.SenderId == plantId);
+            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.SenderId == plantId);
 
+            var tocPending = await pending.SumAsync(s => s.CalculatedToc);
+            var nitrogenPending = await pending.SumAsync(s => s.CalculatedNitrogen);
+            var waterPending = await pendingTotalWater.SumAsync(s => s.Water);
+
+            return (installation.Toc, installation.Nitrogen, installation.Water, tocPending, nitrogenPending, waterPending, null);
         }
 
         public async Task<(Installation, IEnumerable<string>)> SaveOrUpdate(Installation installation)
         {
             var validationErrors = new List<string>();
-           
+
             var user = userResolver.GetCurrentUserId();
 
             if (string.IsNullOrEmpty(installation.Name))
@@ -86,7 +95,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 dbObject = await db.Installations
                     .FirstOrDefaultAsync(ps => ps.Id == installation.Id);
             }
-           
+
 
 
             if (validationErrors.Any()) return (null, validationErrors);
@@ -94,7 +103,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (dbObject != null)
             {
-               //TODO: User check to see if user can update shipments
+                //TODO: User check to see if user can update shipments
 
                 mapper.Map(installation, dbObject);
                 dbObject = HandleRelations(installation, dbObject);
@@ -115,7 +124,7 @@ namespace ChemDec.Api.Controllers.Handlers
             return (await db.Installations.ProjectTo<Installation>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == installation.Id), null);
         }
 
- 
+
         private Db.Installation HandleRelations(Installation dto, Db.Installation dbObject)
         {
 

@@ -6,12 +6,12 @@ namespace ChemDec.Api.Model
     {
         public List<GraphLabel> ShipmentDates { get; set; }
         public List<GraphItem> Chemicals { get; set; }
-        //public Toc Toc { get; set; }
-        //public TocPending TocPending { get; set; }
-        //public Water Water { get; set; }
-        //public WaterPending WaterPending { get; set; }
-        //public Nitrogen Nitrogen { get; set; }
-        //public NitrogenPending NitrogenPending { get; set; }
+        public Toc Toc { get; set; }
+        public TocPending TocPending { get; set; }
+        public Water Water { get; set; }
+        public WaterPending WaterPending { get; set; }
+        public Nitrogen Nitrogen { get; set; }
+        public NitrogenPending NitrogenPending { get; set; }
     }
     public class GraphLabel
     {

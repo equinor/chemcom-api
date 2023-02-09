@@ -14,8 +14,8 @@ namespace ChemDec.Api.Model
 
     public static class ChemicalColors
     {
-        public const string Toc = "#dadada";
-        public const string TocPending = "#e88";
+        public const string Toc = "#e88";
+        public const string TocPending = "#dadada";
         public const string Nitrogen = "#7c7";
         public const string NitrogenPending = "#9d9d9c";
         public const string Water = "#7cb5ec";
