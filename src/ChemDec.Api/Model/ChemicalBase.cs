@@ -10,6 +10,5 @@ namespace ChemDec.Api.Model
         public double YAxis { get; set; }
         public IList<ChemicalData> Data { get; set; }
         public double MaxPointWidth { get; set; }
-        public double? Total { get; set; }
     }
 }
