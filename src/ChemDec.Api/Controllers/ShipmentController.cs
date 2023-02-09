@@ -120,6 +120,7 @@ namespace ChemDec.Api.Controllers
             //return File(stream, "text/csv", $"History {chemicalShipmentsToPlant.FirstOrDefault().FromInstallation}.csv");
             return File(stream, "text/csv", $"Chemical History {fromDate}-{toDate}.csv");
         }
+             
 
         [HttpGet]
         [Route("graph")]
@@ -129,9 +130,9 @@ namespace ChemDec.Api.Controllers
             if (to != null) to = new DateTime(to.Value.Year, to.Value.Month, to.Value.Day, 23, 59, 59);
             if (groupBy != "day" && groupBy != "hour" && groupBy != "month" && groupBy != "year" && groupBy != "total")
             {
-                return BadRequest(new { error = new List<string> {"groupBy must be hour, day, month or year "} });
+                return BadRequest(new { error = new List<string> { "groupBy must be hour, day, month or year " } });
             }
-            var res = await handler.GetSummaryForGraph(fromInstallationId, toInstallationId, from, to, timeZone, excludeDraft, groupBy, exceptShipment);
+            var res = await handler.GetSummary(fromInstallationId, toInstallationId, from, to, timeZone, excludeDraft, groupBy, exceptShipment);
 
             return res;
         }
