@@ -61,10 +61,10 @@ namespace ChemDec.Api.Controllers.Handlers
 
             var res = db.ShipmentChemicals.AsQueryable();
             var resWater = db.ShipmentParts.AsQueryable();
-            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.ReceiverId == plantId);
-            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.ReceiverId == plantId);
-            var approved = res.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.ReceiverId == plantId);
-            var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.ReceiverId == plantId);
+            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.PlannedExecutionFrom > DateTime.Now && w.Shipment.ReceiverId == plantId);
+            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.PlannedExecutionFrom > DateTime.Now && w.Shipment.ReceiverId == plantId);
+            var approved = res.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.PlannedExecutionFrom > DateTime.Now && w.Shipment.ReceiverId == plantId);
+            var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.PlannedExecutionFrom > DateTime.Now && w.Shipment.ReceiverId == plantId);
 
             var tocApproved = await approved.SumAsync(s => s.CalculatedToc);
             var nitrogenApproved = await approved.SumAsync(s => s.CalculatedNitrogen);
