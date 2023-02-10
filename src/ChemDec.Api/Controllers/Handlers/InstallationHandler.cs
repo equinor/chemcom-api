@@ -49,26 +49,44 @@ namespace ChemDec.Api.Controllers.Handlers
             return (true, null);
 
         }
-        public async Task<(double, double, double, double, double, double, IEnumerable<string>)> GetReservoirData(Guid plantId)
+        public async Task<(ReservoirData, IEnumerable<string>)> GetReservoirData(Guid plantId)
         {
             var user = await userService.GetCurrentUser();
             if (user.Roles.Any(a => a.Installation?.Id == plantId) == false)
-                return (0, 0, 0, 0, 0, 0, new List<string> { "User don't have access to change this shipment" });
+                return (new ReservoirData(), new List<string> { "User don't have access to change this shipment" });
 
             var installation = await db.Installations.FirstOrDefaultAsync(w => w.Id == plantId);
             if (installation == null)
-                return (0, 0, 0, 0, 0, 0, new List<string> { "Plant does not exist" });
+                return (new ReservoirData(), new List<string> { "Plant does not exist" });
 
             var res = db.ShipmentChemicals.AsQueryable();
             var resWater = db.ShipmentParts.AsQueryable();
-            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.SenderId == plantId);
-            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.SenderId == plantId);
+            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.ReceiverId == plantId);
+            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.ReceiverId == plantId);
+            var approved = res.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.ReceiverId == plantId);
+            var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.ReceiverId == plantId);
+
+            var tocApproved = await approved.SumAsync(s => s.CalculatedToc);
+            var nitrogenApproved = await approved.SumAsync(s => s.CalculatedNitrogen);
+            var waterApproved = await approvedTotalWater.SumAsync(s => s.Water);
 
             var tocPending = await pending.SumAsync(s => s.CalculatedToc);
             var nitrogenPending = await pending.SumAsync(s => s.CalculatedNitrogen);
             var waterPending = await pendingTotalWater.SumAsync(s => s.Water);
 
-            return (installation.Toc, installation.Nitrogen, installation.Water, tocPending, nitrogenPending, waterPending, null);
+            var reservoirData = new ReservoirData
+            {
+                Toc = installation.Toc,
+                Nitrogen = installation.Nitrogen,
+                Water = installation.Water,
+                TocApproved = tocApproved,
+                NitrogenApproved = nitrogenApproved,
+                WaterApproved = waterApproved,
+                TocPending = tocPending,
+                NitrogenPending = nitrogenPending,
+                WaterPending = waterPending
+            };
+            return (reservoirData, null);
         }
 
         public async Task<(Installation, IEnumerable<string>)> SaveOrUpdate(Installation installation)
