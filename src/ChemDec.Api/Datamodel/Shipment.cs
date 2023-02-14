@@ -46,7 +46,6 @@ namespace ChemDec.Api.Datamodel
 
         public bool WaterHasBeenAnalyzed { get; set; }
         public Attachment WaterAnalysis { get; set; }
-        public Guid? WaterAnalysisId { get; set; }
 
         public ICollection<Attachment> Attachments { get; set; }
         public ICollection<Comment> Comments { get; set; }
