@@ -6,12 +6,13 @@ using System.Linq;
 
 namespace ChemDec.Api.Model
 {
-    public class Shipment 
+    public class Shipment
     {
         public Guid Id { get; set; }
         public string Code { get; set; } /*us248: fjern denne*/
         public string Title { get; set; }
         public Reference Sender { get; set; }
+        public Guid SenderId { get; set; }
         public PlantReference Receiver { get; set; }
         public string Type { get; set; }
         public string Status { get; set; } //Planned, changed etc
@@ -96,7 +97,7 @@ namespace ChemDec.Api.Model
         public string Type { get; set; }
         public string Status { get; set; } //Planned, changed etc
         public DateTime PlannedExecutionFrom { get; set; }
-        public DateTime PlannedExecutionTo { get; set; }        
+        public DateTime PlannedExecutionTo { get; set; }
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
         public bool HasBeenOpened { get; set; }
@@ -171,7 +172,7 @@ namespace ChemDec.Api.Model
 
                 ;
             CreateMap<Db.Shipment, Shipment>()
-                .ForMember(dest => dest.Attachments, m => m.MapFrom(d=>d.Attachments.OrderByDescending(o => o.Updated)))
+                .ForMember(dest => dest.Attachments, m => m.MapFrom(d => d.Attachments.OrderByDescending(o => o.Updated)))
                 .ForMember(dest => dest.Chemicals, m => m.MapFrom(d => d.Chemicals.OrderByDescending(o => o.Updated)))
                 .ForMember(dest => dest.Comments, m => m.MapFrom(d => d.Comments.OrderByDescending(o => o.Updated)))
                 .ForMember(dest => dest.ShipmentParts, m => m.MapFrom(d => d.ShipmentParts.OrderBy(o => o.Shipped)))
@@ -186,8 +187,8 @@ namespace ChemDec.Api.Model
             CreateMap<Db.FieldChange, FieldChange>();
 
             CreateMap<Db.Shipment, ShipmentInfo>()
-                .ForMember(d=>d.LastComment, 
-                s=>s.MapFrom(m => m.Comments.OrderByDescending(o=>o.Updated).Select(ss=>ss.CommentText).FirstOrDefault()));
+                .ForMember(d => d.LastComment,
+                s => s.MapFrom(m => m.Comments.OrderByDescending(o => o.Updated).Select(ss => ss.CommentText).FirstOrDefault()));
             CreateMap<Db.Installation, Reference>();
 
         }
