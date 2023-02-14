@@ -72,7 +72,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
             return otherGraph;
         }
-       
+
         public async Task<GraphData> GetSummaryForGraph(Guid? fromInstallationId, Guid? toInstallationId, DateTime? from, DateTime? to, string timeZone, bool excludeDraft = true, string groupBy = "day", Guid? exceptShipment = null)
         {
             int timeDiff = GetTimeDiff(timeZone);
@@ -543,7 +543,7 @@ namespace ChemDec.Api.Controllers.Handlers
         }
 
 
-        private string CheckIfUserCanChangeShipment(string status, Operation operation, Guid shipsFrom, Guid shipsTo, User user)
+        private string CheckIfUserCanChangeShipment(string status, Operation operation, Guid shipsFrom, User user)
         {
             if ((operation == Operation.Change && (status == null || status == Statuses.Draft)) || operation == Operation.Submit)
             {
@@ -558,23 +558,20 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (operation == Operation.Change)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == shipsFrom || a.Installation?.Id == shipsTo) == false)
+                if (user.Roles.Any(a => a.Installation?.Id == shipsFrom || a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
                     return "User don't have access to change this shipment";
             }
             if (operation == Operation.Approve)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == shipsTo) == false)
+                if (user.Roles.Any(a => a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
                     return "User don't have access to approve this shipment";
 
             }
             if (operation == Operation.SaveEvaluation)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == shipsTo) == false)
+                if (user.Roles.Any(a => a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
                     return "User don't have access to approve this shipment";
-
             }
-
-            //etc
 
             return null;
         }
@@ -619,11 +616,14 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private List<string> CheckIfUserCanSaveEvaluation(Db.Shipment savedShipment, Shipment shipment, User user)
         {
-            var permissionCheck = CheckIfUserCanChangeShipment(savedShipment?.Status, Operation.Approve, shipment.Sender.Id, shipment.Receiver.Id, user);
+            var permissionCheck = CheckIfUserCanChangeShipment(savedShipment?.Status, Operation.Approve, shipment.SenderId, user);
             if (permissionCheck != null)
             {
-                var validationErrors = new List<string>();
-                validationErrors.Add(permissionCheck);
+                var validationErrors = new List<string>
+                {
+                    permissionCheck
+                };
+                return validationErrors;
             }
             return null;
         }
@@ -689,7 +689,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private void ValidateIsSenderIdSet(Shipment shipment, List<string> validationErrors)
         {
-            if (shipment.Sender?.Id == Guid.Empty)
+            if (shipment.SenderId == Guid.Empty)
             {
                 validationErrors.Add("sender.id must be set");
             }
@@ -713,15 +713,15 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private void ValidateAccessToSaveFromThisInstallation(Initiator initiator, User user, Shipment shipment, List<string> validationErrors)
         {
-            if (initiator == Initiator.Offshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.Sender.Id) == false)
+            if (initiator == Initiator.Offshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.SenderId) == false)
             {
                 validationErrors.Add("You do not have access to save from this installation");
             }
         }
 
-        private void ValidateAccessToSaveFromThisPlant(Initiator initiator, User user, Shipment shipment, List<string> validationErrors)
+        private void ValidateAccessToSaveFromThisPlant(Initiator initiator, User user, List<string> validationErrors)
         {
-            if (initiator == Initiator.Onshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.Receiver.Id) == false)
+            if (initiator == Initiator.Onshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == s.Installation.ShipsTo.FirstOrDefault().Id) == false)
             {
                 validationErrors.Add("You do not have access to save from this plant");
             }
@@ -761,14 +761,8 @@ namespace ChemDec.Api.Controllers.Handlers
             ValidateIshipmentDaysSet(shipment, validationErrors);
             if (validationErrors.Any()) return (null, validationErrors);
 
-            var receiverId = await db.Installations.Where(w => w.Id == shipment.Sender.Id).Select(s => s.ShipsToId).FirstOrDefaultAsync();
-            ValidateReceiverIsSet(receiverId, validationErrors);
-            if (validationErrors.Any()) return (null, validationErrors);
-
-            shipment.Receiver = new PlantReference { Id = receiverId.Value };
-
             ValidateAccessToSaveFromThisInstallation(initiator, user, shipment, validationErrors);
-            ValidateAccessToSaveFromThisPlant(initiator, user, shipment, validationErrors);
+            ValidateAccessToSaveFromThisPlant(initiator, user, validationErrors);
 
             if (shipment.ContainsChemicals == false)
             {
@@ -782,7 +776,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (shipment.PlannedExecutionFrom < shipment.PlannedExecutionTo)
             {
-                var installation = await db.Installations.Where(w => w.Id == shipment.Sender.Id).FirstOrDefaultAsync();
+                var installation = await db.Installations.Where(w => w.Id == shipment.SenderId).FirstOrDefaultAsync();
                 var localTimezoneInfo = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
                 var localFrom = TimeZoneInfo.ConvertTimeFromUtc(shipment.PlannedExecutionFrom, localTimezoneInfo);
                 var localTo = TimeZoneInfo.ConvertTimeFromUtc(shipment.PlannedExecutionTo, localTimezoneInfo);
@@ -824,7 +818,8 @@ namespace ChemDec.Api.Controllers.Handlers
                 validationErrors.Add(statusCheck);
             }
 
-            var permissionCheck = CheckIfUserCanChangeShipment(dbObject?.Status, operation, shipment.Sender.Id, shipment.Receiver.Id, user);
+            //?
+            var permissionCheck = CheckIfUserCanChangeShipment(dbObject?.Status, operation, shipment.SenderId, user);
             if (permissionCheck != null)
             {
                 validationErrors.Add(permissionCheck);
@@ -1262,8 +1257,8 @@ namespace ChemDec.Api.Controllers.Handlers
             }
 
 
-            dbObject.ReceiverId = dto.Receiver.Id;
-            dbObject.SenderId = dto.Sender.Id;
+            //dbObject.ReceiverId = dto.Receiver.Id;
+            dbObject.SenderId = dto.SenderId;
 
             return (dbObject, newChemicals);
         }
