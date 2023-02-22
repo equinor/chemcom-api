@@ -545,6 +545,9 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private string CheckIfUserCanChangeShipment(string status, Operation operation, Guid shipsFrom, User user)
         {
+            var role = user.Roles.FirstOrDefault(u => u.Id == shipsFrom.ToString());
+            var receiver = role.Installation.ShipsTo.FirstOrDefault();
+
             if ((operation == Operation.Change && (status == null || status == Statuses.Draft)) || operation == Operation.Submit)
             {
                 if (user.Roles.Any(a => a.Installation?.Id == shipsFrom) == false)
@@ -558,18 +561,19 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (operation == Operation.Change)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == shipsFrom || a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
+                if (receiver != null && user.Roles.Any(a => a.Installation?.Id == shipsFrom || a.Installation?.Id == receiver.Id) == false)
                     return "User don't have access to change this shipment";
             }
             if (operation == Operation.Approve)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
+
+                if (receiver != null && user.Roles.Any(a => a.Id == receiver.Id.ToString()))
                     return "User don't have access to approve this shipment";
 
             }
             if (operation == Operation.SaveEvaluation)
             {
-                if (user.Roles.Any(a => a.Installation?.Id == a.Installation.ShipsTo.FirstOrDefault().Id) == false)
+                if (receiver != null && user.Roles.Any(a => a.Installation?.Id == receiver.Id) == false)
                     return "User don't have access to approve this shipment";
             }
 
@@ -674,11 +678,13 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
                 UpdateEvaluationValues(savedShipment, shipment, user);
 
+                var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+                var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
+                var receiver = role.Installation.ShipsTo.FirstOrDefault();
+                var plant = await db.Installations.Where(w => w.Id == receiver.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+
                 savedShipment.Updated = DateTime.Now;
                 await db.SaveChangesAsync();
-
-                var sender = await db.Installations.Where(w => w.Id == shipment.Sender.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
-                var plant = await db.Installations.Where(w => w.Id == shipment.Receiver.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
                 loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentEvaluationSaved", shipment);
                 await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, null, savedShipment.Status, sender, plant);
@@ -713,15 +719,26 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private void ValidateAccessToSaveFromThisInstallation(Initiator initiator, User user, Shipment shipment, List<string> validationErrors)
         {
-            if (initiator == Initiator.Offshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.SenderId) == false)
+            if (initiator == Initiator.Offshore && user != null && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.SenderId) == false)
             {
                 validationErrors.Add("You do not have access to save from this installation");
             }
         }
 
-        private void ValidateAccessToSaveFromThisPlant(Initiator initiator, User user, List<string> validationErrors)
+        private void ValidateAccessToSaveFromThisPlant(Initiator initiator, User user, Shipment shipment, List<string> validationErrors)
         {
-            if (initiator == Initiator.Onshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == s.Installation.ShipsTo.FirstOrDefault().Id) == false)
+            var sender = db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefault();
+            var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
+            if (role != null)
+            {
+                var receiver = role.Installation.ShipsTo.FirstOrDefault();
+
+                if (initiator == Initiator.Onshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == receiver.Id) == false)
+                {
+                    validationErrors.Add("You do not have access to save from this plant");
+                }
+            }
+            else
             {
                 validationErrors.Add("You do not have access to save from this plant");
             }
@@ -756,13 +773,18 @@ namespace ChemDec.Api.Controllers.Handlers
             var validationErrors = new List<string>();
 
             var user = await userService.GetCurrentUser();
+            if (user == null)
+            {
+                validationErrors.Add("You do not have access to save from this plant");
+                return (shipment, validationErrors);
+            }
 
             ValidateIsSenderIdSet(shipment, validationErrors);
             ValidateIshipmentDaysSet(shipment, validationErrors);
             if (validationErrors.Any()) return (null, validationErrors);
 
             ValidateAccessToSaveFromThisInstallation(initiator, user, shipment, validationErrors);
-            ValidateAccessToSaveFromThisPlant(initiator, user, validationErrors);
+            ValidateAccessToSaveFromThisPlant(initiator, user, shipment, validationErrors);
 
             if (shipment.ContainsChemicals == false)
             {
@@ -818,7 +840,6 @@ namespace ChemDec.Api.Controllers.Handlers
                 validationErrors.Add(statusCheck);
             }
 
-            //?
             var permissionCheck = CheckIfUserCanChangeShipment(dbObject?.Status, operation, shipment.SenderId, user);
             if (permissionCheck != null)
             {
@@ -857,7 +878,14 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (validationErrors.Any()) return (null, validationErrors);
 
+
+            var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+            var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
+            var receiver = role.Installation.ShipsTo.FirstOrDefault();
+            var plant = await db.Installations.Where(w => w.Id == receiver.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+
             dbObject.Updated = DateTime.Now;
+            dbObject.ReceiverId = receiver.Id;
 
             //update legal terms settings:
             if (dbObject.AvailableForDailyContact == true)
@@ -868,16 +896,12 @@ namespace ChemDec.Api.Controllers.Handlers
 
             await db.SaveChangesAsync();
 
-            var sender = await db.Installations.Where(w => w.Id == shipment.Sender.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
-            var plant = await db.Installations.Where(w => w.Id == shipment.Receiver.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
-
             loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentSaved", shipment);
 
             await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
 
             return (await db.Shipments.ProjectTo<Shipment>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == shipment.Id), null);
         }
-
         private async Task SendShipmentChangedMail(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, User user, IEnumerable<Db.Chemical> newChemicals, string status, PlantReference sender, PlantReference plant)
         {
             if (newChemicals != null && newChemicals.Any() && string.IsNullOrEmpty(config["chemicalEmail"]) == false)
@@ -1256,8 +1280,6 @@ namespace ChemDec.Api.Controllers.Handlers
                 CalculateChemicals(dbObject.RinsingOffshorePercent, shipCem, dbChems.First(w => w.Id == shipCem.ChemicalId));
             }
 
-
-            //dbObject.ReceiverId = dto.Receiver.Id;
             dbObject.SenderId = dto.SenderId;
 
             return (dbObject, newChemicals);
