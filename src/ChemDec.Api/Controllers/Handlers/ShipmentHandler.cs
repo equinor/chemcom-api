@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.ApplicationInsights;
 using Azure.Storage.Blobs;
 using Azure.Storage;
+using System.Text;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -909,7 +910,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 var to = config["chemicalEmail"].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 if (to.Any())
                 {
-                    (var subject, var html, var plainText) = await buildEmailContentForChemicalResponsible(initiator, sender, plant, user, newChemicals);
+                    (var subject, var html, var plainText) = buildEmailContentForChemicalResponsible(initiator, sender, plant, user, newChemicals);
                     await mailSender.SendMail(to, subject, html, plainText);
                     loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "EmailNotificationNewChemical", new { To = to, Subject = subject });
                 }
@@ -918,7 +919,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (status != Statuses.Draft)
             {
-                (var subject, var html, var plainText) = await buildEmailContent(initiator, sender, plant, user, operation, details, comment, shipment.EvalComments, attachment, status, shipment.Id);
+                (var subject, var html, var plainText) = buildEmailContent(initiator, sender, plant, user, operation, details, comment, shipment.EvalComments, attachment, status, shipment.Id);
 
                 if (initiator == Initiator.Onshore)
                 {
@@ -941,14 +942,24 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
             }
         }
+       
+        private (string, string, string) buildEmailContentForChemicalResponsible(Initiator initiator, PlantReference installation, PlantReference destination, User user, IEnumerable<Db.Chemical> chemicals)
+        {           
 
-        private static string emailTemplate = null;
-        private async Task<(string, string, string)> buildEmailContentForChemicalResponsible(Initiator initiator, PlantReference installation, PlantReference destination, User user, IEnumerable<Db.Chemical> chemicals)
-        {
-            if (emailTemplate == null)
-            {
-                emailTemplate = await File.ReadAllTextAsync("emailTemplate.html");
-            }
+            var emailTemplate = new StringBuilder().Append("{{subject}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{title}}")
+                                                    .Append("<br/>")                                                    
+                                                    .Append("{{change}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{changedBy}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{link}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{linkTitle}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{portalLink}}");
+          
 
             var subject = string.Empty;
 
@@ -1003,17 +1014,26 @@ namespace ChemDec.Api.Controllers.Handlers
 
             var plainText = $"{subject}\n\n{change}\n{changedBy}\n{link}\n\nRegards\nChemCom";
 
-            return (subject, html, plainText);
+            return (subject, html.ToString(), plainText);
 
 
 
         }
-        private async Task<(string, string, string)> buildEmailContent(Initiator initiator, PlantReference installation, PlantReference destination, User user, Operation operation, DetailedOperation details, string comment, string approversComments, string attachment, string status, Guid shipmentId)
+        private (string, string, string) buildEmailContent(Initiator initiator, PlantReference installation, PlantReference destination, User user, Operation operation, DetailedOperation details, string comment, string approversComments, string attachment, string status, Guid shipmentId)
         {
-            if (emailTemplate == null)
-            {
-                emailTemplate = await File.ReadAllTextAsync("emailTemplate.html");
-            }
+            var emailTemplate = new StringBuilder().Append("{{subject}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{title}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{change}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{changedBy}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{link}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{linkTitle}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{portalLink}}");
 
             var subject = string.Empty;
             var change = string.Empty;
@@ -1091,7 +1111,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             var plainText = $"{subject}\n\n{change}\n{changedBy}\n{link}\nApprovers comments\n{approversComments}\n\nRegards\nChemCom";
 
-            return (subject, html, plainText);
+            return (subject, html.ToString(), plainText);
         }
 
         private string getEnvironmentSpecificSubject(string subject)
