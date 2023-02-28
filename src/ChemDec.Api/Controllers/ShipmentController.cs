@@ -141,8 +141,7 @@ namespace ChemDec.Api.Controllers
         [HttpGet]
         [Route("{roleCode}/{shipmentId}")]
         public async Task<ActionResult<Shipment>> Shipment(string roleCode,Guid shipmentId)
-        {
-            
+        {            
             var res = await handler.GetShipments().FirstOrDefaultAsync(w => w.Id == shipmentId);
 
             if (res == null)
