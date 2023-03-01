@@ -15,6 +15,7 @@ namespace ChemDec.Api.Model
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
+        public IFormFile File { get; set; }
     }
 
     public class NewAttachment
