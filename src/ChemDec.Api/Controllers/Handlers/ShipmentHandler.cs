@@ -942,14 +942,14 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
             }
         }
-       
+
         private (string, string, string) buildEmailContentForChemicalResponsible(Initiator initiator, PlantReference installation, PlantReference destination, User user, IEnumerable<Db.Chemical> chemicals)
-        {           
+        {
 
             var emailTemplate = new StringBuilder().Append("{{subject}}")
                                                     .Append("<br/>")
                                                     .Append("{{title}}")
-                                                    .Append("<br/>")                                                    
+                                                    .Append("<br/>")
                                                     .Append("{{change}}")
                                                     .Append("<br/>")
                                                     .Append("{{changedBy}}")
@@ -959,7 +959,7 @@ namespace ChemDec.Api.Controllers.Handlers
                                                     .Append("{{linkTitle}}")
                                                     .Append("<br/>")
                                                     .Append("{{portalLink}}");
-          
+
 
             var subject = string.Empty;
 
@@ -1182,6 +1182,8 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
+            var blobContainerClient = GetBlobContainerClient(dto.Id);
+
             var newChemicals = new List<Db.Chemical>();
             // Attachments
             if (dto.Attachments == null) dto.Attachments = new List<Attachment>();
@@ -1196,8 +1198,20 @@ namespace ChemDec.Api.Controllers.Handlers
             var attachmentsToBeAdded = dto.Attachments.Where(w => dbObject.Attachments.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
             foreach (var item in attachmentsToBeAdded)
             {
-                var newAttachment = mapper.Map<Db.Attachment>(item);
-                dbObject.Attachments.Add(newAttachment);
+                using (var file = item.File.OpenReadStream())
+                {
+                    var blob = blobContainerClient.GetBlobClient(item.File.FileName);
+                    await blob.UploadAsync(file);
+                    var attachment = new Db.Attachment
+                    {
+                        Id = Guid.NewGuid(),
+                        ShipmentId = dto.Id,
+                        Path = item.File.FileName,
+                        MimeType = item.MimeType,
+                        Extension = item.File.FileName.Substring(item.File.FileName.LastIndexOf(".") >= 0 ? item.File.FileName.LastIndexOf(".") : 0)
+                    };
+                    dbObject.Attachments.Add(attachment);
+                }
             }
 
             // Comments
