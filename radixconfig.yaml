@@ -26,6 +26,8 @@ spec:
           variables:
             ASPNETCORE_URLS: "http://*:5000"
             AllowCorsDomains: "https://frontend-chemcom-dev.radix.equinor.com,http://localhost:3000"
+            AzureBlobAccount: ""
+            AzureBlobKey: ""
           replicas: 2
           monitoring: true
           resources:
