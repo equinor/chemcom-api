@@ -20,6 +20,8 @@ spec:
         - azure__ClientId
         - ConnectionStrings__chemcomdb
         - ClientSecret
+        - AzureBlobAccount
+        - AzureBlobKey
       environmentConfig:
         - environment: dev
           runAsNonRoot: true
