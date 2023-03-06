@@ -1277,7 +1277,13 @@ namespace ChemDec.Api.Controllers.Handlers
 
             foreach (var item in chemicalsToBeAdded)
             {
-                var newShipmentChemical = mapper.Map<Db.ShipmentChemical>(item);
+                var newShipmentChemical = new Db.ShipmentChemical
+                {
+                    Id = Guid.NewGuid(),
+                    ChemicalId = item.Id,
+                    MeasureUnit = item.MeasureUnit,
+                    Amount = item.Amount,
+                };
                 dbObject.Chemicals.Add(newShipmentChemical);
             }
 
