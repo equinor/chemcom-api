@@ -1257,61 +1257,28 @@ namespace ChemDec.Api.Controllers.Handlers
                 db.ShipmentChemicals.Remove(item);
             }
 
-            // Add unknown chemicals as proposed chemicals
-            var newProposedChemicals = dto.Chemicals.Where(w => w.Chemical.Id == Guid.Empty).Select(s => s.Chemical).ToList();
-            var newDbChemicals = new List<Db.Chemical>();
-            if (newProposedChemicals.Any())
-            {
-                var user = await userService.GetCurrentUser();
-
-                foreach (var newC in newProposedChemicals)
-                {
-                    var newId = Guid.NewGuid();
-                    var newChemical = new Db.Chemical
-                    {
-                        Id = newId,
-                        Name = newC.Name,
-                        Description = newC.Description,
-                        Tentative = true,
-                        Proposed = DateTime.Now,
-                        ProposedBy = user.Upn,
-                        ProposedByEmail = user.Email,
-                        ProposedByName = user.Name,
-                        ProposedByInstallationId = dto.Sender.Id,
-                    };
-                    newC.Id = newId;
-                    newDbChemicals.Add(newChemical);
-
-                    newChemicals.Add(newChemical);
-
-                }
-
-                db.Chemicals.AddRange(newDbChemicals);
-            }
 
             var chemicalsToBeAdded = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            var chemicalsToBeUpdated = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id)).ToList();
+            var chemicalIds = new List<Guid>();
 
-            var chemicalIds = dto.Chemicals.Select(s => s.Chemical.Id).Concat(dbObject.Chemicals.Select(s => s.ChemicalId)).ToList().Distinct();
+            foreach (var item in dto.Chemicals)
+            {
+                chemicalIds.Add(item.Id);
+            }
 
-            var dbChems = (await db.Chemicals.Where(w => chemicalIds.Contains(w.Id)).ToListAsync()).Concat(newDbChemicals);
+            foreach (var item in dbObject.Chemicals)
+            {
+                chemicalIds.Add(item.ChemicalId);
+            }
+
+            chemicalIds = chemicalIds.Distinct().ToList();
+
+            var dbChems = await db.Chemicals.Where(w => chemicalIds.Contains(w.Id)).ToListAsync();
 
             foreach (var item in chemicalsToBeAdded)
             {
                 var newShipmentChemical = mapper.Map<Db.ShipmentChemical>(item);
                 dbObject.Chemicals.Add(newShipmentChemical);
-            }
-
-            foreach (var item in chemicalsToBeUpdated)
-            {
-                var shipmentChemical = dbObject.Chemicals.First(w => w.Id == item.Id);
-                mapper.Map(item, shipmentChemical);
-            }
-
-
-            foreach (var shipCem in dbObject.Chemicals)
-            {
-                CalculateChemicals(dbObject.RinsingOffshorePercent, shipCem, dbChems.First(w => w.Id == shipCem.ChemicalId));
             }
 
             dbObject.SenderId = dto.SenderId;
