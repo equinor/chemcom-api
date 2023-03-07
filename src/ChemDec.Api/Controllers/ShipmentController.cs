@@ -164,7 +164,7 @@ namespace ChemDec.Api.Controllers
        
         [HttpPost]
         [Route("{initiator}/{operation}")]
-        public async Task<ActionResult<Shipment>> Save(string initiator, string operation, [FromBody] Shipment shipment)
+        public async Task<ActionResult<Shipment>> Save(string initiator, string operation, [FromForm] Shipment shipment)
         {
             ShipmentHandler.Operation operationEnum;
             if (Enum.TryParse(operation, true, out operationEnum) == false) {
