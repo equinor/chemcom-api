@@ -64,6 +64,11 @@ namespace ChemDec.Api.Datamodel
                   .HasForeignKey(f => f.ShipmentId)
                   .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Attachment>()
+                .HasOne<Shipment>()
+                .WithMany(b => b.Attachments)
+                .HasForeignKey(f => f.ShipmentId);
+
             builder.Entity<Installation>()
                  .HasMany(bc => bc.GetsShipmentsFrom)
                  .WithOne(b => b.ShipsTo)
