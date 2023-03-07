@@ -15,8 +15,8 @@ namespace ChemDec.Api.Model
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
-        public IFormFile File { get; set; }
     }
+
 
     public class NewAttachment
     {
@@ -34,13 +34,8 @@ namespace ChemDec.Api.Model
     {
         public AttachmentProfile()
         {
-
             CreateMap<Attachment, Db.Attachment>();
             CreateMap<Db.Attachment, Attachment>();
-
         }
     }
-
-
-
 }

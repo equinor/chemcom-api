@@ -3,6 +3,7 @@ using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace ChemDec.Api.Model
 {
@@ -52,6 +53,7 @@ namespace ChemDec.Api.Model
         public IEnumerable<Comment> Comments { get; set; }
         public IEnumerable<LogEntry> LogEntries { get; set; }
         public IEnumerable<ShipmentPart> ShipmentParts { get; set; }
+        public List<IFormFile>  FileAttachments { get; set; }
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }

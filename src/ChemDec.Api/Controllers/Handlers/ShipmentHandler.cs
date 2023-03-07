@@ -1193,22 +1193,21 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 dbObject.Attachments.Remove(item);
                 db.Attachments.Remove(item);
-            }
+            }           
 
-            var attachmentsToBeAdded = dto.Attachments.Where(w => dbObject.Attachments.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in attachmentsToBeAdded)
+            foreach (var item in dto.FileAttachments)
             {
-                using (var file = item.File.OpenReadStream())
+                using (var file = item.OpenReadStream())
                 {
-                    var blob = blobContainerClient.GetBlobClient(item.File.FileName);
+                    var blob = blobContainerClient.GetBlobClient(item.FileName);
                     await blob.UploadAsync(file);
                     var attachment = new Db.Attachment
                     {
                         Id = Guid.NewGuid(),
-                        ShipmentId = dto.Id,
-                        Path = item.File.FileName,
-                        MimeType = item.MimeType,
-                        Extension = item.File.FileName.Substring(item.File.FileName.LastIndexOf(".") >= 0 ? item.File.FileName.LastIndexOf(".") : 0)
+                        ShipmentId = dbObject.Id,
+                        Path = item.FileName,
+                        MimeType = item.ContentType,
+                        Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
                     };
                     dbObject.Attachments.Add(attachment);
                 }
