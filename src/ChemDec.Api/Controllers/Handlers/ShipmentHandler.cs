@@ -1182,7 +1182,7 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
-            var blobContainerClient = GetBlobContainerClient(dto.Id);
+            var blobContainerClient = GetBlobContainerClient(dbObject.Id);
 
             var newChemicals = new List<Db.Chemical>();
             // Attachments
