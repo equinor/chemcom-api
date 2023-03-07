@@ -14,6 +14,7 @@ using Microsoft.ApplicationInsights;
 using Azure.Storage.Blobs;
 using Azure.Storage;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -769,7 +770,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
         }
 
-        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment)
+        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, List<IFormFile> attachments = null)
         {
             var validationErrors = new List<string>();
 
@@ -870,6 +871,31 @@ namespace ChemDec.Api.Controllers.Handlers
                 if (newDbObject.Id == Guid.Empty)
                     newDbObject.Id = Guid.NewGuid();
                 (newDbObject, newChemicals) = await HandleRelations(shipment, newDbObject);
+
+                //Add attachments
+                if (attachments != null)
+                {
+                    var blobContainerClient = GetBlobContainerClient(newDbObject.Id);
+                    foreach (var item in attachments)
+                    {
+                        using (var file = item.OpenReadStream())
+                        {
+                            var blob = blobContainerClient.GetBlobClient(item.FileName);
+                            await blob.UploadAsync(file);
+                            var newAttachment = new Db.Attachment
+                            {
+                                Id = Guid.NewGuid(),
+                                ShipmentId = newDbObject.Id,
+                                Path = item.FileName,
+                                MimeType = item.ContentType,
+                                Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
+                            };
+                            newDbObject.Attachments.Add(newAttachment);
+                        }
+                    }
+                }
+
+
                 db.Shipments.Add(newDbObject);
                 shipment.Id = newDbObject.Id;
                 newDbObject.Status = OperationStatus(operation, null, db);
@@ -1182,8 +1208,6 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
-            var blobContainerClient = GetBlobContainerClient(dbObject.Id);
-
             var newChemicals = new List<Db.Chemical>();
             // Attachments
             if (dto.Attachments == null) dto.Attachments = new List<Attachment>();
@@ -1193,24 +1217,6 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 dbObject.Attachments.Remove(item);
                 db.Attachments.Remove(item);
-            }           
-
-            foreach (var item in dto.FileAttachments)
-            {
-                using (var file = item.OpenReadStream())
-                {
-                    var blob = blobContainerClient.GetBlobClient(item.FileName);
-                    await blob.UploadAsync(file);
-                    var attachment = new Db.Attachment
-                    {
-                        Id = Guid.NewGuid(),
-                        ShipmentId = dbObject.Id,
-                        Path = item.FileName,
-                        MimeType = item.ContentType,
-                        Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
-                    };
-                    dbObject.Attachments.Add(attachment);
-                }
             }
 
             // Comments
