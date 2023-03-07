@@ -53,7 +53,7 @@ namespace ChemDec.Api.Model
         public IEnumerable<Comment> Comments { get; set; }
         public IEnumerable<LogEntry> LogEntries { get; set; }
         public IEnumerable<ShipmentPart> ShipmentParts { get; set; }
-        public List<IFormFile>  FileAttachments { get; set; }
+        public List<IFormFile> FileAttachments { get; set; }
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
@@ -157,6 +157,12 @@ namespace ChemDec.Api.Model
         public string UpdatedByName { get; set; }
 
 
+    }
+
+    public class ShipmentRequest
+    {
+        public string Shipment { get; set; }
+        public List<IFormFile> Attachments { get; set; }
     }
 
     public class ShipmentProfile : Profile

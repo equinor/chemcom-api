@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Core;
 using ChemDec.Api.Controllers.Handlers;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
@@ -164,7 +165,7 @@ namespace ChemDec.Api.Controllers
        
         [HttpPost]
         [Route("{initiator}/{operation}")]
-        public async Task<ActionResult<Shipment>> Save(string initiator, string operation, [FromForm] Shipment shipment)
+        public async Task<ActionResult<Shipment>> Save(string initiator, string operation, [FromForm] ShipmentRequest request)
         {
             ShipmentHandler.Operation operationEnum;
             if (Enum.TryParse(operation, true, out operationEnum) == false) {
@@ -176,6 +177,8 @@ namespace ChemDec.Api.Controllers
             {
                 return BadRequest(new { error = initiator + " is not a valid initiator" });
             };
+
+            var shipment = JsonConvert.DeserializeObject<Shipment>(request.Shipment);
             Shipment savedShipment;
             IEnumerable<string> validationErrors;
             if (operationEnum == ShipmentHandler.Operation.SaveEvaluation)
@@ -184,7 +187,7 @@ namespace ChemDec.Api.Controllers
             }
             else
             {
-                (savedShipment, validationErrors) = await handler.SaveOrUpdate(shipment, initiatorEnum, operationEnum, ShipmentHandler.DetailedOperation.Saved, null, null);
+                (savedShipment, validationErrors) = await handler.SaveOrUpdate(shipment, initiatorEnum, operationEnum, ShipmentHandler.DetailedOperation.Saved, null, null, request.Attachments);
             }
             if (validationErrors != null)
             {
