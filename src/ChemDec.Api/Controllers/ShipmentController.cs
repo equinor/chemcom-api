@@ -198,8 +198,8 @@ namespace ChemDec.Api.Controllers
         }
 
         [HttpGet]
-        [Route("attachment/{shipmentId}/{attachmentId}/{*filename}")]
-        public async Task<ActionResult> GetAttachment(Guid shipmentId, Guid attachmentId, string filename)
+        [Route("attachment/{shipmentId}/{attachmentId}")]
+        public async Task<ActionResult> GetAttachment(Guid shipmentId, Guid attachmentId)
         {
            
             (var res, var validationErrors) = await handler.ReturnAttachment(shipmentId, attachmentId);
