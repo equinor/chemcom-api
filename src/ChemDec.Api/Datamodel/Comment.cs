@@ -11,7 +11,4 @@ namespace ChemDec.Api.Datamodel
         public string UpdatedBy { get; set; }
         public string UpdatedByName { get; set; }
     }
-
-
-
 }
