@@ -569,7 +569,7 @@ namespace ChemDec.Api.Controllers.Handlers
             if (operation == Operation.Approve)
             {
 
-                if (receiver != null && user.Roles.Any(a => a.Id == receiver.Id.ToString()))
+                if (receiver != null && !user.Roles.Any(a => a.Id == receiver.Id.ToString()))
                     return "User don't have access to approve this shipment";
 
             }
@@ -926,7 +926,8 @@ namespace ChemDec.Api.Controllers.Handlers
 
             loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentSaved", shipment);
 
-            await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
+            //TODO: Remove this code
+            //await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
 
             return (await db.Shipments.ProjectTo<Shipment>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == shipment.Id), null);
         }
