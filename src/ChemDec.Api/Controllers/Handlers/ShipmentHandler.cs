@@ -861,6 +861,31 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
                 mapper.Map(shipment, dbObject);
                 (dbObject, newChemicals) = await HandleRelations(shipment, dbObject);
+
+                //Add attachments
+                if (attachments != null)
+                {
+                    var blobContainerClient = GetBlobContainerClient(dbObject.Id);
+                    await blobContainerClient.CreateIfNotExistsAsync();
+                    foreach (var item in attachments)
+                    {
+                        using (var file = item.OpenReadStream())
+                        {
+                            var blob = blobContainerClient.GetBlobClient(item.FileName);
+                            await blob.UploadAsync(file);
+                            var newAttachment = new Db.Attachment
+                            {
+                                Id = Guid.NewGuid(),
+                                ShipmentId = dbObject.Id,
+                                Path = item.FileName,
+                                MimeType = item.ContentType,
+                                Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
+                            };
+                            db.Attachments.Add(newAttachment);                          
+                        }
+                    }                    
+                }
+
                 dbObject.Status = OperationStatus(operation, dbObject.Status, db);
                 status = dbObject.Status;
             }
@@ -874,7 +899,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 //Add attachments
                 if (attachments != null)
-                {
+                {                  
                     var blobContainerClient = GetBlobContainerClient(newDbObject.Id);
                     await blobContainerClient.CreateIfNotExistsAsync();
                     foreach (var item in attachments)
@@ -1210,17 +1235,7 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
-            var newChemicals = new List<Db.Chemical>();
-            // Attachments
-            if (dto.Attachments == null) dto.Attachments = new List<Attachment>();
-            if (dbObject.Attachments == null) dbObject.Attachments = new List<Db.Attachment>();
-            var attachmentsToBeRemoved = dbObject.Attachments.Where(w => dto.Attachments.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in attachmentsToBeRemoved)
-            {
-                dbObject.Attachments.Remove(item);
-                db.Attachments.Remove(item);
-            }
-
+            var newChemicals = new List<Db.Chemical>();      
             // Comments
             if (dto.Comments == null) dto.Comments = new List<Comment>();
             if (dbObject.Comments == null) dbObject.Comments = new List<Db.Comment>();
@@ -1331,23 +1346,14 @@ namespace ChemDec.Api.Controllers.Handlers
             else return (null, null);
         }
 
-        public async Task<(Shipment, IEnumerable<string>)> AddAttachment(Shipment shipment, Initiator initiator, string fileName, string mimeType, Stream attachement)
+        public async Task<(Shipment, IEnumerable<string>)> AddAttachment(Shipment shipment, Initiator initiator, string fileName, string mimeType, IFormFile attachement)
         {
             if (shipment.Id == Guid.Empty || shipment.Status == null)
             {
                 shipment.Id = Guid.NewGuid();
             }
 
-            var blobContainerClient = GetBlobContainerClient(shipment.Id);
-            var newBlob = blobContainerClient.GetBlobClient(fileName);
-            await newBlob.UploadAsync(attachement);
-
-            if (shipment.Attachments == null) shipment.Attachments = new List<Attachment>();
-            var attachments = shipment.Attachments.ToList();
-            attachments.Add(new Attachment { Id = Guid.NewGuid(), Path = fileName, MimeType = mimeType, Extension = fileName.Substring(fileName.LastIndexOf(".") >= 0 ? fileName.LastIndexOf(".") : 0) });
-            shipment.Attachments = attachments;
-
-            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.NewAttachment, null, fileName);
+            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.NewAttachment, null, null, new List<IFormFile> { attachement });
         }
 
         public async Task<(Shipment, IEnumerable<string>)> RemoveAttachement(Shipment shipment, Initiator initiator, Guid attachmentId)
