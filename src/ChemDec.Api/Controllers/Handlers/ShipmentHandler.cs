@@ -1380,7 +1380,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var blobContainerClient = GetBlobContainerClient(shipment.Id);
             var newBlob = blobContainerClient.GetBlobClient(attachment.Path);
             await newBlob.DeleteIfExistsAsync();
-            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path);
+            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path, null, attachmentId);
         }
 
 
