@@ -51,7 +51,7 @@ namespace ChemDec.Api.Controllers
 
             if (toInstallationId != null)
             {
-                res = res.Where(w => w.Receiver.Id == toInstallationId).Where(w=>w.Status != ShipmentHandler.Statuses.Draft);
+                res = res.Where(w => w.Receiver.Id == toInstallationId).Where(w => w.Status != ShipmentHandler.Statuses.Draft);
             }
 
             if (from != null)
@@ -63,7 +63,7 @@ namespace ChemDec.Api.Controllers
             {
                 res = res.Where(w => w.PlannedExecutionFrom <= to);
             }
-            
+
             return new ShipmentResponse
             {
                 Total = res.Count(),
@@ -73,7 +73,7 @@ namespace ChemDec.Api.Controllers
 
         }
 
-        
+
         [HttpGet]
         [Route("chemicalhistory")]
         public async Task<ActionResult<List<ShipmentChemicalTableItem>>> GetChemicalHistoryForPlant(DateTime? from, DateTime? to, Guid? toInstallationId, string timeZone) //, Filter filter)
@@ -81,12 +81,12 @@ namespace ChemDec.Api.Controllers
             //get data for entire days
             if (from != null) from = new DateTime(from.Value.Year, from.Value.Month, from.Value.Day, 0, 0, 0);
             if (to != null) to = new DateTime(to.Value.Year, to.Value.Month, to.Value.Day, 23, 59, 59);
-            
+
             if (toInstallationId == null)
             {
                 return BadRequest(new { error = new List<string> { "toInstallationId can not be null " } });
             }
-            
+
             var chemicalShipmentsToPlant = await handler.GetChemicalHistoryForPlant(toInstallationId, timeZone, from, to);
 
             return chemicalShipmentsToPlant;
@@ -121,7 +121,7 @@ namespace ChemDec.Api.Controllers
             //return File(stream, "text/csv", $"History {chemicalShipmentsToPlant.FirstOrDefault().FromInstallation}.csv");
             return File(stream, "text/csv", $"Chemical History {fromDate}-{toDate}.csv");
         }
-             
+
 
         [HttpGet]
         [Route("graph")]
@@ -137,17 +137,17 @@ namespace ChemDec.Api.Controllers
 
             return res;
         }
-       
+
 
         [HttpGet]
         [Route("{roleCode}/{shipmentId}")]
-        public async Task<ActionResult<Shipment>> Shipment(string roleCode,Guid shipmentId)
-        {            
+        public async Task<ActionResult<Shipment>> Shipment(string roleCode, Guid shipmentId)
+        {
             var res = await handler.GetShipments().FirstOrDefaultAsync(w => w.Id == shipmentId);
 
             if (res == null)
             {
-                return BadRequest(new { error = $"Shipment with id {shipmentId} was not found"});
+                return BadRequest(new { error = $"Shipment with id {shipmentId} was not found" });
             }
             var user = await userService.GetCurrentUser();
             var role = user.Roles.FirstOrDefault(w => w.Code == roleCode);
@@ -162,13 +162,14 @@ namespace ChemDec.Api.Controllers
             }
             return res;
         }
-       
+
         [HttpPost]
         [Route("{initiator}/{operation}")]
         public async Task<ActionResult<Shipment>> Save(string initiator, string operation, [FromForm] ShipmentRequest request)
         {
             ShipmentHandler.Operation operationEnum;
-            if (Enum.TryParse(operation, true, out operationEnum) == false) {
+            if (Enum.TryParse(operation, true, out operationEnum) == false)
+            {
                 return BadRequest(new { error = operation + " is not a valid operation" });
             };
 
@@ -201,7 +202,7 @@ namespace ChemDec.Api.Controllers
         [Route("attachment/{shipmentId}/{attachmentId}")]
         public async Task<ActionResult> GetAttachment(Guid shipmentId, Guid attachmentId)
         {
-           
+
             (var res, var validationErrors) = await handler.ReturnAttachment(shipmentId, attachmentId);
             if (validationErrors != null)
             {
@@ -211,8 +212,9 @@ namespace ChemDec.Api.Controllers
             {
                 return NotFound();
             }
-            
-            return new FileStreamResult(res.Attachment, res.MimeType) {
+
+            return new FileStreamResult(res.Attachment, res.MimeType)
+            {
                 FileDownloadName = $"{res.Path}"
             };
         }
@@ -230,15 +232,15 @@ namespace ChemDec.Api.Controllers
             if (request.Attachment != null && request.Shipment != null)
             {
                 var shipment = JsonConvert.DeserializeObject<Shipment>(request.Shipment);
-                using (var attachment = request.Attachment.OpenReadStream())
+
+                (var res, var validationErrors) = await handler.AddAttachment(shipment, initiatorEnum, request.Attachment.FileName, request.Attachment.ContentType, request.Attachment);
+                if (validationErrors != null)
                 {
-                    (var res, var validationErrors) = await handler.AddAttachment(shipment, initiatorEnum, request.Attachment.FileName, request.Attachment.ContentType, attachment);
-                    if (validationErrors != null)
-                    {
-                        return BadRequest(new { error = validationErrors });
-                    }
-                    return res;
+                    return BadRequest(new { error = validationErrors });
                 }
+
+                return res;
+
             }
             return BadRequest(new { error = "Shipment or attachment was not included in the request" });
 
@@ -286,7 +288,7 @@ namespace ChemDec.Api.Controllers
                     return BadRequest(new { error = validationErrors });
                 }
                 return res;
-               
+
             }
             return BadRequest(new { error = "Shipment or comment was not included in the request" });
 
@@ -303,7 +305,7 @@ namespace ChemDec.Api.Controllers
             };
             if (shipment != null)
             {
-                (var res, var validationErrors) = await handler.RemoveComment(shipment,commentId, initiatorEnum);
+                (var res, var validationErrors) = await handler.RemoveComment(shipment, commentId, initiatorEnum);
                 if (validationErrors != null)
                 {
                     return BadRequest(new { error = validationErrors });
@@ -319,7 +321,7 @@ namespace ChemDec.Api.Controllers
         public async Task<ActionResult<Shipment>> AddPartsWhereMissing()
         {
             //Add ShipmentParts where these are not set. Remove in next round
-            var shipmentsWithMissing = await db.Shipments.Include(i=>i.ShipmentParts).Where(w => w.ShipmentParts.Any() == false).ToListAsync();
+            var shipmentsWithMissing = await db.Shipments.Include(i => i.ShipmentParts).Where(w => w.ShipmentParts.Any() == false).ToListAsync();
             foreach (var s in shipmentsWithMissing)
             {
                 if (s.PlannedExecutionFrom != DateTime.MinValue && s.PlannedExecutionTo != DateTime.MinValue
