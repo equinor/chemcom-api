@@ -770,7 +770,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
         }
 
-        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, List<IFormFile> attachments = null)
+        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, List<IFormFile> attachments = null, Guid? deleteAttachmentId = null)
         {
             var validationErrors = new List<string>();
 
@@ -862,28 +862,37 @@ namespace ChemDec.Api.Controllers.Handlers
                 mapper.Map(shipment, dbObject);
                 (dbObject, newChemicals) = await HandleRelations(shipment, dbObject);
 
-                //Add attachments
-                if (attachments != null)
+                if (details == DetailedOperation.DeleteAttachment)
                 {
-                    var blobContainerClient = GetBlobContainerClient(dbObject.Id);
-                    await blobContainerClient.CreateIfNotExistsAsync();
-                    foreach (var item in attachments)
+                    var attach = await db.Attachments.FirstOrDefaultAsync(a => a.Id == deleteAttachmentId);
+                    if (attach != null) { db.Attachments.Remove(attach); }
+                }
+
+                if (details == DetailedOperation.NewAttachment)
+                {
+                    //Add attachments
+                    if (attachments != null)
                     {
-                        using (var file = item.OpenReadStream())
+                        var blobContainerClient = GetBlobContainerClient(dbObject.Id);
+                        await blobContainerClient.CreateIfNotExistsAsync();
+                        foreach (var item in attachments)
                         {
-                            var blob = blobContainerClient.GetBlobClient(item.FileName);
-                            await blob.UploadAsync(file);
-                            var newAttachment = new Db.Attachment
+                            using (var file = item.OpenReadStream())
                             {
-                                Id = Guid.NewGuid(),
-                                ShipmentId = dbObject.Id,
-                                Path = item.FileName,
-                                MimeType = item.ContentType,
-                                Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
-                            };
-                            db.Attachments.Add(newAttachment);                          
+                                var blob = blobContainerClient.GetBlobClient(item.FileName);
+                                await blob.UploadAsync(file);
+                                var newAttachment = new Db.Attachment
+                                {
+                                    Id = Guid.NewGuid(),
+                                    ShipmentId = dbObject.Id,
+                                    Path = item.FileName,
+                                    MimeType = item.ContentType,
+                                    Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
+                                };
+                                db.Attachments.Add(newAttachment);
+                            }
                         }
-                    }                    
+                    }
                 }
 
                 dbObject.Status = OperationStatus(operation, dbObject.Status, db);
@@ -899,7 +908,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 //Add attachments
                 if (attachments != null)
-                {                  
+                {
                     var blobContainerClient = GetBlobContainerClient(newDbObject.Id);
                     await blobContainerClient.CreateIfNotExistsAsync();
                     foreach (var item in attachments)
@@ -1235,7 +1244,7 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
-            var newChemicals = new List<Db.Chemical>();      
+            var newChemicals = new List<Db.Chemical>();
             // Comments
             if (dto.Comments == null) dto.Comments = new List<Comment>();
             if (dbObject.Comments == null) dbObject.Comments = new List<Db.Comment>();
@@ -1374,7 +1383,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             shipment.Attachments = shipment.Attachments.Where(w => w.Id != attachmentId).ToList();
 
-            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path);
+            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path, null, attachmentId);
         }
 
 
