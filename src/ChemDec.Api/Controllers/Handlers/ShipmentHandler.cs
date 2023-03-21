@@ -911,6 +911,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 {
                     var blobContainerClient = GetBlobContainerClient(newDbObject.Id);
                     await blobContainerClient.CreateIfNotExistsAsync();
+                    newDbObject.Attachments = new List<Db.Attachment>();
                     foreach (var item in attachments)
                     {
                         using (var file = item.OpenReadStream())
