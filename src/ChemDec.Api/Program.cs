@@ -21,6 +21,7 @@ using System.Net.Http;
 using ChemDec.Api;
 using ChemDec.Api.GraphApi;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using ChemDec.Api.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -93,6 +94,7 @@ builder.Services.AddScoped<ShipmentHandler>();
 builder.Services.AddScoped<InstallationHandler>();
 builder.Services.AddScoped<AdminHandler>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddTransient<ICommentsService, CommentsService>();
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthenticationProvider, MicrosoftGraphAuthenticationProvider>();

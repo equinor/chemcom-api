@@ -7,6 +7,7 @@ namespace ChemDec.Api.Datamodel
     {
         public Guid Id { get; set; }
         public string CommentText { get; set; }
+        public Guid? ShipmentId { get; set; }
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
         public string UpdatedByName { get; set; }

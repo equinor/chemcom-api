@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Core;
 using ChemDec.Api.Controllers.Handlers;
+using ChemDec.Api.Infrastructure.Services;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -24,12 +25,14 @@ namespace ChemDec.Api.Controllers
         private readonly ShipmentHandler handler;
         private readonly UserService userService;
         private readonly Db.ChemContext db;
+        private readonly ICommentsService _commentsService;
 
-        public ShipmentController(ShipmentHandler handler, UserService userService, Db.ChemContext db)
+        public ShipmentController(ShipmentHandler handler, UserService userService, Db.ChemContext db, ICommentsService commentsService)
         {
             this.handler = handler;
             this.userService = userService;
             this.db = db;
+            _commentsService = commentsService;
         }
 
         [HttpGet]
@@ -268,26 +271,26 @@ namespace ChemDec.Api.Controllers
             return BadRequest(new { error = "Shipment was not included in the request" });
 
         }
-
-
+               
 
         [HttpPost]
         [Route("{initiator}/comment")]
-        public async Task<ActionResult<Shipment>> AddComment(string initiator, NewCommentRequest request)
+        public async Task<ActionResult<Shipment>> AddNewComment(string initiator, AddCommentRequest request)
         {
             ShipmentHandler.Initiator initiatorEnum;
             if (Enum.TryParse(initiator, true, out initiatorEnum) == false)
             {
                 return BadRequest(new { error = initiator + " is not a valid initiator" });
             };
-            if (string.IsNullOrEmpty(request?.Comment) == false && request?.Shipment != null)
+            if (string.IsNullOrEmpty(request?.Comment) == false && request?.ShipmentId != Guid.Empty && request?.SenderId != Guid.Empty)
             {
-                (var res, var validationErrors) = await handler.AddComment(request.Shipment, initiatorEnum, request.Comment);
+                var validationErrors = await _commentsService.AddComment(initiatorEnum, request.Comment, request.ShipmentId, request.SenderId);
                 if (validationErrors != null)
                 {
                     return BadRequest(new { error = validationErrors });
                 }
-                return res;
+
+                return Ok("new comment added");
 
             }
             return BadRequest(new { error = "Shipment or comment was not included in the request" });
