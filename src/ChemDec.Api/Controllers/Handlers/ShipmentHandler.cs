@@ -855,10 +855,10 @@ namespace ChemDec.Api.Controllers.Handlers
             string status = null;
             if (dbObject != null)
             {
-                //if (shipment.Updated < dbObject.Updated)
-                //{
-                //    return (null, new List<string> { "This form has been updated while you have been working on it. Refresh the page to load the most recent version" });
-                //}
+                if (shipment.Updated < dbObject.Updated)
+                {
+                    return (null, new List<string> { "This form has been updated while you have been working on it. Refresh the page to load the most recent version" });
+                }
                 mapper.Map(shipment, dbObject);
                 (dbObject, newChemicals) = await HandleRelations(shipment, dbObject);
 
