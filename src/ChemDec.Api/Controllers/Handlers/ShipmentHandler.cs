@@ -1287,39 +1287,7 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 dbObject.Chemicals.Remove(item);
                 db.ShipmentChemicals.Remove(item);
-            }
-
-            // Add unknown chemicals as proposed chemicals
-            var newProposedChemicals = dto.Chemicals.Where(w => w.Chemical.Id == Guid.Empty).Select(s => s.Chemical).ToList();
-            var newDbChemicals = new List<Db.Chemical>();
-            if (newProposedChemicals.Any())
-            {
-                var user = await userService.GetCurrentUser();
-
-                foreach (var newC in newProposedChemicals)
-                {
-                    var newId = Guid.NewGuid();
-                    var newChemical = new Db.Chemical
-                    {
-                        Id = newId,
-                        Name = newC.Name,
-                        Description = newC.Description,
-                        Tentative = true,
-                        Proposed = DateTime.Now,
-                        ProposedBy = user.Upn,
-                        ProposedByEmail = user.Email,
-                        ProposedByName = user.Name,
-                        ProposedByInstallationId = dto.Sender.Id,
-                    };
-                    newC.Id = newId;
-                    newDbChemicals.Add(newChemical);
-
-                    newChemicals.Add(newChemical);
-
-                }
-
-                db.Chemicals.AddRange(newDbChemicals);
-            }
+            }            
 
             var chemicalsToBeAdded = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
             var chemicalIds = new List<Guid>();

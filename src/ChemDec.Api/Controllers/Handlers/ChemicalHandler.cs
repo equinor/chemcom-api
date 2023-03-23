@@ -32,20 +32,20 @@ namespace ChemDec.Api.Controllers.Handlers
         public async Task<(Chemical, IEnumerable<string>)> SaveOrUpdate(Chemical chemical)
         {
             var validationErrors = new List<string>();
-           
+
             var user = userResolver.GetCurrentUserId();
 
-           /* Code no longer mandatory
-            * if (string.IsNullOrEmpty(chemical.Code))
-            {
-                validationErrors.Add("Chemical code must be set");
-            }*/
+            /* Code no longer mandatory
+             * if (string.IsNullOrEmpty(chemical.Code))
+             {
+                 validationErrors.Add("Chemical code must be set");
+             }*/
 
             if (string.IsNullOrEmpty(chemical.Name))
             {
                 validationErrors.Add("Chemical name must be set");
             }
-            if(chemical.Name.Contains(';'))
+            if (chemical.Name.Contains(';'))
             {
                 validationErrors.Add("Chemical name cannot contain semicolons.");
             }
@@ -54,12 +54,11 @@ namespace ChemDec.Api.Controllers.Handlers
                 validationErrors.Add("Chemical description cannot contain semicolons.");
             }
 
-            /*
             if (string.IsNullOrEmpty(chemical.Description))
             {
                 validationErrors.Add("Chemical description must be set");
             }
-            */
+
 
             Db.Chemical dbObject = null;
             if (chemical.Id != Guid.Empty)
@@ -83,7 +82,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (dbObject != null)
             {
-               // User check to see if user can update chemicals
+                // User check to see if user can update chemicals
 
                 chemical.Id = dbObject.Id;
                 var tentative = dbObject.Tentative;
@@ -98,7 +97,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 if (dbObject.TocWeight != tocWeight || dbObject.NitrogenWeight != nWeight || dbObject.Density != density)
                 {
                     // Recalculate shipments
-                    var shipmentsToUpdate = await db.ShipmentChemicals.Include(i=>i.Shipment).Where(w => w.ChemicalId == dbObject.Id).ToListAsync();
+                    var shipmentsToUpdate = await db.ShipmentChemicals.Include(i => i.Shipment).Where(w => w.ChemicalId == dbObject.Id).ToListAsync();
                     foreach (var shipment in shipmentsToUpdate)
                     {
                         ShipmentHandler.CalculateChemicals(shipment.Shipment.RinsingOffshorePercent, shipment, dbObject);
@@ -111,6 +110,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 // User check. Only chem administrator can add non-tentative chemicals
 
                 var newDbObject = mapper.Map<Db.Chemical>(chemical);
+
                 if (newDbObject.Id == Guid.Empty)
                     newDbObject.Id = Guid.NewGuid();
                 newDbObject = HandleRelations(chemical, newDbObject);
