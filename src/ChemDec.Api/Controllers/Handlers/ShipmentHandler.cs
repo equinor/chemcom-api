@@ -1279,44 +1279,35 @@ namespace ChemDec.Api.Controllers.Handlers
                 dbObject.ShipmentParts.Add(newPart);
             }
 
-
-            // Chemicals
-            if (dbObject.Chemicals == null) dbObject.Chemicals = new List<Db.ShipmentChemical>();
-            var chemicalsToBeRemoved = dbObject.Chemicals.Where(w => dto.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in chemicalsToBeRemoved)
-            {
-                dbObject.Chemicals.Remove(item);
-                db.ShipmentChemicals.Remove(item);
-            }            
-
-            var chemicalsToBeAdded = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            var chemicalIds = new List<Guid>();
-
             foreach (var item in dto.Chemicals)
             {
-                chemicalIds.Add(item.Id);
-            }
-
-            foreach (var item in dbObject.Chemicals)
-            {
-                chemicalIds.Add(item.ChemicalId);
-            }
-
-            chemicalIds = chemicalIds.Distinct().ToList();
-
-            var dbChems = await db.Chemicals.Where(w => chemicalIds.Contains(w.Id)).ToListAsync();
-
-            foreach (var item in chemicalsToBeAdded)
-            {
-                var newShipmentChemical = new Db.ShipmentChemical
+                if (dbObject.Chemicals == null)
                 {
-                    Id = Guid.NewGuid(),
-                    ChemicalId = item.Id,
-                    MeasureUnit = item.MeasureUnit,
-                    Amount = item.Amount,
-                };
-                dbObject.Chemicals.Add(newShipmentChemical);
+                    dbObject.Chemicals = new List<Db.ShipmentChemical>();
+                }
+
+                var shipmentChemical = await db.ShipmentChemicals.FirstOrDefaultAsync(c => c.ChemicalId == item.Id && c.ShipmentId == dto.Id);
+
+                if(shipmentChemical == null)
+                {
+                    var newShipmentChemical = new Db.ShipmentChemical
+                    {
+                        Id = Guid.NewGuid(),
+                        ChemicalId = item.Id,
+                        MeasureUnit = item.MeasureUnit,
+                        Amount = item.Amount,
+                        ShipmentId = dbObject.Id
+                    };
+                    db.ShipmentChemicals.Add(newShipmentChemical);
+                }
+                else
+                {
+                    shipmentChemical.MeasureUnit = item.MeasureUnit;
+                    shipmentChemical.Amount = item.Amount;
+                    db.ShipmentChemicals.Update(shipmentChemical);
+                }
             }
+            
 
             dbObject.SenderId = dto.SenderId;
 
