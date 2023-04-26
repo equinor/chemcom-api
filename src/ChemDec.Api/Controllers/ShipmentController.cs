@@ -10,6 +10,7 @@ using ChemDec.Api.Infrastructure.Services;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -20,6 +21,7 @@ namespace ChemDec.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableCors("_myAllowSpecificOrigins")]
     public class ShipmentController : ControllerBase
     {
         private readonly ShipmentHandler handler;

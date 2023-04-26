@@ -35,8 +35,6 @@ builder.Services.AddDbContext<ChemContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("chemcomdb"));
 });
 
-//builder.Services.AddMicrosoftIdentityWebApiAuthentication(configuration, "azure");
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(optionsA => { }, optionsB =>
     {
@@ -46,10 +44,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         optionsB.Backchannel = defaultBackChannel;
     }).EnableTokenAcquisitionToCallDownstreamApi(e => { })
     .AddInMemoryTokenCaches();
-
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddMicrosoftIdentityWebApi(configuration, "azure");
-
 
 builder.Services.AddAuthorization(options =>
 {
