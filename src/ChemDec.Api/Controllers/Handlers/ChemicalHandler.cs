@@ -16,12 +16,14 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly Db.ChemContext db;
         private readonly IMapper mapper;
         private readonly UserResolver userResolver;
+        private readonly UserService _userService;
 
-        public ChemicalHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver)
+        public ChemicalHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService)
         {
             this.db = db;
             this.mapper = mapper;
             this.userResolver = userResolver;
+            _userService = userService;
         }
 
         public IQueryable<Chemical> GetChemicals()
@@ -32,14 +34,7 @@ namespace ChemDec.Api.Controllers.Handlers
         public async Task<(Chemical, IEnumerable<string>)> SaveOrUpdate(Chemical chemical)
         {
             var validationErrors = new List<string>();
-
-            var user = userResolver.GetCurrentUserId();
-
-            /* Code no longer mandatory
-             * if (string.IsNullOrEmpty(chemical.Code))
-             {
-                 validationErrors.Add("Chemical code must be set");
-             }*/
+            var user = await _userService.GetCurrentUser();
 
             if (string.IsNullOrEmpty(chemical.Name))
             {
@@ -93,7 +88,6 @@ namespace ChemDec.Api.Controllers.Handlers
                 mapper.Map(chemical, dbObject);
                 dbObject.Tentative = tentative; // can only be approved through Approve-method
                 dbObject = HandleRelations(chemical, dbObject);
-
                 if (dbObject.TocWeight != tocWeight || dbObject.NitrogenWeight != nWeight || dbObject.Density != density)
                 {
                     // Recalculate shipments
@@ -114,6 +108,10 @@ namespace ChemDec.Api.Controllers.Handlers
                 if (newDbObject.Id == Guid.Empty)
                     newDbObject.Id = Guid.NewGuid();
                 newDbObject = HandleRelations(chemical, newDbObject);
+                newDbObject.ProposedBy = user.Email;
+                newDbObject.ProposedByEmail = user.Email;
+                newDbObject.ProposedByName = user.Name;
+                newDbObject.Proposed = DateTime.Now;
                 db.Chemicals.Add(newDbObject);
                 chemical.Id = newDbObject.Id;
             }
