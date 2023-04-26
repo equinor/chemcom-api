@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Db = ChemDec.Api.Datamodel;
 
@@ -15,14 +16,14 @@ namespace ChemDec.Api.Model
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
-        public IFormFile File { get; set; }
     }
+
 
     public class NewAttachment
     {
         public IFormFile Attachment { get; set; }
         public string Shipment { get; set; }
-    }
+    }   
 
     public class AttachmentResponse
     {
@@ -34,13 +35,8 @@ namespace ChemDec.Api.Model
     {
         public AttachmentProfile()
         {
-
             CreateMap<Attachment, Db.Attachment>();
             CreateMap<Db.Attachment, Attachment>();
-
         }
     }
-
-
-
 }

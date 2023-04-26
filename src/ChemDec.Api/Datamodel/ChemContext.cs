@@ -33,13 +33,10 @@ namespace ChemDec.Api.Datamodel
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            
-
             builder.Entity<ShipmentChemical>()
                 .HasOne(bc => bc.Chemical)
                 .WithMany(b => b.Shipments)
                 .HasForeignKey(bc => bc.ChemicalId);
-
           
             builder.Entity<ShipmentChemical>()
              .HasOne(bc => bc.Shipment)
@@ -63,6 +60,7 @@ namespace ChemDec.Api.Datamodel
                   .WithOne(b => b.Shipment)
                   .HasForeignKey(f => f.ShipmentId)
                   .OnDelete(DeleteBehavior.Restrict);
+          
 
             builder.Entity<Installation>()
                  .HasMany(bc => bc.GetsShipmentsFrom)
@@ -80,10 +78,6 @@ namespace ChemDec.Api.Datamodel
               .HasOne(pt => pt.Plant)
               .WithMany(p => p.GetsShipmentsFromInstallation)
               .HasForeignKey(pt => pt.PlantId).OnDelete(DeleteBehavior.Restrict); 
-
-      
-        
-
     }
 
 

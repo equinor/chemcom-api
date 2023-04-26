@@ -14,6 +14,7 @@ using Microsoft.ApplicationInsights;
 using Azure.Storage.Blobs;
 using Azure.Storage;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -568,7 +569,7 @@ namespace ChemDec.Api.Controllers.Handlers
             if (operation == Operation.Approve)
             {
 
-                if (receiver != null && user.Roles.Any(a => a.Id == receiver.Id.ToString()))
+                if (receiver != null && !user.Roles.Any(a => a.Id == receiver.Id.ToString()))
                     return "User don't have access to approve this shipment";
 
             }
@@ -769,7 +770,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
         }
 
-        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment)
+        public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, List<IFormFile> attachments = null, Guid? deleteAttachmentId = null)
         {
             var validationErrors = new List<string>();
 
@@ -860,6 +861,40 @@ namespace ChemDec.Api.Controllers.Handlers
                 }
                 mapper.Map(shipment, dbObject);
                 (dbObject, newChemicals) = await HandleRelations(shipment, dbObject);
+
+                if (details == DetailedOperation.DeleteAttachment)
+                {
+                    var attach = await db.Attachments.FirstOrDefaultAsync(a => a.Id == deleteAttachmentId);
+                    if (attach != null) { db.Attachments.Remove(attach); }
+                }
+
+                if (details == DetailedOperation.NewAttachment)
+                {
+                    //Add attachments
+                    if (attachments != null)
+                    {
+                        var blobContainerClient = GetBlobContainerClient(dbObject.Id);
+                        await blobContainerClient.CreateIfNotExistsAsync();
+                        foreach (var item in attachments)
+                        {
+                            using (var file = item.OpenReadStream())
+                            {
+                                var blob = blobContainerClient.GetBlobClient(item.FileName);
+                                await blob.UploadAsync(file);
+                                var newAttachment = new Db.Attachment
+                                {
+                                    Id = Guid.NewGuid(),
+                                    ShipmentId = dbObject.Id,
+                                    Path = item.FileName,
+                                    MimeType = item.ContentType,
+                                    Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
+                                };
+                                db.Attachments.Add(newAttachment);
+                            }
+                        }
+                    }
+                }
+
                 dbObject.Status = OperationStatus(operation, dbObject.Status, db);
                 status = dbObject.Status;
             }
@@ -870,6 +905,33 @@ namespace ChemDec.Api.Controllers.Handlers
                 if (newDbObject.Id == Guid.Empty)
                     newDbObject.Id = Guid.NewGuid();
                 (newDbObject, newChemicals) = await HandleRelations(shipment, newDbObject);
+
+                //Add attachments
+                if (attachments != null)
+                {
+                    var blobContainerClient = GetBlobContainerClient(newDbObject.Id);
+                    await blobContainerClient.CreateIfNotExistsAsync();
+                    newDbObject.Attachments = new List<Db.Attachment>();
+                    foreach (var item in attachments)
+                    {
+                        using (var file = item.OpenReadStream())
+                        {
+                            var blob = blobContainerClient.GetBlobClient(item.FileName);
+                            await blob.UploadAsync(file);
+                            var newAttachment = new Db.Attachment
+                            {
+                                Id = Guid.NewGuid(),
+                                ShipmentId = newDbObject.Id,
+                                Path = item.FileName,
+                                MimeType = item.ContentType,
+                                Extension = item.FileName.Substring(item.FileName.LastIndexOf(".") >= 0 ? item.FileName.LastIndexOf(".") : 0)
+                            };
+                            newDbObject.Attachments.Add(newAttachment);
+                        }
+                    }
+                }
+
+
                 db.Shipments.Add(newDbObject);
                 shipment.Id = newDbObject.Id;
                 newDbObject.Status = OperationStatus(operation, null, db);
@@ -899,7 +961,8 @@ namespace ChemDec.Api.Controllers.Handlers
 
             loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentSaved", shipment);
 
-            await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
+            //TODO: Remove this code
+            //await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
 
             return (await db.Shipments.ProjectTo<Shipment>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == shipment.Id), null);
         }
@@ -1182,38 +1245,7 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         private async Task<(Db.Shipment, IEnumerable<Db.Chemical>)> HandleRelations(Shipment dto, Db.Shipment dbObject)
         {
-            var blobContainerClient = GetBlobContainerClient(dto.Id);
-
             var newChemicals = new List<Db.Chemical>();
-            // Attachments
-            if (dto.Attachments == null) dto.Attachments = new List<Attachment>();
-            if (dbObject.Attachments == null) dbObject.Attachments = new List<Db.Attachment>();
-            var attachmentsToBeRemoved = dbObject.Attachments.Where(w => dto.Attachments.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in attachmentsToBeRemoved)
-            {
-                dbObject.Attachments.Remove(item);
-                db.Attachments.Remove(item);
-            }
-
-            var attachmentsToBeAdded = dto.Attachments.Where(w => dbObject.Attachments.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in attachmentsToBeAdded)
-            {
-                using (var file = item.File.OpenReadStream())
-                {
-                    var blob = blobContainerClient.GetBlobClient(item.File.FileName);
-                    await blob.UploadAsync(file);
-                    var attachment = new Db.Attachment
-                    {
-                        Id = Guid.NewGuid(),
-                        ShipmentId = dto.Id,
-                        Path = item.File.FileName,
-                        MimeType = item.MimeType,
-                        Extension = item.File.FileName.Substring(item.File.FileName.LastIndexOf(".") >= 0 ? item.File.FileName.LastIndexOf(".") : 0)
-                    };
-                    dbObject.Attachments.Add(attachment);
-                }
-            }
-
             // Comments
             if (dto.Comments == null) dto.Comments = new List<Comment>();
             if (dbObject.Comments == null) dbObject.Comments = new List<Db.Comment>();
@@ -1247,72 +1279,35 @@ namespace ChemDec.Api.Controllers.Handlers
                 dbObject.ShipmentParts.Add(newPart);
             }
 
-
-            // Chemicals
-            if (dbObject.Chemicals == null) dbObject.Chemicals = new List<Db.ShipmentChemical>();
-            var chemicalsToBeRemoved = dbObject.Chemicals.Where(w => dto.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            foreach (var item in chemicalsToBeRemoved)
+            foreach (var item in dto.Chemicals)
             {
-                dbObject.Chemicals.Remove(item);
-                db.ShipmentChemicals.Remove(item);
-            }
-
-            // Add unknown chemicals as proposed chemicals
-            var newProposedChemicals = dto.Chemicals.Where(w => w.Chemical.Id == Guid.Empty).Select(s => s.Chemical).ToList();
-            var newDbChemicals = new List<Db.Chemical>();
-            if (newProposedChemicals.Any())
-            {
-                var user = await userService.GetCurrentUser();
-
-                foreach (var newC in newProposedChemicals)
+                if (dbObject.Chemicals == null)
                 {
-                    var newId = Guid.NewGuid();
-                    var newChemical = new Db.Chemical
-                    {
-                        Id = newId,
-                        Name = newC.Name,
-                        Description = newC.Description,
-                        Tentative = true,
-                        Proposed = DateTime.Now,
-                        ProposedBy = user.Upn,
-                        ProposedByEmail = user.Email,
-                        ProposedByName = user.Name,
-                        ProposedByInstallationId = dto.Sender.Id,
-                    };
-                    newC.Id = newId;
-                    newDbChemicals.Add(newChemical);
-
-                    newChemicals.Add(newChemical);
-
+                    dbObject.Chemicals = new List<Db.ShipmentChemical>();
                 }
 
-                db.Chemicals.AddRange(newDbChemicals);
+                var shipmentChemical = await db.ShipmentChemicals.FirstOrDefaultAsync(c => c.ChemicalId == item.Id && c.ShipmentId == dto.Id);
+
+                if(shipmentChemical == null)
+                {
+                    var newShipmentChemical = new Db.ShipmentChemical
+                    {
+                        Id = Guid.NewGuid(),
+                        ChemicalId = item.Id,
+                        MeasureUnit = item.MeasureUnit,
+                        Amount = item.Amount,
+                        ShipmentId = dbObject.Id
+                    };
+                    db.ShipmentChemicals.Add(newShipmentChemical);
+                }
+                else
+                {
+                    shipmentChemical.MeasureUnit = item.MeasureUnit;
+                    shipmentChemical.Amount = item.Amount;
+                    db.ShipmentChemicals.Update(shipmentChemical);
+                }
             }
-
-            var chemicalsToBeAdded = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id) == false).ToList();
-            var chemicalsToBeUpdated = dto.Chemicals.Where(w => dbObject.Chemicals.Select(s => s.Id).Any(a => a == w.Id)).ToList();
-
-            var chemicalIds = dto.Chemicals.Select(s => s.Chemical.Id).Concat(dbObject.Chemicals.Select(s => s.ChemicalId)).ToList().Distinct();
-
-            var dbChems = (await db.Chemicals.Where(w => chemicalIds.Contains(w.Id)).ToListAsync()).Concat(newDbChemicals);
-
-            foreach (var item in chemicalsToBeAdded)
-            {
-                var newShipmentChemical = mapper.Map<Db.ShipmentChemical>(item);
-                dbObject.Chemicals.Add(newShipmentChemical);
-            }
-
-            foreach (var item in chemicalsToBeUpdated)
-            {
-                var shipmentChemical = dbObject.Chemicals.First(w => w.Id == item.Id);
-                mapper.Map(item, shipmentChemical);
-            }
-
-
-            foreach (var shipCem in dbObject.Chemicals)
-            {
-                CalculateChemicals(dbObject.RinsingOffshorePercent, shipCem, dbChems.First(w => w.Id == shipCem.ChemicalId));
-            }
+            
 
             dbObject.SenderId = dto.SenderId;
 
@@ -1351,23 +1346,14 @@ namespace ChemDec.Api.Controllers.Handlers
             else return (null, null);
         }
 
-        public async Task<(Shipment, IEnumerable<string>)> AddAttachment(Shipment shipment, Initiator initiator, string fileName, string mimeType, Stream attachement)
+        public async Task<(Shipment, IEnumerable<string>)> AddAttachment(Shipment shipment, Initiator initiator, string fileName, string mimeType, IFormFile attachement)
         {
             if (shipment.Id == Guid.Empty || shipment.Status == null)
             {
                 shipment.Id = Guid.NewGuid();
             }
 
-            var blobContainerClient = GetBlobContainerClient(shipment.Id);
-            var newBlob = blobContainerClient.GetBlobClient(fileName);
-            await newBlob.UploadAsync(attachement);
-
-            if (shipment.Attachments == null) shipment.Attachments = new List<Attachment>();
-            var attachments = shipment.Attachments.ToList();
-            attachments.Add(new Attachment { Id = Guid.NewGuid(), Path = fileName, MimeType = mimeType, Extension = fileName.Substring(fileName.LastIndexOf(".") >= 0 ? fileName.LastIndexOf(".") : 0) });
-            shipment.Attachments = attachments;
-
-            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.NewAttachment, null, fileName);
+            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.NewAttachment, null, null, new List<IFormFile> { attachement });
         }
 
         public async Task<(Shipment, IEnumerable<string>)> RemoveAttachement(Shipment shipment, Initiator initiator, Guid attachmentId)
@@ -1385,10 +1371,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var blobContainerClient = GetBlobContainerClient(shipment.Id);
             var newBlob = blobContainerClient.GetBlobClient(attachment.Path);
             await newBlob.DeleteIfExistsAsync();
-
-            shipment.Attachments = shipment.Attachments.Where(w => w.Id != attachmentId).ToList();
-
-            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path);
+            return await SaveOrUpdate(shipment, initiator, Operation.Change, DetailedOperation.DeleteAttachment, null, attachment.Path, null, attachmentId);
         }
 
 

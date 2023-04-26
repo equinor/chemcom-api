@@ -3,6 +3,7 @@ using AutoMapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace ChemDec.Api.Model
 {
@@ -52,6 +53,7 @@ namespace ChemDec.Api.Model
         public IEnumerable<Comment> Comments { get; set; }
         public IEnumerable<LogEntry> LogEntries { get; set; }
         public IEnumerable<ShipmentPart> ShipmentParts { get; set; }
+        public List<IFormFile> FileAttachments { get; set; }
 
         public DateTime Updated { get; set; }
         public string UpdatedBy { get; set; }
@@ -84,6 +86,13 @@ namespace ChemDec.Api.Model
     public class NewCommentRequest
     {
         public Shipment Shipment { get; set; }
+        public string Comment { get; set; }
+    }
+
+    public class AddCommentRequest
+    {
+        public Guid ShipmentId { get; set; }
+        public Guid SenderId { get; set; }
         public string Comment { get; set; }
     }
 
@@ -155,6 +164,12 @@ namespace ChemDec.Api.Model
         public string UpdatedByName { get; set; }
 
 
+    }
+
+    public class ShipmentRequest
+    {
+        public string Shipment { get; set; }
+        public List<IFormFile> Attachments { get; set; }
     }
 
     public class ShipmentProfile : Profile
