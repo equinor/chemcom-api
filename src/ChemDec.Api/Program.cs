@@ -1,13 +1,10 @@
 using ChemDec.Api.Datamodel;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Threading.Tasks;
 using System;
 using ChemDec.Api.Infrastructure.Security;
 using ChemDec.Api.Infrastructure.Utils;
@@ -20,15 +17,19 @@ using Microsoft.Identity.Web;
 using System.Net.Http;
 using ChemDec.Api;
 using ChemDec.Api.GraphApi;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using ChemDec.Api.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+var keyVaultUrl = configuration["KeyVaultEndpoint"];
+var clientId = configuration["azure:ClientId"];
+var clientSecret = configuration["azure:ClientSecret"];
+builder.Configuration.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
+
 var corsDomainsFromConfig = Utils.GetCommaSeparatedConfigValue(configuration, "AllowCorsDomains");
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<ChemContext>(options =>
 {
@@ -65,11 +66,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy(MyAllowSpecificOrigins,
     builder =>
     {
-        //var domainsAsArray = new string[corsDomainsFromConfig.Count];
-        //corsDomainsFromConfig.CopyTo(domainsAsArray);
+        var domainsAsArray = new string[corsDomainsFromConfig.Count];
+        corsDomainsFromConfig.CopyTo(domainsAsArray);
 
-        //builder.WithOrigins(domainsAsArray)
-        builder.AllowAnyOrigin()
+        builder.WithOrigins(domainsAsArray)
         .AllowAnyHeader()
         .AllowAnyMethod();
     });

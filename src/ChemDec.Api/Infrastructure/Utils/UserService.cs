@@ -3,7 +3,6 @@ using AutoMapper.QueryableExtensions;
 using ChemDec.Api.Datamodel;
 using ChemDec.Api.Infrastructure.Security;
 using ChemDec.Api.Model;
-using LazyCache;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
