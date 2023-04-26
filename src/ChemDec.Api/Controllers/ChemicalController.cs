@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ChemDec.Api.Controllers.Handlers;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +13,7 @@ namespace ChemDec.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableCors("_myAllowSpecificOrigins")]
     public class ChemicalController : ControllerBase
     {
         private readonly ChemicalHandler handler;

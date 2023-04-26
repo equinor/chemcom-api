@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using ChemDec.Api.Controllers.Handlers;
 using ChemDec.Api.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,6 +16,7 @@ namespace ChemDec.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableCors("_myAllowSpecificOrigins")]
     public class AdminController : ControllerBase
     {
         private readonly AdminHandler handler;
