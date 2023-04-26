@@ -21,7 +21,6 @@ namespace ChemDec.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [EnableCors("_myAllowSpecificOrigins")]
     public class ShipmentController : ControllerBase
     {
         private readonly ShipmentHandler handler;

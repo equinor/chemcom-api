@@ -12,8 +12,7 @@ namespace ChemDec.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    [EnableCors("_myAllowSpecificOrigins")]
+    [Authorize]    
     public class InstallationController : ControllerBase
     {
         private readonly InstallationHandler handler;

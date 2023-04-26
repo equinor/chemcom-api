@@ -16,7 +16,6 @@ namespace ChemDec.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    [EnableCors("_myAllowSpecificOrigins")]
     public class AdminController : ControllerBase
     {
         private readonly AdminHandler handler;
