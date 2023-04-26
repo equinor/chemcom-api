@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata;
-
-namespace ChemDec.Api.Model
+﻿namespace ChemDec.Api.Model
 {
     public static class ChemicalTypes
     {

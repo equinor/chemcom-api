@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Core;
 using ChemDec.Api.Controllers.Handlers;
 using ChemDec.Api.Infrastructure.Services;
 using ChemDec.Api.Infrastructure.Utils;
@@ -20,6 +19,7 @@ namespace ChemDec.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class ShipmentController : ControllerBase
     {
