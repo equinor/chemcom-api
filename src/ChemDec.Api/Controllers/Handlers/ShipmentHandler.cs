@@ -8,7 +8,6 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.ApplicationInsights;
 using Azure.Storage.Blobs;
