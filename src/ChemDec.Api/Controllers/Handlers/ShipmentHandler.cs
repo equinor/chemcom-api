@@ -1287,7 +1287,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 var shipmentChemical = await db.ShipmentChemicals.FirstOrDefaultAsync(c => c.ChemicalId == item.Id && c.ShipmentId == dto.Id);
 
-                if(shipmentChemical == null)
+                if (shipmentChemical == null)
                 {
                     var newShipmentChemical = new Db.ShipmentChemical
                     {
@@ -1295,7 +1295,15 @@ namespace ChemDec.Api.Controllers.Handlers
                         ChemicalId = item.Id,
                         MeasureUnit = item.MeasureUnit,
                         Amount = item.Amount,
-                        ShipmentId = dbObject.Id
+                        ShipmentId = dbObject.Id,
+                        CalculatedWeightUnrinsed = item.CalculatedWeightUnrinsed,
+                        CalculatedBiocides = item.CalculatedBiocides,
+                        CalculatedBiocidesUnrinsed = item.CalculatedBiocidesUnrinsed,
+                        CalculatedNitrogen = item.CalculatedNitrogen,
+                        CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed,
+                        CalculatedToc = item.CalculatedToc,
+                        CalculatedTocUnrinsed = item.CalculatedTocUnrinsed,
+                        CalculatedWeight = item.CalculatedWeight
                     };
                     db.ShipmentChemicals.Add(newShipmentChemical);
                 }
@@ -1303,10 +1311,18 @@ namespace ChemDec.Api.Controllers.Handlers
                 {
                     shipmentChemical.MeasureUnit = item.MeasureUnit;
                     shipmentChemical.Amount = item.Amount;
+                    shipmentChemical.CalculatedWeightUnrinsed = item.CalculatedWeightUnrinsed;
+                    shipmentChemical.CalculatedBiocides = item.CalculatedBiocides;
+                    shipmentChemical.CalculatedBiocidesUnrinsed = item.CalculatedBiocidesUnrinsed;
+                    shipmentChemical.CalculatedNitrogen = item.CalculatedNitrogen;
+                    shipmentChemical.CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed;
+                    shipmentChemical.CalculatedToc = item.CalculatedToc;
+                    shipmentChemical.CalculatedTocUnrinsed = item.CalculatedTocUnrinsed;
+                    shipmentChemical.CalculatedWeight = item.CalculatedWeight;
                     db.ShipmentChemicals.Update(shipmentChemical);
                 }
             }
-            
+
 
             dbObject.SenderId = dto.SenderId;
 
