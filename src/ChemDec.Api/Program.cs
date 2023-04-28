@@ -66,10 +66,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy(MyAllowSpecificOrigins,
     builder =>
     {
-        var domainsAsArray = new string[corsDomainsFromConfig.Count];
-        corsDomainsFromConfig.CopyTo(domainsAsArray);
+        //var domainsAsArray = new string[corsDomainsFromConfig.Count];
+        //corsDomainsFromConfig.CopyTo(domainsAsArray);
 
-        builder.WithOrigins(domainsAsArray)
+        //builder.WithOrigins(domainsAsArray)
+        builder.AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod();
     });

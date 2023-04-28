@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace ChemDec.Api.Controllers
 {
     [Route("[controller]/[action]")]
-    [EnableCors("_myAllowSpecificOrigins")]
     public class AccountController : Controller
     {
         private readonly UserService userService;
