@@ -547,7 +547,7 @@ namespace ChemDec.Api.Controllers.Handlers
         private string CheckIfUserCanChangeShipment(string status, Operation operation, Guid senderId, User user, Guid receiverId)
         {
             var role = user.Roles.FirstOrDefault(u => u.Id == senderId.ToString());
-                       
+
             var receiverRole = user.Roles.FirstOrDefault(u => u.Id == receiverId.ToString());
 
             if ((operation == Operation.Change && (status == null || status == Statuses.Draft)) || operation == Operation.Submit)
@@ -785,7 +785,12 @@ namespace ChemDec.Api.Controllers.Handlers
             if (validationErrors.Any()) return (null, validationErrors);
 
             ValidateAccessToSaveFromThisInstallation(initiator, user, shipment, validationErrors);
-            ValidateAccessToSaveFromThisPlant(initiator, user, shipment, validationErrors);
+
+            if (operation == Operation.Approve || operation == Operation.Decline || operation == Operation.SaveEvaluation)
+            {
+                ValidateAccessToSaveFromThisPlant(initiator, user, shipment, validationErrors);
+            }
+
 
             if (shipment.ContainsChemicals == false)
             {
@@ -841,7 +846,9 @@ namespace ChemDec.Api.Controllers.Handlers
                 validationErrors.Add(statusCheck);
             }
 
-            var permissionCheck = CheckIfUserCanChangeShipment(dbObject?.Status, operation, shipment.SenderId, user, shipment.Receiver.Id);
+
+
+            var permissionCheck = CheckIfUserCanChangeShipment(dbObject?.Status, operation, shipment.SenderId, user, shipment.Receiver == null ? Guid.Empty : shipment.Receiver.Id);
             if (permissionCheck != null)
             {
                 validationErrors.Add(permissionCheck);
@@ -943,11 +950,12 @@ namespace ChemDec.Api.Controllers.Handlers
 
             var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
             var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
-            var receiverRole = user.Roles.FirstOrDefault(u => u.Id == shipment.Receiver.Id.ToString());
-            var plant = await db.Installations.Where(w => w.Id.ToString() == receiverRole.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+
+            var receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
+            var plant = await db.Installations.Where(w => w.Id == receiverId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             dbObject.Updated = DateTime.Now;
-            dbObject.ReceiverId = Guid.Parse(receiverRole.Id);
+            dbObject.ReceiverId = receiverId;
 
             //update legal terms settings:
             if (dbObject.AvailableForDailyContact == true)
