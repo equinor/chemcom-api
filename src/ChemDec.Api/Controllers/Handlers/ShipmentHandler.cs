@@ -951,7 +951,17 @@ namespace ChemDec.Api.Controllers.Handlers
             var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
             var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
 
-            var receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
+            var receiverId = Guid.Empty;
+
+            if (operation == Operation.Approve || operation == Operation.Decline || operation == Operation.SaveEvaluation)
+            {
+                receiverId = shipment.Receiver.Id;
+            }
+            else
+            {
+                receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
+            }
+
             var plant = await db.Installations.Where(w => w.Id == receiverId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
             dbObject.Updated = DateTime.Now;
