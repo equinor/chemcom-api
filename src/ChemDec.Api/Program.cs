@@ -66,10 +66,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy(MyAllowSpecificOrigins,
     builder =>
     {
-        var domainsAsArray = new string[corsDomainsFromConfig.Count];
-        corsDomainsFromConfig.CopyTo(domainsAsArray);
-
-        builder.WithOrigins(domainsAsArray)        
+        var origins = new string[]
+        {
+            "https://frontend-chemcom-dev.radix.equinor.com",
+            "http://localhost:3000",
+            "https://chemcom.equinor.com/"
+        };
+        builder.WithOrigins(origins)
         .AllowAnyHeader()
         .AllowAnyMethod();
     });
