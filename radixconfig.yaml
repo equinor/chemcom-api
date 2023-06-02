@@ -19,6 +19,7 @@ spec:
         - azure__ClientSecret
         - azure__ClientId
         - ClientSecret
+        - KeyVaultEndpoint
       environmentConfig:
         - environment: dev
           runAsNonRoot: true
