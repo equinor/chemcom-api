@@ -66,11 +66,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy(MyAllowSpecificOrigins,
     builder =>
     {
-        //var domainsAsArray = new string[corsDomainsFromConfig.Count];
-        //corsDomainsFromConfig.CopyTo(domainsAsArray);
+        var domainsAsArray = new string[corsDomainsFromConfig.Count];
+        corsDomainsFromConfig.CopyTo(domainsAsArray);
 
-        //builder.WithOrigins(domainsAsArray)
-        builder.AllowAnyOrigin()
+        builder.WithOrigins(domainsAsArray)        
         .AllowAnyHeader()
         .AllowAnyMethod();
     });
@@ -109,7 +108,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var dbContext = services.GetRequiredService<ChemContext>();
-    dbContext.CheckMigrations();
+    //dbContext.CheckMigrations();
 }
 app.UseCors(MyAllowSpecificOrigins);
 if (app.Environment.IsDevelopment())
