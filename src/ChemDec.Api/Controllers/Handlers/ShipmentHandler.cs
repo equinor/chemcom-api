@@ -979,7 +979,7 @@ namespace ChemDec.Api.Controllers.Handlers
             loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentSaved", shipment);
 
             //TODO: Remove this code
-            //await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
+            await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
 
             return (await db.Shipments.ProjectTo<Shipment>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == shipment.Id), null);
         }
