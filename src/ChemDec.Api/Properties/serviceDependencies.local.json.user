@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "secrets1": {
+      "restored": true,
+      "restoreTime": "2023-06-06T13:06:12.3138301Z"
+    },
+    "appInsights1": {
+      "restored": true,
+      "restoreTime": "2023-06-06T13:06:24.7411814Z"
+    }
+  },
+  "parameters": {
+    "appInsights1.resourceGroupName": {
+      "Name": "appInsights1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "rg-chemcom-dev"
+    },
+    "appInsights1.subscriptionId": {
+      "Name": "appInsights1.subscriptionId",
+      "Type": "subscription",
+      "Value": "38ae4a0b-0960-43a3-abe9-973a505bca88"
+    }
+  }
+}

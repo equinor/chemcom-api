@@ -102,6 +102,7 @@ builder.Services.AddTransient<MailSender>();
 builder.Services.AddTransient<LoggerHelper>();
 builder.Services.AddScoped<IGraphServiceProvider, GraphServiceProvider>();
 builder.Services.AddMemoryCache();
+builder.Services.AddApplicationInsightsTelemetry();
 
 SwaggerSetup.ConfigureServices(builder.Configuration, builder.Services);
 
