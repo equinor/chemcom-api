@@ -1,0 +1,16 @@
+name: Lint PR
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  lint-pr-title:
+    name: Lint PR title
+    uses: equinor/ops-actions/.github/workflows/commitlint.yml@v6.11.0
+    with:
+      message: ${{ github.event.pull_request.title }}
+      help_url: "https://github.com/equinor/handbook/blob/main/README.md#git-commits"
