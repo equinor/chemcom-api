@@ -41,20 +41,12 @@ namespace ChemDec.Api.Infrastructure.Utils
         public async Task<User> GetUser(ClaimsPrincipal userPrincipal)
         {
             if (string.IsNullOrEmpty(userPrincipal.Identity.Name))
-                return null;
-
-            //TEST EF:
-            var graphUserEF = await graphHandler.GetUserAsync(userPrincipal.Identity.Name);
-            var graphRolesForUserEF = await graphHandler.GetGroupMembershipForUser(graphUserEF.Id, "ChemCom ");
-            //var graphRolesForUserAll = await graphHandler.GetGroupMembershipForUser(graphUserEF.Id, "");
-            //var codesEFAll = graphRolesForUserAll.Select(s => s.DisplayName).ToList();
-            var codesEF = graphRolesForUserEF.Select(s => s.DisplayName
-            .Replace("ChemCom ", string.Empty).Replace("Chemcom ", string.Empty)).ToList();
-            //END TEST
+                return null;       
 
             var user = await cache.GetOrCreateAsync(CacheCategories.Roles + ":" + userPrincipal.Identity.Name, async cacheEntry =>
             {
                 var graphUser = await graphHandler.GetUserAsync(userPrincipal.Identity.Name);
+                var roles = userPrincipal.Claims.Where(c => c.Type == ClaimTypes.Role);
 
                 var released = string.Empty;
                 DateTime date = DateTime.Now;
@@ -79,21 +71,7 @@ namespace ChemDec.Api.Infrastructure.Utils
 
                 res.IsAffiliate = graphUser.UserType?.ToLower() == "guest";
                 List<string> codes = new List<string>();
-                if (!res.IsAffiliate)
-                {
-                    var graphRolesForUser =
-                        await graphHandler.GetGroupMembershipForUser(graphUser.Id, "ChemCom ");
-                    codes = graphRolesForUser.Select(s => s.DisplayName.Replace("ChemCom ", string.Empty).Replace("Chemcom ", string.Empty)).ToList();
-                    
-                
-                }
-                else
-                {
-                    var graphRolesForUser =
-                        await graphHandler.GetGroupMembershipForUser(graphUser.Id, "AZAPPL ChemCom"); 
-                    codes = graphRolesForUser.Select(s => s.DisplayName.Replace("AZAPPL ChemCom ", string.Empty)).ToList();
-
-                }
+                codes = roles.Select(s => s.Value).ToList();
 
                 var installations = await db.Installations.Where(w => codes.Contains(w.Code)).ProjectTo<InstallationReference>(mapper.ConfigurationProvider).ToListAsync();
 
