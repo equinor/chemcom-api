@@ -18,6 +18,7 @@ using System.Net.Http;
 using ChemDec.Api;
 using ChemDec.Api.GraphApi;
 using ChemDec.Api.Infrastructure.Services;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -69,8 +70,9 @@ builder.Services.AddCors(options =>
         var origins = new string[]
         {
             "https://frontend-chemcom-dev.radix.equinor.com",
-            "http://localhost:3000",
-            "https://chemcom.equinor.com/"
+            "https://frontend-chemcom-prod.radix.equinor.com",
+            "http://localhost:5173",
+            "https://chemcom.equinor.com"
         };
         builder.WithOrigins(origins)
         .AllowAnyHeader()
@@ -102,6 +104,10 @@ builder.Services.AddTransient<MailSender>();
 builder.Services.AddTransient<LoggerHelper>();
 builder.Services.AddScoped<IGraphServiceProvider, GraphServiceProvider>();
 builder.Services.AddMemoryCache();
+// The following line enables Application Insights telemetry collection.
+var appinsightConnStr = configuration["ApplicationInsights:ConnectionString"];
+var optionsAppInsight = new ApplicationInsightsServiceOptions { ConnectionString = configuration["ApplicationInsights:ConnectionString"] };
+builder.Services.AddApplicationInsightsTelemetry(options: optionsAppInsight);
 
 SwaggerSetup.ConfigureServices(builder.Configuration, builder.Services);
 
