@@ -41,7 +41,7 @@ namespace ChemDec.Api.Infrastructure.Utils
         public async Task<User> GetUser(ClaimsPrincipal userPrincipal)
         {
             if (string.IsNullOrEmpty(userPrincipal.Identity.Name))
-                return null;       
+                return null;
 
             var user = await cache.GetOrCreateAsync(CacheCategories.Roles + ":" + userPrincipal.Identity.Name, async cacheEntry =>
             {
@@ -52,7 +52,7 @@ namespace ChemDec.Api.Infrastructure.Utils
                 DateTime date = DateTime.Now;
                 if (config["released"]?.EndsWith("Z") == true) // assume date
                 {
-                    
+
                     if (DateTime.TryParse(config["released"], out date))
                     {
                         released = date.ToString("dd MMM yyyy HH:mm");
@@ -66,7 +66,7 @@ namespace ChemDec.Api.Infrastructure.Utils
                     Email = graphUser.Mail,
                     PortalEnv = config["env"],
                     PortalBuild = config["build"],
-                    PortalRelease = string.IsNullOrEmpty(released) ? null :(DateTime?)date,
+                    PortalRelease = string.IsNullOrEmpty(released) ? null : (DateTime?)date,
                 };
 
                 res.IsAffiliate = graphUser.UserType?.ToLower() == "guest";
@@ -81,7 +81,7 @@ namespace ChemDec.Api.Infrastructure.Utils
                 {
                     res.Roles.Add(new Role { Id = "chemical", Roletype = "Chemical", Code = "Chemical responsible", Name = "Chemical responsible" });
                 }
-                
+
                 if (codes.Any(w => w.ToLowerInvariant() == "admin"))
                 {
                     res.Roles.Add(new Role { Id = "admin", Roletype = "Admin", Code = "Admin", Name = "Administrator" });
@@ -92,16 +92,6 @@ namespace ChemDec.Api.Infrastructure.Utils
                          new Role{Id = "noRole", Roletype="NoRoles", Code="NA", Name="No access", Installation=new InstallationReference{Code="NoAccess", Name="No Access" } }
                     };
                 }
-                //Mock Data
-                /* res.Roles = new List<Role>
-                 {
-                     new Role{Id = "testRole1", Roletype="Offshore", Code="OsebergC", Name="Oseberg C", Installation=db.Installations.ProjectTo<InstallationReference>(mapper.ConfigurationProvider).FirstOrDefault(w=>w.Code=="OsebergC")},
-                     new Role{Id = "testRole2", Roletype="Offshore", Code="Snorre", Name="Snorre", Installation=db.Installations.ProjectTo<InstallationReference>(mapper.ConfigurationProvider).FirstOrDefault(w=>w.Code=="Snorre")},
-                     new Role{Id = "testRole22", Roletype="Offshore", Code="Kvitebjorn", Name="Kvitebjørn", Installation=db.Installations.ProjectTo<InstallationReference>(mapper.ConfigurationProvider).FirstOrDefault(w=>w.Code=="Kvitebjorn")},
-                     new Role{Id = "testRole3", Roletype="Onshore", Code="Mongstad", Name="Mongstad", Installation=db.Installations.ProjectTo<InstallationReference>(mapper.ConfigurationProvider).FirstOrDefault(w=>w.Code=="Mongstad")},
-                     new Role{Id = "testRole4", Roletype="Onshore", Code="Sture", Name="Sture", Installation=db.Installations.ProjectTo<InstallationReference>(mapper.ConfigurationProvider).FirstOrDefault(w=>w.Code=="Sture")},
-                     new Role{Id = "testRole5", Roletype="Chemical", Code="Kjemikalieansvarlig", Name="Kjemikalieansvarlig"},
-                 };*/
                 return res;
             });
 
