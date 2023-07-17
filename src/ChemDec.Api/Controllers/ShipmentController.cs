@@ -272,7 +272,7 @@ namespace ChemDec.Api.Controllers
             return BadRequest(new { error = "Shipment was not included in the request" });
 
         }
-               
+
 
         [HttpPost]
         [Route("{initiator}/comment")]
@@ -283,9 +283,9 @@ namespace ChemDec.Api.Controllers
             {
                 return BadRequest(new { error = initiator + " is not a valid initiator" });
             };
-            if (string.IsNullOrEmpty(request?.Comment) == false && request?.ShipmentId != Guid.Empty && request?.SenderId != Guid.Empty)
+            if (string.IsNullOrEmpty(request?.Comment) == false && request?.ShipmentId != Guid.Empty)
             {
-                var validationErrors = await _commentsService.AddComment(initiatorEnum, request.Comment, request.ShipmentId, request.SenderId);
+                var validationErrors = await _commentsService.AddComment(initiatorEnum, request.Comment, request.ShipmentId);
                 if (validationErrors != null)
                 {
                     return BadRequest(new { error = validationErrors });
