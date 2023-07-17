@@ -18,31 +18,9 @@ namespace ChemDec.Api.Infrastructure.Security
         public async Task<User> GetUserAsync(string searchParam, string searchField = null)
         {
 
-            switch (searchParam)
-            {
-                case "BOUVET\\stian.edvardsen":
-                    searchParam = "STGA@STATOIL.COM";
-                    break;
-
-                case "BOUVET\\steffen.martinsen":
-                    searchParam = "SMARTI@STATOIL.COM";
-                    break;
-
-                case "BOUVET\\jostein.soiland":
-                    searchParam = "JSOI@STATOIL.COM";
-                    break;
-                case "DESKTOP-67U1GEE\\nebus":
-                    searchParam = "RONNAV@STATOIL.COM";
-                    break;
-            }
-
-            if (string.IsNullOrEmpty(searchField))
-                searchField = "userprincipalname";
-            if (searchParam.Contains("live.com#"))
-                searchParam = searchParam.Substring(searchParam.IndexOf("#") + 1);
-            string filter = $"{searchField} eq '{searchParam}'";
-            var list = await GetUsersContainsAsync(searchParam);
-            return list.FirstOrDefault();
+            var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All", "GroupMember.Read.All" });
+            var currentUser = await graphClient.Me.Request().GetAsync();
+            return currentUser;
         }
 
         public async Task<User> GetUserAsync(Guid id)
