@@ -7,6 +7,6 @@ namespace ChemDec.Api.Infrastructure.Services
 {
     public interface ICommentsService
     {
-        Task<List<string>> AddComment(Initiator initiator, string comment, Guid shipmentId, Guid senderId);
+        Task<List<string>> AddComment(Initiator initiator, string comment, Guid shipmentId);
     }
 }

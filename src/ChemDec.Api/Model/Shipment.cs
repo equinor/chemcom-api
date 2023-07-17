@@ -91,8 +91,7 @@ namespace ChemDec.Api.Model
 
     public class AddCommentRequest
     {
-        public Guid ShipmentId { get; set; }
-        public Guid SenderId { get; set; }
+        public Guid ShipmentId { get; set; }    
         public string Comment { get; set; }
     }
 

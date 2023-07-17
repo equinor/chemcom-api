@@ -31,7 +31,7 @@ namespace ChemDec.Api.Infrastructure.Services
 
         //NOTE: Initial implementation of the project has lot of code smells and rookie errors.
         //      This is an attempt to re-implement and to write some clean code.        
-        public async Task<List<string>> AddComment(Initiator initiator, string comment, Guid shipmentId, Guid senderId)
+        public async Task<List<string>> AddComment(Initiator initiator, string comment, Guid shipmentId)
         {
             var validationErrors = new List<string>();
             var shipment = await _dbContext.Shipments.FirstOrDefaultAsync(ps => ps.Id == shipmentId);
@@ -40,11 +40,11 @@ namespace ChemDec.Api.Infrastructure.Services
                 validationErrors.Add($"cannot find the shipment with Id {shipmentId}");
                 return validationErrors;
             }
-            validationErrors = await Validate(initiator, shipmentId, senderId, shipment);
+            validationErrors = await Validate(initiator, shipmentId, shipment);
             if (validationErrors.Any())
             {
                 return validationErrors;
-            }            
+            }
 
             using (var transaction = await _dbContext.Database.BeginTransactionAsync())
             {
@@ -73,7 +73,7 @@ namespace ChemDec.Api.Infrastructure.Services
         }
 
 
-        private async Task<List<string>> Validate(Initiator initiator, Guid shipmentId, Guid senderId, Datamodel.Shipment shipment)
+        private async Task<List<string>> Validate(Initiator initiator, Guid shipmentId, Datamodel.Shipment shipment)
         {
             var validationErrors = new List<string>();
 
@@ -85,26 +85,14 @@ namespace ChemDec.Api.Infrastructure.Services
 
             //TODO: Refacor to middleware
             //Note: Validate save from this installation
-            if (initiator == Initiator.Offshore && user != null && user.Roles.Any(s => s.Installation != null && s.Installation.Id == senderId) == false)
+            if (initiator == Initiator.Offshore && user != null && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.SenderId) == false)
             {
                 validationErrors.Add("You do not have access to save from this installation");
             }
 
-            //TODO: Refacor to middleware
-            //Note: Validate save from this plant
-            var sender = await _dbContext.Installations.Where(w => w.Id == senderId).ProjectTo<PlantReference>(_mapper.ConfigurationProvider).FirstOrDefaultAsync();
-            var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
-            if (role != null)
+            if (initiator == Initiator.Onshore && user != null && user.Roles.Any(s => s.Installation != null && s.Installation.Id == shipment.ReceiverId) == false)
             {
-                var receiver = role.Installation.ShipsTo.FirstOrDefault();
-                if (initiator == Initiator.Onshore && user.Roles.Any(s => s.Installation != null && s.Installation.Id == receiver.Id) == false)
-                {
-                    validationErrors.Add("You do not have access to save from this plant");
-                }
-            }
-            else
-            {
-                validationErrors.Add("You do not have access to save from this plant");
+                validationErrors.Add("You do not have access to save from this installation");
             }
 
             return validationErrors;
