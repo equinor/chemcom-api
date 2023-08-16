@@ -680,9 +680,8 @@ namespace ChemDec.Api.Controllers.Handlers
                 UpdateEvaluationValues(savedShipment, shipment, user);
 
                 var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
-                var role = user.Roles.FirstOrDefault(u => u.Id == shipment.SenderId.ToString());
-                var receiver = role.Installation.ShipsTo.FirstOrDefault();
-                var plant = await db.Installations.Where(w => w.Id == receiver.Id).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
+                var receiver = user.Roles.FirstOrDefault(u => u.Id == shipment.Receiver.Id.ToString());                
+                var plant = await db.Installations.Where(w => w.Id == Guid.Parse(receiver.Id)).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
                 savedShipment.Updated = DateTime.Now;
                 await db.SaveChangesAsync();
