@@ -18,6 +18,7 @@ namespace ChemDec.Api.Controllers
         {
             _mailSender = mailSender;
         }
+
         [HttpPost]
         public async Task<IActionResult> TestEmail(string email)
         {
