@@ -19,6 +19,9 @@ using ChemDec.Api;
 using ChemDec.Api.GraphApi;
 using ChemDec.Api.Infrastructure.Services;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -27,7 +30,10 @@ string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var keyVaultUrl = configuration["KeyVaultEndpoint"];
 var clientId = configuration["azure:ClientId"];
 var clientSecret = configuration["azure:ClientSecret"];
-builder.Configuration.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
+var tenantId = configuration["azure:TenantId"];
+var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+var secretClient = new SecretClient(new Uri(keyVaultUrl), clientSecretCredential);
+builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
 
 var corsDomainsFromConfig = Utils.GetCommaSeparatedConfigValue(configuration, "AllowCorsDomains");
 builder.Services.AddControllers();
