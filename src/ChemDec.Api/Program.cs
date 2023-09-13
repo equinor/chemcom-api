@@ -77,7 +77,7 @@ builder.Services.AddCors(options =>
         {
             "https://frontend-chemcom-dev.radix.equinor.com",
             "https://frontend-chemcom-prod.radix.equinor.com",
-            "http://localhost:5173",
+            "http://localhost:5174",
             "https://chemcom.equinor.com"
         };
         builder.WithOrigins(origins)
