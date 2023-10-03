@@ -680,7 +680,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 UpdateEvaluationValues(savedShipment, shipment, user);
 
                 var sender = await db.Installations.Where(w => w.Id == shipment.SenderId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
-                var receiver = user.Roles.FirstOrDefault(u => u.Id == shipment.Receiver.Id.ToString());                
+                var receiver = user.Roles.FirstOrDefault(u => u.Id == shipment.Receiver.Id.ToString());
                 var plant = await db.Installations.Where(w => w.Id == Guid.Parse(receiver.Id)).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefaultAsync();
 
                 savedShipment.Updated = DateTime.Now;
@@ -1295,6 +1295,16 @@ namespace ChemDec.Api.Controllers.Handlers
                 dbObject.ShipmentParts.Add(newPart);
             }
 
+            DeleteChemicals(dto, dbObject);
+            await UpdateChemicals(dto, dbObject);
+
+            dbObject.SenderId = dto.SenderId;
+
+            return (dbObject, newChemicals);
+        }
+
+        private async Task UpdateChemicals(Shipment dto, Db.Shipment dbObject)
+        {
             foreach (var item in dto.Chemicals)
             {
                 if (dbObject.Chemicals == null)
@@ -1339,11 +1349,28 @@ namespace ChemDec.Api.Controllers.Handlers
                     db.ShipmentChemicals.Update(shipmentChemical);
                 }
             }
+        }
 
+        public void DeleteChemicals(Shipment dto, Db.Shipment dbObject)
+        {
+            if (!dto.Chemicals.Any())
+            {
+                var shipmentChemicals = dbObject.Chemicals.ToList();
 
-            dbObject.SenderId = dto.SenderId;
+                foreach (var item in shipmentChemicals)
+                {
+                    dbObject.Chemicals.Remove(item);
+                }
+                
+                return;
+            }
 
-            return (dbObject, newChemicals);
+            var removingChemicals = dbObject.Chemicals.Where(w => dto.Chemicals.Select(s => s.Id).Any(a => a == w.Id)).ToList();
+
+            foreach (var shipmentChemical in removingChemicals)
+            {
+                dbObject.Chemicals.Remove(shipmentChemical);
+            }
         }
 
         private BlobContainerClient GetBlobContainerClient(Guid shipmentId)
