@@ -1355,21 +1355,23 @@ namespace ChemDec.Api.Controllers.Handlers
         {
             if (!dto.Chemicals.Any())
             {
-                var shipmentChemicals = dbObject.Chemicals.ToList();
+                var shipmentChemicals = db.ShipmentChemicals.ToList();
 
                 foreach (var item in shipmentChemicals)
                 {
                     dbObject.Chemicals.Remove(item);
+                    db.ShipmentChemicals.Remove(item);
                 }
-                
+
                 return;
             }
 
-            var removingChemicals = dbObject.Chemicals.Where(w => dto.Chemicals.Select(s => s.Id).Any(a => a == w.Id)).ToList();
+            var removingChemicals = db.ShipmentChemicals.Where(w => dto.Chemicals.Select(s => s.Id).Any(a => a == w.Id)).ToList();
 
             foreach (var shipmentChemical in removingChemicals)
             {
                 dbObject.Chemicals.Remove(shipmentChemical);
+                db.ShipmentChemicals.Remove(shipmentChemical);
             }
         }
 
