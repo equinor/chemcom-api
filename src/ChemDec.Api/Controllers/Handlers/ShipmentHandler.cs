@@ -1355,11 +1355,10 @@ namespace ChemDec.Api.Controllers.Handlers
         {
             if (!dto.Chemicals.Any())
             {
-                var shipmentChemicals = db.ShipmentChemicals.ToList();
+                var shipmentChemicals = db.ShipmentChemicals.Where(s => s.ShipmentId == dbObject.Id).ToList();
 
                 foreach (var item in shipmentChemicals)
-                {
-                    dbObject.Chemicals.Remove(item);
+                {                   
                     db.ShipmentChemicals.Remove(item);
                 }
 
