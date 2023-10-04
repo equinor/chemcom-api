@@ -24,9 +24,7 @@ namespace ChemDec.Api
                             TokenUrl = new Uri($"https://login.microsoftonline.com/{configuration["azure:TenantId"]}/oauth2/v2.0/token"),
                             AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{configuration["azure:TenantId"]}/oauth2/v2.0/authorize"),
                             Scopes = new Dictionary<string, string> {
-                                { $"api://{configuration["azure:ClientId"]}/User.Impersonation", "Chemcom API" },
-                                { $"api://{configuration["azure:ClientId"]}/chemcom.read", "Chemcom API" },
-                                { $"api://{configuration["azure:ClientId"]}/.default", "Chemcom API" }
+                                { $"api://{configuration["azure:ClientId"]}/User.Impersonation", "Chemcom API" }
                             },
                         }
                     },
@@ -48,9 +46,7 @@ namespace ChemDec.Api
                                 Type = SecuritySchemeType.Http,
                                 Name = "Bearer",
                                 In = ParameterLocation.Header
-                            }, new List<string> { $"{configuration["azure:ClientId"]}/User.Impersonation",
-                                                  $"{configuration["azure:ClientId"]}/.default",
-                                                  $"{configuration["azure:ClientId"]}/chemcom.read" }
+                            }, new List<string> { $"{configuration["azure:ClientId"]}/User.Impersonation"}
                         }
                     });
             });
