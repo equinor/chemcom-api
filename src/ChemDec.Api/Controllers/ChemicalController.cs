@@ -25,7 +25,7 @@ namespace ChemDec.Api.Controllers
 
         [HttpGet]
         [Route("")]
-        public async Task<ActionResult<ChemicalResponse>> Chemicals(int? skip, int? take, bool? excludeActive = false, bool? excludeDisabled = true, bool? excludeProposed = true, bool? excludeNotProposed = false, string filter = null, Guid? forInstallation=null)
+        public async Task<ActionResult<ChemicalResponse>> Chemicals(int? skip, int? take, bool? excludeActive = false, bool? excludeDisabled = true, bool? excludeProposed = true, bool? excludeNotProposed = false, string filter = null, Guid? forInstallation = null)
         {
             skip = skip ?? 0;
             take = take ?? int.MaxValue;
@@ -63,11 +63,12 @@ namespace ChemDec.Api.Controllers
                 Skipped = skip.Value,
                 Chemicals = await res.OrderBy(o => o.Name).Skip(skip.Value).Take(take.Value).ToListAsync()
             };
-          
+
         }
 
         [HttpPost]
         [Route("")]
+        //[Authorize(Roles = "CHEMICAL")]
         public async Task<ActionResult<Chemical>> SaveChemical([FromBody] Chemical chemical)
         {
             (var savedChemical, var validationErrors) = await handler.SaveOrUpdate(chemical);
@@ -92,7 +93,7 @@ namespace ChemDec.Api.Controllers
                 return BadRequest(new { error = validationErrors });
             }
 
-            return new { Res = "Approved" } ;
+            return new { Res = "Approved" };
         }
 
     }

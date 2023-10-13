@@ -8,6 +8,12 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.ApplicationInsights.Channel;
+using System.Reflection;
+using Microsoft.ApplicationInsights;
+using ChemDec.Api.Datamodel;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -17,21 +23,26 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly IMapper mapper;
         private readonly UserResolver userResolver;
         private readonly UserService _userService;
+        private readonly MailSender _mailSender;
+        private readonly IConfiguration _config;
+        private TelemetryClient telemetry = new TelemetryClient();
 
-        public ChemicalHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService)
+        public ChemicalHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, MailSender mailSender, IConfiguration config)
         {
             this.db = db;
             this.mapper = mapper;
             this.userResolver = userResolver;
             _userService = userService;
+            _mailSender = mailSender;
+            _config = config;
         }
 
-        public IQueryable<Chemical> GetChemicals()
+        public IQueryable<Model.Chemical> GetChemicals()
         {
-            return db.Chemicals.ProjectTo<Chemical>(mapper.ConfigurationProvider);
+            return db.Chemicals.ProjectTo<Model.Chemical>(mapper.ConfigurationProvider);
         }
 
-        public async Task<(Chemical, IEnumerable<string>)> SaveOrUpdate(Chemical chemical)
+        public async Task<(Model.Chemical, IEnumerable<string>)> SaveOrUpdate(Model.Chemical chemical)
         {
             var validationErrors = new List<string>();
             var user = await _userService.GetCurrentUser();
@@ -98,11 +109,11 @@ namespace ChemDec.Api.Controllers.Handlers
                     }
                 }
 
+                await db.SaveChangesAsync();
             }
             else
             {
                 // User check. Only chem administrator can add non-tentative chemicals
-
                 var newDbObject = mapper.Map<Db.Chemical>(chemical);
 
                 if (newDbObject.Id == Guid.Empty)
@@ -114,10 +125,12 @@ namespace ChemDec.Api.Controllers.Handlers
                 newDbObject.Proposed = DateTime.Now;
                 db.Chemicals.Add(newDbObject);
                 chemical.Id = newDbObject.Id;
-            }
-            await db.SaveChangesAsync();
 
-            return (await db.Chemicals.ProjectTo<Chemical>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == chemical.Id), null);
+                await db.SaveChangesAsync();
+                await SendNewChemicalEmail(user, newDbObject);
+            }
+
+            return (await db.Chemicals.ProjectTo<Model.Chemical>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == chemical.Id), null);
         }
 
         public async Task<(bool, IEnumerable<string>)> Approve(Guid chemicalId)
@@ -145,12 +158,50 @@ namespace ChemDec.Api.Controllers.Handlers
             return (true, null);
         }
 
-        private Db.Chemical HandleRelations(Chemical dto, Db.Chemical dbObject)
+        private Db.Chemical HandleRelations(Model.Chemical dto, Db.Chemical dbObject)
         {
             // Nothing to do here yet
             return dbObject;
         }
 
 
+        public async Task SendNewChemicalEmail(User user, Db.Chemical chemical)
+        {
+            if (chemical == null) return;
+
+            var to = _config["chemicalEmail"].Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (to.Any())
+            {
+                (var subject, var html) = buildEmailContentForChemicalResponsible(user, chemical);
+                await _mailSender.SendMail(to, subject, html, null);
+            }
+        }
+
+        private (string, string) buildEmailContentForChemicalResponsible(User user, Db.Chemical chemical)
+        {
+            var emailTemplate = new StringBuilder().Append("{{change}}")
+                                                    .Append("<br/>")
+                                                    .Append("{{changedBy}}");
+
+            var changedBy = "Added by " + user.Name + " on " + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
+
+            string portalLink = "https://chemcom.equinor.com";
+
+            if (_config["env"] == "dev")
+            {
+                portalLink = "https://frontend-chemcom-dev.radix.equinor.com/";
+            }
+
+            string subject = "New chemical added to the chemical register";
+            var change = $"New chemical added {chemical.Name}";
+            var link = "<a href=\"" + portalLink + "\">" + change + "</a>"; ;
+
+            var html = emailTemplate
+                .Replace("{{change}}", link)
+                .Replace("{{changedBy}}", changedBy);
+
+            return (subject, html.ToString());
+        }
     }
 }
