@@ -68,7 +68,7 @@ namespace ChemDec.Api.Controllers
 
         [HttpPost]
         [Route("")]
-        //[Authorize(Roles = "CHEMICAL")]
+        [Authorize(Roles = "CHEMICAL")]
         public async Task<ActionResult<Chemical>> SaveChemical([FromBody] Chemical chemical)
         {
             (var savedChemical, var validationErrors) = await handler.SaveOrUpdate(chemical);
