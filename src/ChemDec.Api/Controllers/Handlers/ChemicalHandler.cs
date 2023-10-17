@@ -184,7 +184,7 @@ namespace ChemDec.Api.Controllers.Handlers
                                                     .Append("<br/>")
                                                     .Append("{{changedBy}}");
 
-            var changedBy = "Added by " + user.Name + " on " + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
+            var changedBy = "Added by " + user.Name + ". Contact on " + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
 
             string portalLink = "https://chemcom.equinor.com";
 
