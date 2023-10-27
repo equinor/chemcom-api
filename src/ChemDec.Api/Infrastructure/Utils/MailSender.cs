@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -9,39 +11,55 @@ namespace ChemDec.Api.Infrastructure.Utils
 {
     public class MailSender
     {
-        private readonly IConfiguration config;
+        private readonly IConfiguration _config;
 
         public MailSender(IConfiguration config)
         {
-            this.config = config;
-        }
+            _config = config;
+        }      
 
-        public async Task SendMail(IEnumerable<string> to, string subject, string infoHtml, string info)
+        public async Task SendMail(IEnumerable<string> to, string subject, string infoHtml)
         {
             try
             {
-                SmtpClient client = new SmtpClient("mrrr.statoil.com");
-                client.UseDefaultCredentials = false;
-                client.Port = 25;
-                client.EnableSsl = true;
-                client.Credentials = new NetworkCredential("chemcom@equinor.com", config["smtpPw"]);
+                string tenantId = _config["azure:TenantId"];
+                string clientId = _config["azure:ClientId"];
+                string clientSecret = _config["azure:ClientSecret"];
 
-                MailMessage mailMessage = new MailMessage();
-                mailMessage.From = new MailAddress("chemcom@equinor.com");
-                foreach (var a in to)
+                ClientSecretCredential credential = new(tenantId, clientId, clientSecret);
+                GraphServiceClient graphClient = new(credential);
+
+                List<Recipient> recipients = new List<Recipient>();
+                foreach (var emailAddress in to)
                 {
-                    mailMessage.To.Add(a);
+                    Recipient recipient = new Recipient
+                    {
+                        EmailAddress = new EmailAddress { Address = emailAddress }
+                    };
+                    recipients.Add(recipient);
                 }
-                mailMessage.Body = infoHtml;
-                mailMessage.IsBodyHtml = true;
-                mailMessage.Subject = subject;
-                await client.SendMailAsync(mailMessage);
+
+                Message message = new()
+                {
+                    Subject = subject,
+                    Body = new ItemBody
+                    {
+                        ContentType = BodyType.Html,
+                        Content = infoHtml
+                    },
+                    ToRecipients = recipients
+                };
+                bool saveToSentItems = true;
+                await graphClient.Users[_config["FromEmailAddress"]]
+                                 .SendMail(message, saveToSentItems)
+                                 .Request()
+                                 .PostAsync();               
             }
             catch (Exception ex)
             {
                 throw new Exception("Email notification failed:", ex);
             }
         }
-     
+
     }
 }
