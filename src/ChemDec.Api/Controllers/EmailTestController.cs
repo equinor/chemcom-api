@@ -26,7 +26,7 @@ namespace ChemDec.Api.Controllers
             {
                 email
             };
-            await _mailSender.SendMail(to, "Email test", "<h1>Test Mail</h1>", "Test email");
+            await _mailSender.SendMail(to, "Email test", "<h1>Test Mail</h1>");
             return Ok();
         }
     }

@@ -990,7 +990,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 if (to.Any())
                 {
                     (var subject, var html, var plainText) = buildEmailContentForChemicalResponsible(initiator, sender, plant, user, newChemicals);
-                    await mailSender.SendMail(to, subject, html, plainText);
+                    await mailSender.SendMail(to, subject, html);
                     loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "EmailNotificationNewChemical", new { To = to, Subject = subject });
                 }
 
@@ -1005,7 +1005,7 @@ namespace ChemDec.Api.Controllers.Handlers
                     var recipients = sender?.ContactList;
                     if (recipients != null && recipients.Any())
                     {
-                        await mailSender.SendMail(recipients, subject, html, plainText);
+                        await mailSender.SendMail(recipients, subject, html);
                         loggerHelper.LogEvent(telemetry, user, plant, sender, operation, details, "EmailNotificationFromOnshore", new { To = recipients, Subject = subject });
 
                     }
@@ -1015,7 +1015,7 @@ namespace ChemDec.Api.Controllers.Handlers
                     var recipients = plant?.ContactList;
                     if (recipients != null && recipients.Any())
                     {
-                        await mailSender.SendMail(recipients, subject, html, plainText);
+                        await mailSender.SendMail(recipients, subject, html);
                         loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "EmailNotificationFromOffshore", new { To = recipients, Subject = subject });
                     }
                 }

@@ -174,7 +174,7 @@ namespace ChemDec.Api.Controllers.Handlers
             if (to.Any())
             {
                 (var subject, var html) = buildEmailContentForChemicalResponsible(user, chemical);
-                await _mailSender.SendMail(to, subject, html, null);
+                await _mailSender.SendMail(to, subject, html);
             }
         }
 
@@ -185,15 +185,16 @@ namespace ChemDec.Api.Controllers.Handlers
                                                     .Append("{{changedBy}}");
 
             var changedBy = "Added by " + user.Name + ". Contact on " + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
-
+            string subject = "New chemical added to the chemical register";
             string portalLink = "https://chemcom.equinor.com";
 
             if (_config["env"] == "dev")
             {
+                subject = $"[Dev] {subject}";
                 portalLink = "https://frontend-chemcom-dev.radix.equinor.com/";
             }
 
-            string subject = "New chemical added to the chemical register";
+           
             var change = $"New chemical added {chemical.Name}";
             var link = "<a href=\"" + portalLink + "\">" + change + "</a>"; ;
 
