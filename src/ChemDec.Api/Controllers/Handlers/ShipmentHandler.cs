@@ -1064,7 +1064,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             subject = "Chemical(s) was added as added to the chemical register";
 
-            change = "Chemical(s) was added to the chemical register while registering a delivery from from " +
+            change = "Chemical(s) was added to the chemical register while registering a shipment from from " +
                 installation.Name + " to " + destination.Name + ":<br/><br/><i>" + string.Join("<br/>", chemicals.Select(s => s.Name)) + "</i>";
 
 
@@ -1126,7 +1126,7 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 if (operation == Operation.Submit)
                 {
-                    subject = "Chemical form was submitted to " + destination.Name;
+                    subject = "Shipment form was submitted to " + destination.Name;
                 }
 
             }
@@ -1134,19 +1134,19 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 if (operation == Operation.Approve)
                 {
-                    subject = "Chemical form was approved";
+                    subject = "Shipment form was approved";
                 }
                 if (operation == Operation.Change)
                 {
-                    subject = "Chemical form was changed";
+                    subject = "Shipment form was changed";
                 }
                 if (operation == Operation.Decline)
                 {
-                    subject = "Chemical form was declined";
+                    subject = "Shipment form was declined";
                 }
                 if (operation == Operation.SaveEvaluation)
                 {
-                    subject = "Chemical form evaluation was changed";
+                    subject = "Shipment form evaluation was changed";
                 }
             }
 
@@ -1211,8 +1211,8 @@ namespace ChemDec.Api.Controllers.Handlers
             switch (config["env"])
             {
                 case "Local": return "https://localhost:44356";
-                case "Dev": return "https://chemdec-dev.azurewebsites.net";
-                case "Test": return "https://chemdec-test.azurewebsites.net";
+                case "Dev": return "https://frontend-chemcom-dev.radix.equinor.com";
+                case "Test": return "https://frontend-chemcom-dev.radix.equinor.com";
                 case "Prod": return "https://chemcom.equinor.com";
                 default: return string.Empty;
             }
