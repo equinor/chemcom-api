@@ -1055,10 +1055,8 @@ namespace ChemDec.Api.Controllers.Handlers
 
             switch (config["env"])
             {
-                case "Local": portalLink = "https://localhost:44356"; break;
-                case "Dev": portalLink = "https://chemdec-dev.azurewebsites.net"; break;
-                case "Test": portalLink = "https://chemdec-test.azurewebsites.net"; break;
-                case "QA": portalLink = "https://chemcom-qa.azurewebsites.net"; break;
+                case "Local": portalLink = "https://localhost:7284"; break;
+                case "Dev": portalLink = "https://api-chemcom-api-dev.radix.equinor.com"; break;              
                 case "Prod": portalLink = "https://chemcom.equinor.com"; break;
             }
 
