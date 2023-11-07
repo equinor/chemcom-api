@@ -1056,7 +1056,7 @@ namespace ChemDec.Api.Controllers.Handlers
             switch (config["env"])
             {
                 case "Local": portalLink = "https://localhost:7284"; break;
-                case "Dev": portalLink = "https://api-chemcom-api-dev.radix.equinor.com"; break;              
+                case "Dev": portalLink = "https://api-chemcom-api-dev.radix.equinor.com"; break;
                 case "Prod": portalLink = "https://chemcom.equinor.com"; break;
             }
 
@@ -1100,23 +1100,18 @@ namespace ChemDec.Api.Controllers.Handlers
         {
             var emailTemplate = new StringBuilder().Append("{{subject}}")
                                                     .Append("<br/>")
-                                                    .Append("{{title}}")
-                                                    .Append("<br/>")
                                                     .Append("{{change}}")
                                                     .Append("<br/>")
                                                     .Append("{{changedBy}}")
                                                     .Append("<br/>")
-                                                    .Append("{{link}}")
                                                     .Append("<br/>")
-                                                    .Append("{{linkTitle}}")
-                                                    .Append("<br/>")
-                                                    .Append("{{portalLink}}");
+                                                    .Append("{{approversComments}}");
 
             var subject = string.Empty;
             var change = string.Empty;
             var changedBy = status + " by " + user.Name + " on " + installation.Name + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
 
-            var link = string.Empty;
+
             var linkTitle = string.Empty;
             var portalLink = getEnvironmentSpecificPortalLink();
 
@@ -1172,16 +1167,16 @@ namespace ChemDec.Api.Controllers.Handlers
 
             subject = getEnvironmentSpecificSubject(subject);
 
-             link = "<a href=\"" + portalLink + "/" + shipmentId + "/registeredshipment" + "\">" + subject + "</a>";
+            portalLink = $"{portalLink}/{shipmentId}/registeredshipment";
+
+            var link = "<a href=\"" + portalLink + "\">" + subject + "</a>";
 
             var approversCommentsSection = !string.IsNullOrWhiteSpace(approversComments) ? "<h3>Approver comments<br /></h3>" + approversComments : "";
 
             var html = emailTemplate
-                .Replace("{{subject}}", subject)
+                .Replace("{{subject}}", link)
                 .Replace("{{change}}", change)
                 .Replace("{{changedBy}}", changedBy)
-                .Replace("{{linkTitle}}", linkTitle)
-                .Replace("{{portalLink}}", link)
                 .Replace("{{approversComments}}", approversCommentsSection);
 
             var plainText = $"{subject}\n\n{change}\n{changedBy}\n{link}\nApprovers comments\n{approversComments}\n\nRegards\nChemCom";
@@ -1204,14 +1199,11 @@ namespace ChemDec.Api.Controllers.Handlers
 
         private string getEnvironmentSpecificPortalLink()
         {
-            switch (config["env"])
+            if (config["env"] == "prod")
             {
-                case "Local": return "https://localhost:44356";
-                case "Dev": return "https://frontend-chemcom-dev.radix.equinor.com";
-                case "Test": return "https://frontend-chemcom-dev.radix.equinor.com";
-                case "Prod": return "https://chemcom.equinor.com";
-                default: return string.Empty;
+                return "https://chemcom.equinor.com";
             }
+            return "https://frontend-chemcom-dev.radix.equinor.com";
         }
 
         private IEnumerable<LogEntry> FindGeneralDifferences(Shipment dto, Db.Shipment dbObject)
@@ -1363,7 +1355,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             List<Guid> ids = new();
             ids.AddRange(dto.Chemicals.Select(chemicals => chemicals.Id));
-            
+
             var removingChemicals = db.ShipmentChemicals.Where(s => !ids.Contains(s.ChemicalId) && s.ShipmentId == dbObject.Id).ToList();
 
             foreach (var shipmentChemical in removingChemicals)
