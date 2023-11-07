@@ -1172,18 +1172,16 @@ namespace ChemDec.Api.Controllers.Handlers
 
             subject = getEnvironmentSpecificSubject(subject);
 
-            var linkSubject = "<a href=\"" + portalLink + "/" + (initiator == Initiator.Offshore ? destination.Code : installation.Code) + "/viewform/" + shipmentId + "\">" + subject + "</a>";
+             link = "<a href=\"" + portalLink + "/" + shipmentId + "/registeredshipment" + "\">" + subject + "</a>";
 
             var approversCommentsSection = !string.IsNullOrWhiteSpace(approversComments) ? "<h3>Approver comments<br /></h3>" + approversComments : "";
 
             var html = emailTemplate
                 .Replace("{{subject}}", subject)
-                .Replace("{{title}}", linkSubject)
                 .Replace("{{change}}", change)
                 .Replace("{{changedBy}}", changedBy)
-                .Replace("{{link}}", link)
                 .Replace("{{linkTitle}}", linkTitle)
-                .Replace("{{portalLink}}", portalLink)
+                .Replace("{{portalLink}}", link)
                 .Replace("{{approversComments}}", approversCommentsSection);
 
             var plainText = $"{subject}\n\n{change}\n{changedBy}\n{link}\nApprovers comments\n{approversComments}\n\nRegards\nChemCom";
