@@ -1110,9 +1110,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var subject = string.Empty;
             var change = string.Empty;
             var changedBy = status + " by " + user.Name + " on " + installation.Name + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
-
-
-            var linkTitle = string.Empty;
+                       
             var portalLink = getEnvironmentSpecificPortalLink();
 
             if (initiator == Initiator.Offshore)
@@ -1167,7 +1165,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             subject = getEnvironmentSpecificSubject(subject);
 
-            portalLink = $"{portalLink}/{shipmentId}/registeredshipment";
+            portalLink = $"{portalLink}/{destination.Id}/registeredshipment";
 
             var link = "<a href=\"" + portalLink + "\">" + subject + "</a>";
 
@@ -1189,8 +1187,7 @@ namespace ChemDec.Api.Controllers.Handlers
             switch (config["env"])
             {
                 case "Local": subject = "[Local] " + subject; break;
-                case "Dev": subject = "[Dev] " + subject; break;
-                case "Test": subject = "[Test] " + subject; break;
+                case "Dev": subject = "[Dev] " + subject; break;               
                 case "QA": subject = "[QA] " + subject; break;
             }
 
