@@ -189,8 +189,8 @@ namespace ChemDec.Api.Model
                 .ForMember(dest => dest.Attachments, m => m.MapFrom(d => d.Attachments.OrderByDescending(o => o.Updated)))
                 .ForMember(dest => dest.Chemicals, m => m.MapFrom(d => d.Chemicals.OrderByDescending(o => o.Updated)))
                 .ForMember(dest => dest.Comments, m => m.MapFrom(d => d.Comments.OrderByDescending(o => o.Updated)))
-                .ForMember(dest => dest.ShipmentParts, m => m.MapFrom(d => d.ShipmentParts.OrderBy(o => o.Shipped)))
-                ;
+                .ForMember(dest => dest.ShipmentParts, m => m.MapFrom(d => d.ShipmentParts.OrderBy(o => o.Shipped)));
+              
 
             CreateMap<Db.ShipmentPart, ShipmentPart>();
             CreateMap<ShipmentPart, Db.ShipmentPart>();

@@ -22,6 +22,8 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Infrastructure.Persistance.Interceptors;
+using Infrastructure.Persistance;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -42,6 +44,14 @@ builder.Services.AddDbContext<ChemContext>(options =>
 {
     options.UseSqlServer(configuration.GetConnectionString("chemcomdb"));
 });
+
+//builder.Services.AddSingleton<AuditableEntitiesInterceptor>();
+//builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+//{
+//    var auditableEntitiesInterceptor = sp.GetService<AuditableEntitiesInterceptor>();
+//    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"))
+//            .AddInterceptors(auditableEntitiesInterceptor);
+//});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(optionsA => { }, optionsB =>

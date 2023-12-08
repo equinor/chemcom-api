@@ -127,7 +127,6 @@ namespace ChemDec.Api.Datamodel
                 ((IAudit)audit.Entity).UpdatedByName = currentUserDisplayName;
 
             }
-
         }
     }
 }

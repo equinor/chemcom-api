@@ -779,7 +779,9 @@ namespace ChemDec.Api.Controllers.Handlers
                 return (shipment, validationErrors);
             }
 
+            //TODO: Validate in the API
             ValidateIsSenderIdSet(shipment, validationErrors);
+            //TODO: Validate in the API
             ValidateIshipmentDaysSet(shipment, validationErrors);
             if (validationErrors.Any()) return (null, validationErrors);
 
@@ -797,6 +799,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
 
             ValidateChemicalsListIsSetInCorrectFormat(shipment, validationErrors);
+            //TODO: Validate in the API
             ValidatePlannedExecutionDatesIsSet(shipment, validationErrors);
 
             if (validationErrors.Any()) return (null, validationErrors);
