@@ -17,7 +17,6 @@ namespace ChemDec.Api.Infrastructure.Security
 
         public async Task<User> GetUserAsync(string searchParam, string searchField = null)
         {
-
             var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All", "GroupMember.Read.All" });
             var currentUser = await graphClient.Me.Request().GetAsync();
             return currentUser;
