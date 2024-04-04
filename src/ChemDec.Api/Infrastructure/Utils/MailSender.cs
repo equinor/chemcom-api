@@ -24,10 +24,11 @@ namespace ChemDec.Api.Infrastructure.Utils
             {
                 string tenantId = _config["azure:TenantId"];
                 string clientId = _config["azure:ClientId"];
-                string clientSecret = _config["azure:ClientSecret"];
+                string clientSecret = _config["azure:ClientSecret"];               
 
-                ClientSecretCredential credential = new(tenantId, clientId, clientSecret);
-                GraphServiceClient graphClient = new(credential);
+                ClientSecretCredential clientSecretCredential = new(tenantId, clientId, clientSecret);
+                ChainedTokenCredential chainedTokenCredential = new(new WorkloadIdentityCredential(), clientSecretCredential);
+                GraphServiceClient graphClient = new(chainedTokenCredential);
 
                 List<Recipient> recipients = new List<Recipient>();
                 foreach (var emailAddress in to)

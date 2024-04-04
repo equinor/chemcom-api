@@ -10,14 +10,12 @@ namespace ChemDec.Api.Infrastructure.Security
     {
         private readonly UserResolver userResolver;
         private readonly UserService userService;
-        private readonly AuthorizationHandler authHandler;
         private readonly IConfiguration config;
         private readonly ChemContext db;
 
-        public ChemAuthenticationHandler(UserService userService, AuthorizationHandler authHandler, IConfiguration config, ChemContext db)
+        public ChemAuthenticationHandler(UserService userService, IConfiguration config, ChemContext db)
         {
             this.userService = userService;
-            this.authHandler = authHandler;
             this.config = config;
             this.db = db;
         }
