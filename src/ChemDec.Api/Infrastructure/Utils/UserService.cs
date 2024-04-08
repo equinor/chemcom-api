@@ -6,6 +6,7 @@ using ChemDec.Api.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Identity.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,16 +18,15 @@ namespace ChemDec.Api.Infrastructure.Utils
     public class UserService
     {
         private readonly UserResolver resolver;
-        private readonly EquinorMsGraphHandler graphHandler;
+       
         private readonly IMemoryCache cache;
         private readonly ChemContext db;
         private readonly IMapper mapper;
         private readonly IConfiguration config;
 
-        public UserService(UserResolver resolver, EquinorMsGraphHandler graphHandler, IMemoryCache cache, ChemContext db, IMapper mapper, IConfiguration config)
+        public UserService(UserResolver resolver,IMemoryCache cache, ChemContext db, IMapper mapper, IConfiguration config)
         {
             this.resolver = resolver;
-            this.graphHandler = graphHandler;
             this.cache = cache;
             this.db = db;
             this.mapper = mapper;
@@ -43,14 +43,12 @@ namespace ChemDec.Api.Infrastructure.Utils
             if (string.IsNullOrEmpty(userPrincipal.Identity.Name))
                 return null;
 
-            var graphUser = await graphHandler.GetUserAsync(userPrincipal.Identity.Name);
             var roles = userPrincipal.Claims.Where(c => c.Type == ClaimTypes.Role);
 
             var released = string.Empty;
             DateTime date = DateTime.Now;
             if (config["released"]?.EndsWith("Z") == true) // assume date
             {
-
                 if (DateTime.TryParse(config["released"], out date))
                 {
                     released = date.ToString("dd MMM yyyy HH:mm");
@@ -59,15 +57,14 @@ namespace ChemDec.Api.Infrastructure.Utils
 
             var res = new User
             {
-                Upn = graphUser.UserPrincipalName,
-                Name = graphUser.DisplayName,
-                Email = graphUser.Mail,
+                Upn = userPrincipal.Claims.Where(c => c.Type == ClaimTypes.Upn).FirstOrDefault().Value,
+                Name = userPrincipal.Claims.Where(c => c.Type == "name").FirstOrDefault().Value,
+                Email = userPrincipal.GetDisplayName(),
                 PortalEnv = config["env"],
                 PortalBuild = config["build"],
                 PortalRelease = string.IsNullOrEmpty(released) ? null : (DateTime?)date,
             };
 
-            res.IsAffiliate = graphUser.UserType?.ToLower() == "guest";
             List<string> codes = new List<string>();
             codes = roles.Select(s => s.Value).ToList();
 
@@ -92,6 +89,5 @@ namespace ChemDec.Api.Infrastructure.Utils
             }
             return res;
         }
-
     }
 }
