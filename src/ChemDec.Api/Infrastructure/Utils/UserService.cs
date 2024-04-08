@@ -18,13 +18,13 @@ namespace ChemDec.Api.Infrastructure.Utils
     public class UserService
     {
         private readonly UserResolver resolver;
-       
+
         private readonly IMemoryCache cache;
         private readonly ChemContext db;
         private readonly IMapper mapper;
         private readonly IConfiguration config;
 
-        public UserService(UserResolver resolver,IMemoryCache cache, ChemContext db, IMapper mapper, IConfiguration config)
+        public UserService(UserResolver resolver, IMemoryCache cache, ChemContext db, IMapper mapper, IConfiguration config)
         {
             this.resolver = resolver;
             this.cache = cache;
@@ -57,7 +57,7 @@ namespace ChemDec.Api.Infrastructure.Utils
 
             var res = new User
             {
-                Upn = userPrincipal.Claims.Where(c => c.Type == ClaimTypes.Upn).FirstOrDefault().Value,
+                Upn = userPrincipal.GetDisplayName(),
                 Name = userPrincipal.Claims.Where(c => c.Type == "name").FirstOrDefault().Value,
                 Email = userPrincipal.GetDisplayName(),
                 PortalEnv = config["env"],
