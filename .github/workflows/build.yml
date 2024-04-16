@@ -21,10 +21,10 @@ jobs:
           dotnet-version: "7.0.x"
 
       - name: Restore
-        run: dotnet restore ./src/Chemcom.sln.sln
+        run: dotnet restore ./src/Chemcom.sln
 
       - name: Build
-        run: dotnet build ./src/Chemcom.sln.sln --configuration Release --no-restore
+        run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
     runs-on: ubuntu-latest
