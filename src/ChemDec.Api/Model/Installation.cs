@@ -73,15 +73,11 @@ namespace ChemDec.Api.Model
             CreateMap<Installation, Db.Installation>();
             CreateMap<Db.Installation, Installation>()
                 .ForMember(d => d.ShipsToPlant, s => s.MapFrom(m => m.ShipsToPlant.Select(ss => ss.Plant)))
-                .ForMember(d => d.GetsShipmentsFromInstallation, s => s.MapFrom(m => m.GetsShipmentsFromInstallation.Select(ss => ss.Installation)))
-           ;
+                .ForMember(d => d.GetsShipmentsFromInstallation, s => s.MapFrom(m => m.GetsShipmentsFromInstallation.Select(ss => ss.Installation)));
             CreateMap<Db.Installation, Reference>();
             CreateMap<Db.Installation, InstallationReference>()
-                .ForMember(d =>d.ShipsTo, s => s.MapFrom(m=>m.ShipsToPlant.Select(ss=>ss.Plant)))
-                ;
-            CreateMap<Db.Installation, PlantReference>();
-          
-
+                .ForMember(d => d.ShipsTo, s => s.MapFrom(m => m.ShipsToPlant.Select(ss => ss.Plant)));
+            CreateMap<Db.Installation, PlantReference>();  
         }
     }
 }
