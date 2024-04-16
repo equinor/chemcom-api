@@ -6,6 +6,7 @@ using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 namespace ChemDec.Api.Endpoints.Shipments;
 
 [Route("api/shipments")]
+[Authorize]
 [ApiController]
 [EnableCors("_myAllowSpecificOrigins")]
-[Authorize]
 public class Create : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
@@ -28,6 +29,9 @@ public class Create : ControllerBase
     }
 
     [HttpPost]
+    [SwaggerOperation(Description = "Create new shipment",
+                        Summary = "Create new shipment",
+                        Tags = new[] { "shipments" })]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
@@ -65,7 +69,12 @@ public class Create : ControllerBase
             UpdatedByName = user.Name
         };
 
-        bool result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, bool>(command);
+        Result result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result>(command);
+
+        if (result.Errors.Any())
+        {
+            return BadRequest(result);
+        }
         return Ok(result);
     }
 }

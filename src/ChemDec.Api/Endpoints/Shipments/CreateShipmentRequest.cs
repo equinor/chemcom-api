@@ -5,10 +5,9 @@ namespace ChemDec.Api.Endpoints.Shipments;
 
 public sealed record CreateShipmentRequest
 {
-    public string Code { get; private set; }
-    public string Title { get; private set; }
+    public string Code { get; set; }
+    public string Title { get; set; }
     public Guid SenderId { get; set; }
-    public Guid ReceiverId { get; set; }
     public string Type { get; set; }
     public string Initiator { get; set; }
     public double RinsingOffshorePercent { get; set; }
@@ -37,14 +36,4 @@ public sealed record CreateShipmentRequest
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
     public List<int> ShipmentParts { get; set; }
-    //public bool? EvalCapacityOk { get; set; }
-    //public string EvalCapacityOkUpdatedBy { get; set; }
-    //public bool? EvalContaminationRisk { get; set; }
-    //public string EvalContaminationRiskUpdatedBy { get; set; }
-    //public bool? EvalAmountOk { get; set; }
-    //public string EvalAmountOkUpdatedBy { get; set; }
-    //public bool? EvalBiocidesOk { get; set; }
-    //public string EvalBiocidesOkUpdatedBy { get; set; }
-    //public string EvalEnvImpact { get; set; }
-    //public string EvalComments { get; set; }
 }

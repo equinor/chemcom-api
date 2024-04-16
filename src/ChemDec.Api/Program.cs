@@ -24,6 +24,9 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Infrastructure.Persistance.Interceptors;
 using Infrastructure.Persistance;
+using Application.Common;
+using Application.Common.Repositories;
+using Infrastructure.Persistance.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -33,6 +36,7 @@ var keyVaultUrl = configuration["KeyVaultEndpoint"];
 var clientId = configuration["azure:ClientId"];
 var clientSecret = configuration["azure:ClientSecret"];
 var tenantId = configuration["azure:TenantId"];
+
 var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
 var secretClient = new SecretClient(new Uri(keyVaultUrl), clientSecretCredential);
 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
@@ -45,13 +49,12 @@ builder.Services.AddDbContext<ChemContext>(options =>
     options.UseSqlServer(configuration.GetConnectionString("chemcomdb"));
 });
 
-//builder.Services.AddSingleton<AuditableEntitiesInterceptor>();
-//builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
-//{
-//    var auditableEntitiesInterceptor = sp.GetService<AuditableEntitiesInterceptor>();
-//    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"))
-//            .AddInterceptors(auditableEntitiesInterceptor);
-//});
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+   
+    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"))
+            .EnableSensitiveDataLogging();
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(optionsA => { }, optionsB =>
@@ -98,6 +101,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -120,6 +124,17 @@ builder.Services.AddTransient<MailSender>();
 builder.Services.AddTransient<LoggerHelper>();
 builder.Services.AddScoped<IGraphServiceProvider, GraphServiceProvider>();
 builder.Services.AddMemoryCache();
+
+
+builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+builder.Services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
+builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
+builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
+CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
+CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));
+CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(IQueryHandler<,>));
+
 // The following line enables Application Insights telemetry collection.
 var appinsightConnStr = configuration["ApplicationInsights:ConnectionString"];
 var optionsAppInsight = new ApplicationInsightsServiceOptions { ConnectionString = configuration["ApplicationInsights:ConnectionString"] };
