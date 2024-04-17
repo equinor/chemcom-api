@@ -11,7 +11,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ChemDec.Api.Endpoints.Shipments;
+namespace ChemDec.Api.Endpoints.Shipments.Create;
 
 [Route("api/shipments")]
 [Authorize]
@@ -31,7 +31,7 @@ public class Create : ControllerBase
     [HttpPost]
     [SwaggerOperation(Description = "Create new shipment",
                         Summary = "Create new shipment",
-                        Tags = new[] { "shipments" })]
+                        Tags = new[] { "Shipments" })]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
@@ -52,24 +52,40 @@ public class Create : ControllerBase
 
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
+            SenderId = request.SenderId,
             Code = request.Code,
             Title = request.Title,
-            SenderId = request.SenderId,
-            ReceiverId = receiverId,
             Type = request.Type,
-            Initiator = initiator,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
-            PlannedExecutionFrom = request.PlannedExecutionFrom,
-            PlannedExecutionTo = request.PlannedExecutionTo,
+            PlannedExecutionFrom = request.PlannedExecutionFrom.Value,
+            PlannedExecutionTo = request.PlannedExecutionTo.Value,
             WaterAmount = request.WaterAmount,
             WaterAmountPerHour = request.WaterAmountPerHour,
             Well = request.Well,
-            ShipmentParts = request.ShipmentParts,
-            UpdatedBy = user.Email,
-            UpdatedByName = user.Name
+            VolumePersentageOffspec = request.VolumePersentageOffspec,
+            ContainsChemicals = request.ContainsChemicals,
+            ContainsStableOilEmulsion = request.ContainsStableOilEmulsion,
+            ContainsHighParticleAmount = request.ContainsHighParticleAmount,
+            ContainsBiocides = request.ContainsBiocides,
+            VolumeHasBeenMinimized = request.VolumeHasBeenMinimized,
+            VolumeHasBeenMinimizedComment = request.VolumeHasBeenMinimizedComment,
+            NormalProcedure = request.NormalProcedure,
+            OnlyWayToGetRidOf = request.OnlyWayToGetRidOf,
+            OnlyWayToGetRidOfComment = request.OnlyWayToGetRidOfComment,
+            AvailableForDailyContact = request.AvailableForDailyContact,
+            HeightenedLra = request.HeightenedLra,
+            Pb210 = request.Pb210,
+            Ra226 = request.Ra226,
+            Ra228 = request.Ra228,
+            TakePrecaution = request.TakePrecaution,
+            Precautions = request.Precautions,
+            WaterHasBeenAnalyzed = request.WaterHasBeenAnalyzed,
+            HasBeenOpened = request.HasBeenOpened,
+            RinsingOffshorePercent = request.RinsingOffshorePercent,
+            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
+            ShipmentParts = request.ShipmentParts
         };
 
-        Result result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result>(command);
+        Result<CreateShipmentResult> result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
 
         if (result.Errors.Any())
         {

@@ -1,29 +1,19 @@
-﻿using Domain.Attachments;
-using Domain.Comments;
-using Domain.Installations;
-using Domain.LogEntries;
-using Domain.ShipmentChemicals;
-using Domain.ShipmentParts;
+﻿using System.Collections.Generic;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Domain.Shipments;
+namespace ChemDec.Api.Endpoints.Shipments.Update;
 
-public sealed class ShipmentDetails
-{   
+public sealed record UpdateShipmentRequest
+{
     public string Code { get; set; }
-    public string Title { get; init; }
+    public string Title { get; set; }
     public Guid SenderId { get; set; }
-    public Guid ReceiverId { get; set; }
     public string Type { get; set; }
-    public string Status { get; set; }
+    public string Initiator { get; set; }
     public double RinsingOffshorePercent { get; set; }
-    public DateTime PlannedExecutionFrom { get; set; }
-    public DateTime PlannedExecutionTo { get; set; }
-    public double WaterAmount { get; init; }
+    public DateTime? PlannedExecutionFrom { get; set; }
+    public DateTime? PlannedExecutionTo { get; set; }    
+    public double WaterAmount { get; set; }
     public double WaterAmountPerHour { get; set; }
     public bool VolumePersentageOffspec { get; set; }
     public string Well { get; set; }
@@ -44,8 +34,6 @@ public sealed class ShipmentDetails
     public bool TakePrecaution { get; set; }
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
-    public DateTime Updated { get; set; }
-    public string UpdatedBy { get; set; }
-    public string UpdatedByName { get; set; }
     public bool HasBeenOpened { get; set; }
+    public Dictionary<Guid, double> ShipmentParts { get; set; }
 }

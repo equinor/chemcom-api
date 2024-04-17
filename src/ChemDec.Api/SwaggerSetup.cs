@@ -13,6 +13,7 @@ namespace ChemDec.Api
         {
             services.AddSwaggerGen(options =>
             {
+                options.EnableAnnotations();
                 options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.OAuth2,

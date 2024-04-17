@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Shipments.Commands.Create;
 
-public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmentCommand, Result>
+public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmentCommand, Result<CreateShipmentResult>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IInstallationsRepository _installationsRepository;
@@ -21,7 +21,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
 
     //TODO: Add logging
 
-    public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,        
+    public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IInstallationsRepository installationsRepository,
         IUnitOfWork unitOfWork)
     {
@@ -29,14 +29,16 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         _installationsRepository = installationsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result> HandleAsync(CreateShipmentCommand command)
+    public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command)
     {
-        Result result = new();       
+        Result<CreateShipmentResult> result = new();
         //TODO: Add fluent validation  
+        //TODO: Validate receiver id as well?
+        //TODO: Should validate volumehasbeenminimizedcomment
         if (command.SenderId == Guid.Empty)
         {
             result.Errors.Add("Sender is required");
-        }      
+        }
 
         if (command.PlannedExecutionFrom is null || command.PlannedExecutionTo is null)
         {
@@ -67,6 +69,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
 
         if (result.Errors.Any())
         {
+            result.Status = ResultStatusConstants.Failed;
             return result;
         }
 
@@ -78,8 +81,10 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         await _shipmentsRepository.InsertAsync(shipment);
         await _unitOfWork.CommitChangesAsync();
 
-        //TODO: Do I need to fetch the whole shipment object? May be have to do it in update command handler
-        result.Data = shipment;
+        //TODO: Do I need to fetch the whole shipment object? May be have to do it in update command handler        
+        CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment);
+        result.Data = createShipmentResult;
+        result.Status = ResultStatusConstants.Success;
         return result;
     }
 }

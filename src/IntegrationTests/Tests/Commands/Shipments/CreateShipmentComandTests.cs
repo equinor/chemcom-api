@@ -43,7 +43,7 @@ public sealed class CreateShipmentComandTests
             UpdatedByName = "ABCD",
         };
 
-        Result result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result>(command);
+        Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
         Assert.True(result.Data is not null);
     }
 }
