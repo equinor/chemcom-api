@@ -60,7 +60,7 @@ public sealed record UpdateShipmentResult
             WaterAmount = shipment.WaterAmount,
             WaterAmountPerHour = shipment.WaterAmountPerHour,
             Well = shipment.Well,
-            ShipmentParts = shipment.ShipmentParts.ToDictionary(x => x.Id, x => x.Water),
+            //ShipmentParts = shipment.ShipmentParts.ToDictionary(x => x.Id, x => x.Water),
             VolumePersentageOffspec = shipment.VolumePersentageOffspec,
             ContainsChemicals = shipment.ContainsChemicals,
             ContainsStableOilEmulsion = shipment.ContainsStableOilEmulsion,

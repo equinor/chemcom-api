@@ -30,11 +30,11 @@ public class Update : ControllerBase
     }
 
     [HttpPut]
-    [Route("{shipmentId}")]
-    [SwaggerOperation(Description = "Create new shipment",
-                        Summary = "Create new shipment",
+    [Route("{id}")]
+    [SwaggerOperation(Description = "Update shipment",
+                        Summary = "Update shipment",
                         Tags = new[] { "Shipments" })]
-    public async Task<IActionResult> HandleAsync(Guid id, [FromBody] UpdateShipmentRequest request)
+    public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
         {
@@ -89,10 +89,16 @@ public class Update : ControllerBase
 
         Result<UpdateShipmentResult> result = await _commandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(command);
 
-        if (result.Errors.Any())
+        if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
+
+        if (result.Status == ResultStatusConstants.NotFound)
+        {
+            return NotFound(result);
+        }
+
         return Ok(result);
     }
 }

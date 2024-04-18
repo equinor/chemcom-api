@@ -17,16 +17,19 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IInstallationsRepository _installationsRepository;
+    private readonly IShipmentPartsRepository _shipmentPartsRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     //TODO: Add logging
 
     public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IInstallationsRepository installationsRepository,
+        IShipmentPartsRepository shipmentPartsRepository,
         IUnitOfWork unitOfWork)
     {
         _shipmentsRepository = shipmentsRepository;
         _installationsRepository = installationsRepository;
+        _shipmentPartsRepository = shipmentPartsRepository;
         _unitOfWork = unitOfWork;
     }
     public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command)
@@ -55,6 +58,11 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
             result.Errors.Add("User do not have access to save from this installation");
         }
 
+        if (string.IsNullOrWhiteSpace(command.VolumeHasBeenMinimizedComment))
+        {
+            result.Errors.Add("Missing specification on measures taken to minimize well fluids / water volume sent to land");
+        }
+
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
         DateTime plannedExecutionFrom = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
@@ -77,12 +85,13 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         Shipment shipment = new Shipment(shipmentDetails);
         shipment.SetStatus(Statuses.Draft);
         shipment.SetNewId();
-        shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
+        List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
+        await _shipmentPartsRepository.InsertManyAsync(shipmentParts);
         await _shipmentsRepository.InsertAsync(shipment);
         await _unitOfWork.CommitChangesAsync();
 
         //TODO: Do I need to fetch the whole shipment object? May be have to do it in update command handler        
-        CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment);
+        CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment, shipmentParts);
         result.Data = createShipmentResult;
         result.Status = ResultStatusConstants.Success;
         return result;

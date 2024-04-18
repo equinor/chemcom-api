@@ -7,6 +7,7 @@ using Domain.ShipmentChemicals;
 using Domain.ShipmentParts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,7 +58,7 @@ public class Shipment : IAuditable
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
         HasBeenOpened = shipmentDetails.HasBeenOpened;
-        ShipmentParts = new List<ShipmentPart>();
+        //ShipmentParts = new List<ShipmentPart>();
     }
 
 
@@ -100,7 +101,7 @@ public class Shipment : IAuditable
     public ICollection<Attachment> Attachments { get; set; }
     public ICollection<Comment> Comments { get; set; }
     public ICollection<ShipmentChemical> Chemicals { get; set; }
-    public ICollection<ShipmentPart> ShipmentParts { get; private set; }
+    //public ICollection<ShipmentPart> ShipmentParts { get; private set; }
     public ICollection<LogEntry> LogEntries { get; set; }
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
@@ -118,21 +119,44 @@ public class Shipment : IAuditable
     public string EvalEnvImpact { get; set; }
     public string EvalComments { get; set; }
 
-    public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
+    [ConcurrencyCheck]
+    public Guid Version { get; set; }
+
+    //public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
+    //{
+    //    for (int i = 0; i < days; i++)
+    //    {
+    //        DateTime shippedDate = plannedExecutionFrom.AddDays(i);
+    //        ShipmentPart shipmentPart = new(shipmentParts[i], shippedDate)
+    //        {
+    //            Updated = DateTime.Now,
+    //            UpdatedByName = UpdatedByName,
+    //            UpdatedBy = UpdatedBy
+    //        };
+    //        shipmentPart.SetNewId();
+    //        //ShipmentParts.Add(shipmentPart);
+    //    }
+    //}
+
+    public List<ShipmentPart> AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     {
+        var list = new List<ShipmentPart>();
         for (int i = 0; i < days; i++)
         {
             DateTime shippedDate = plannedExecutionFrom.AddDays(i);
             ShipmentPart shipmentPart = new(shipmentParts[i], shippedDate)
             {
+                ShipmentId = Id,
                 Updated = DateTime.Now,
                 UpdatedByName = UpdatedByName,
                 UpdatedBy = UpdatedBy
             };
             shipmentPart.SetNewId();
-            ShipmentParts.Add(shipmentPart);
+            list.Add(shipmentPart);
         }
-    }      
+
+        return list;
+    }
 
     public void SetStatus(string status)
     {

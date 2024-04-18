@@ -1,5 +1,6 @@
 ﻿using Application.Common;
 using Application.Common.Repositories;
+using Domain.ShipmentParts;
 using Domain.Shipments;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,13 @@ namespace Application.Shipments.Queries;
 public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
+    private readonly IShipmentPartsRepository _shipmentPartsRepository;
 
-    public GetShipmentByIdQueryHandler(IShipmentsRepository shipmentsRepository)
+    public GetShipmentByIdQueryHandler(IShipmentsRepository shipmentsRepository, IShipmentPartsRepository shipmentPartsRepository)
     {
         _shipmentsRepository = shipmentsRepository;
+        _shipmentPartsRepository = shipmentPartsRepository;
+
     }
 
     public async Task<Result<GetShipmentByIdQueryResult>> ExecuteAsync(GetShipmentByIdQuery query)
@@ -30,7 +34,8 @@ public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQ
             return result;
         }
 
-        GetShipmentByIdQueryResult queryResult = GetShipmentByIdQueryResult.Map(shipment);
+        List<ShipmentPart> shipmentParts = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id);
+        GetShipmentByIdQueryResult queryResult = GetShipmentByIdQueryResult.Map(shipment, shipmentParts);
         result.Status = ResultStatusConstants.Success;
         result.Data = queryResult;
         return result;

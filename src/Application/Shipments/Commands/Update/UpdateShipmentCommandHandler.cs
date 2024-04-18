@@ -69,6 +69,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
         if (result.Errors.Any())
         {
+            result.Status = ResultStatusConstants.Failed;
             return result;
         }
 
@@ -82,14 +83,10 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
             return result;
         }
 
-        //TODO: fix concurrency issues
-
-        //List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentId(shipment.Id);
-        //_shipmentPartsRepository.Delete(shipmentPartsToDelete);
-        //await _unitOfWork.CommitChangesAsync();
-        shipment.ShipmentParts.Clear();
-        //shipment.AddNewShipmentParts(command.ShipmentParts.Select(shipmentPart => (int)shipmentPart.Value).ToList(), plannedExecutionFrom, days);
-
+        List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id);
+        _shipmentPartsRepository.Delete(shipmentPartsToDelete);
+        List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts.Select(shipmentPart => (int)shipmentPart.Value).ToList(), plannedExecutionFrom, days);
+        await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd);
         shipment.Update(shipmentDetails);
         //Note: Should we change the status to "Changed" when updating a shipment?
         await _unitOfWork.CommitChangesAsync();

@@ -87,10 +87,11 @@ public class Create : ControllerBase
 
         Result<CreateShipmentResult> result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
 
-        if (result.Errors.Any())
+        if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
+
         return Ok(result);
     }
 }

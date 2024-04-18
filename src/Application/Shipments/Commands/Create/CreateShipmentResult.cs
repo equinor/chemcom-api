@@ -1,4 +1,5 @@
 ﻿using Application.Common.Enums;
+using Domain.ShipmentParts;
 using Domain.Shipments;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ public sealed record CreateShipmentResult
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
 
-    public static CreateShipmentResult Map(Shipment shipment)
+    public static CreateShipmentResult Map(Shipment shipment, List<ShipmentPart> shipmentParts)
     {
         CreateShipmentResult result = new()
         {
@@ -61,7 +62,7 @@ public sealed record CreateShipmentResult
             WaterAmount = shipment.WaterAmount,
             WaterAmountPerHour = shipment.WaterAmountPerHour,
             Well = shipment.Well,
-            ShipmentParts = shipment.ShipmentParts.ToDictionary(x => x.Id, x => x.Water),
+            ShipmentParts = shipmentParts.ToDictionary(x => x.Id, x => x.Water),
             VolumePersentageOffspec = shipment.VolumePersentageOffspec,
             ContainsChemicals = shipment.ContainsChemicals,
             ContainsStableOilEmulsion = shipment.ContainsStableOilEmulsion,

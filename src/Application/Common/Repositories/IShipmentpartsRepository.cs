@@ -10,6 +10,7 @@ namespace Application.Common.Repositories;
 public interface IShipmentPartsRepository
 {
     Task InsertAsync(ShipmentPart shipmentPart);
+    Task InsertManyAsync(List<ShipmentPart> shipmentParts);
     void Delete(ICollection<ShipmentPart> shipmentParts);
-    Task<List<ShipmentPart>> GetByShipmentId(Guid shipmentId);
+    Task<List<ShipmentPart>> GetByShipmentIdAsync(Guid shipmentId);
 }
