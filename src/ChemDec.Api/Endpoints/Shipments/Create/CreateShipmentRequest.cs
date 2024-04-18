@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ChemDec.Api.Endpoints.Shipments;
+namespace ChemDec.Api.Endpoints.Shipments.Create;
 
 public sealed record CreateShipmentRequest
 {

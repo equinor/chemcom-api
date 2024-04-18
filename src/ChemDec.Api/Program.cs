@@ -53,7 +53,7 @@ builder.Services.AddDbContext<ChemContext>(options =>
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-   
+
     options.UseSqlServer(configuration.GetConnectionString("chemcomdb"))
             .EnableSensitiveDataLogging();
 });
@@ -128,6 +128,7 @@ builder.Services.AddScoped<ICommandDispatcher, CommandDispatcher>();
 builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 builder.Services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
 builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
+builder.Services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
 builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));

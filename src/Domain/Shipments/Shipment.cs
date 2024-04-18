@@ -7,6 +7,7 @@ using Domain.ShipmentChemicals;
 using Domain.ShipmentParts;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,6 @@ public class Shipment : IAuditable
         SenderId = shipmentDetails.SenderId;
         ReceiverId = shipmentDetails.ReceiverId;
         Type = shipmentDetails.Type;
-        Status = shipmentDetails.Status;
         RinsingOffshorePercent = shipmentDetails.RinsingOffshorePercent;
         PlannedExecutionFrom = shipmentDetails.PlannedExecutionFrom;
         PlannedExecutionTo = shipmentDetails.PlannedExecutionTo;
@@ -58,12 +58,12 @@ public class Shipment : IAuditable
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
         HasBeenOpened = shipmentDetails.HasBeenOpened;
-        ShipmentParts = new List<ShipmentPart>();
+        //ShipmentParts = new List<ShipmentPart>();
     }
 
 
     public Guid Id { get; private set; }
-    public string Code { get; private set; } /*us248: fjern denne*/
+    public string Code { get; private set; } 
     public string Title { get; private set; }
     public Guid SenderId { get; set; }
     public Installation Sender { get; private set; }
@@ -101,13 +101,13 @@ public class Shipment : IAuditable
     public ICollection<Attachment> Attachments { get; set; }
     public ICollection<Comment> Comments { get; set; }
     public ICollection<ShipmentChemical> Chemicals { get; set; }
-    public ICollection<ShipmentPart> ShipmentParts { get; private set; }
+    //public ICollection<ShipmentPart> ShipmentParts { get; private set; }
     public ICollection<LogEntry> LogEntries { get; set; }
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
     public bool HasBeenOpened { get; set; }
-    //Evaluation
+   
     public bool? EvalCapacityOk { get; set; }
     public string EvalCapacityOkUpdatedBy { get; set; }
     public bool? EvalContaminationRisk { get; set; }
@@ -119,42 +119,44 @@ public class Shipment : IAuditable
     public string EvalEnvImpact { get; set; }
     public string EvalComments { get; set; }
 
-    //public void AddShipmentChemicals(List<ShipmentChemical> shipmentChemicals)
-    //{
-    //    _chemicals.AddRange(shipmentChemicals);
-    //}
+    [ConcurrencyCheck]
+    public Guid Version { get; set; }
 
-    //public void RemoveShipmentChemicals(List<ShipmentChemical> shipmentChemicals)
+    //public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     //{
-    //    foreach (var shipmentChemical in shipmentChemicals)
+    //    for (int i = 0; i < days; i++)
     //    {
-    //        _chemicals.Remove(shipmentChemical);
+    //        DateTime shippedDate = plannedExecutionFrom.AddDays(i);
+    //        ShipmentPart shipmentPart = new(shipmentParts[i], shippedDate)
+    //        {
+    //            Updated = DateTime.Now,
+    //            UpdatedByName = UpdatedByName,
+    //            UpdatedBy = UpdatedBy
+    //        };
+    //        shipmentPart.SetNewId();
+    //        //ShipmentParts.Add(shipmentPart);
     //    }
     //}
 
-    public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
+    public List<ShipmentPart> AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     {
+        var list = new List<ShipmentPart>();
         for (int i = 0; i < days; i++)
         {
             DateTime shippedDate = plannedExecutionFrom.AddDays(i);
             ShipmentPart shipmentPart = new(shipmentParts[i], shippedDate)
             {
+                ShipmentId = Id,
                 Updated = DateTime.Now,
                 UpdatedByName = UpdatedByName,
                 UpdatedBy = UpdatedBy
             };
             shipmentPart.SetNewId();
-            ShipmentParts.Add(shipmentPart);
+            list.Add(shipmentPart);
         }
-    }
 
-    //public void RemoveShipmentParts(List<ShipmentPart> shipmentParts)
-    //{
-    //    foreach (var shipmentPart in shipmentParts)
-    //    {
-    //        _shipmentParts.Remove(shipmentPart);
-    //    }
-    //}
+        return list;
+    }
 
     public void SetStatus(string status)
     {
@@ -165,11 +167,6 @@ public class Shipment : IAuditable
     {
         Id = Guid.NewGuid();
     }
-
-    //public void AddLogEntry(LogEntry logEntry)
-    //{
-    //    _logEntries.Add(logEntry);
-    //}
 
     public void Update(ShipmentDetails shipmentDetails)
     {
@@ -206,13 +203,7 @@ public class Shipment : IAuditable
         Updated = DateTime.Now;
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
-        HasBeenOpened = shipmentDetails.HasBeenOpened;
-        //EvalCapacityOk = shipmentDetails.EvalCapacityOk;
-        //EvalCapacityOkUpdatedBy = shipmentDetails.EvalCapacityOkUpdatedBy;
-        //EvalContaminationRisk = shipmentDetails.EvalContaminationRisk;
-        //EvalContaminationRiskUpdatedBy = shipmentDetails.EvalContaminationRiskUpdatedBy;
-        //EvalAmountOk = shipmentDetails.EvalAmountOk;
-        //EvalAmountOkUpdatedBy = shipmentDetails.EvalAmountOkUpdatedBy;
+        HasBeenOpened = shipmentDetails.HasBeenOpened;       
     }
 
     private Shipment()

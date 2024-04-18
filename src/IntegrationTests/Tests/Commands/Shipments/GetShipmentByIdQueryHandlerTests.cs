@@ -1,6 +1,7 @@
 ﻿using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Application.Shipments.Queries;
 using IntegrationTests.Fixtures;
 using System;
 using System.Collections.Generic;
@@ -8,19 +9,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Tests.CommandHandlers.Shipments;
+namespace IntegrationTests.Tests.Commands.Shipments;
 
 [Collection("TestSetupCollection")]
-public sealed class CreateShipmentComandTests
+public sealed class GetShipmentByIdQueryHandlerTests
 {
     private readonly TestSetupFixture _testSetupFixture;
-    public CreateShipmentComandTests(TestSetupFixture testSetupFixture)
+    public GetShipmentByIdQueryHandlerTests(TestSetupFixture testSetupFixture)
     {
         _testSetupFixture = testSetupFixture;
     }
 
     [Fact]
-    public async Task DispatchShouldCreateShipment()
+    public async Task DispatchShouldGetShipmentById()
     {
         bool isInstallationPartOfUserRoles = true;
 
@@ -43,7 +44,10 @@ public sealed class CreateShipmentComandTests
             UpdatedByName = "ABCD",
         };
 
-        Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
-        Assert.True(result.Data is not null);
+        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+
+        Result<GetShipmentByIdQueryResult> getResult = await _testSetupFixture.QueryDispatcher.DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(createResult.Data.Id));
+
+        Assert.True(getResult.Status == ResultStatusConstants.Success);
     }
 }

@@ -52,6 +52,7 @@ public class TestSetupFixture : IDisposable
                 services.AddScoped<IQueryDispatcher, QueryDispatcher>();
                 services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
                 services.AddScoped<IInstallationsRepository, InstallationsRepository>();
+                services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
                 services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
                 AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));
                 AddCommandOrQueryHandlers(services, typeof(ICommandHandler<,>));
