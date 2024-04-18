@@ -119,9 +119,6 @@ public class Shipment : IAuditable
     public string EvalEnvImpact { get; set; }
     public string EvalComments { get; set; }
 
-    [ConcurrencyCheck]
-    public Guid Version { get; set; }
-
     //public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     //{
     //    for (int i = 0; i < days; i++)

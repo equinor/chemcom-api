@@ -49,5 +49,7 @@ public sealed class GetShipmentByIdQueryHandlerTests
         Result<GetShipmentByIdQueryResult> getResult = await _testSetupFixture.QueryDispatcher.DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(createResult.Data.Id));
 
         Assert.True(getResult.Status == ResultStatusConstants.Success);
+        Assert.True(getResult.Data is not null);
+        Assert.True(getResult.Errors is null);
     }
 }

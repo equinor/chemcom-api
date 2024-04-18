@@ -24,20 +24,17 @@ public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQ
 
     public async Task<Result<GetShipmentByIdQueryResult>> ExecuteAsync(GetShipmentByIdQuery query)
     {
-        Result<GetShipmentByIdQueryResult> result = new();
+        List<string> errors = new();
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.Id);
 
         if (shipment is null)
         {
-            result.Errors.Add("Shipment not found");
-            result.Status = ResultStatusConstants.NotFound;
-            return result;
+            errors.Add("Shipment not found");
+            return Result<GetShipmentByIdQueryResult>.NotFound(errors);
         }
 
         List<ShipmentPart> shipmentParts = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id);
         GetShipmentByIdQueryResult queryResult = GetShipmentByIdQueryResult.Map(shipment, shipmentParts);
-        result.Status = ResultStatusConstants.Success;
-        result.Data = queryResult;
-        return result;
+        return Result<GetShipmentByIdQueryResult>.Success(queryResult);
     }
 }

@@ -6,10 +6,12 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace ChemDec.Api.Endpoints.Shipments.Update;
@@ -34,6 +36,9 @@ public class Update : ControllerBase
     [SwaggerOperation(Description = "Update shipment",
                         Summary = "Update shipment",
                         Tags = new[] { "Shipments" })]
+    [ProducesResponseType(typeof(Result<UpdateShipmentResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(Result), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
