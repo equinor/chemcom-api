@@ -38,11 +38,11 @@ public class ShipmentChemical
         UpdatedBy = updatedBy;
         UpdatedByName = updatedbyName;
     }
-    public Guid Id { get; init; }
+    public Guid Id { get; private set; }
 
-    public Guid ShipmentId { get; init; }
+    public Guid ShipmentId { get; private set; }
 
-    public Guid ChemicalId { get; init; }
+    public Guid ChemicalId { get; private set; }
 
     public string MeasureUnit { get; set; }
 

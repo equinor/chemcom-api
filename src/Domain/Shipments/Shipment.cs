@@ -58,7 +58,6 @@ public class Shipment : IAuditable
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
         HasBeenOpened = shipmentDetails.HasBeenOpened;
-        //ShipmentParts = new List<ShipmentPart>();
     }
 
 

@@ -37,4 +37,8 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Tests\Queries\Chemicals\" />
+  </ItemGroup>
+
 </Project>

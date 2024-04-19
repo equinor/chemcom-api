@@ -129,6 +129,8 @@ builder.Services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 builder.Services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
 builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
+builder.Services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
+builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
 builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));

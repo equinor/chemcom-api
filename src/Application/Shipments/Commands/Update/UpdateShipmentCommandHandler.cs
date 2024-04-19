@@ -85,6 +85,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts.Select(shipmentPart => (int)shipmentPart.Value).ToList(), plannedExecutionFrom, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd);
         shipment.Update(shipmentDetails);
+        _shipmentsRepository.Update(shipment);
         //Note: Should we change the status to "Changed" when updating a shipment?
         await _unitOfWork.CommitChangesAsync();
         UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment);

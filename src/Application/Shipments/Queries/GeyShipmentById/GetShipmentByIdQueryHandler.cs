@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Shipments.Queries;
+namespace Application.Shipments.Queries.GeyShipmentById;
 
 public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>
 {

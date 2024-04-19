@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Application.Common;
 
-public sealed record Result<T>
+public sealed class Result<T> : ResultBase
 {
     public Result() { }
-    public List<string> Errors { get; private set; }
-    public T Data { get; set; }
-    public string Status { get; set; }
+    public T Data { get; private set; }
 
     public static Result<T> Success(T data)
     {
@@ -41,12 +39,12 @@ public sealed record Result<T>
     }
 }
 
-public sealed record Result
+public abstract class ResultBase
 {
-    public Result()
+    public ResultBase()
     { }
-    public List<string> Errors { get; set; }
-    public string Status { get; set; }
+    public List<string> Errors { get; protected set; }
+    public string Status { get; protected set; }
 }
 
 public static class ResultStatusConstants

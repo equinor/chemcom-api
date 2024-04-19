@@ -33,10 +33,10 @@ public class Create : ControllerBase
     [HttpPost]
     [SwaggerOperation(Description = "Create new shipment",
                         Summary = "Create new shipment",
-                        Tags = new[] { "Shipments" })]
+                        Tags = new[] { "Shipments - new" })]
     [ProducesResponseType(typeof(Result<CreateShipmentResult>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(Result), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(Result), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
@@ -88,7 +88,9 @@ public class Create : ControllerBase
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
             IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
-            ShipmentParts = request.ShipmentParts
+            ShipmentParts = request.ShipmentParts,
+            UpdatedBy = user.Email,
+            UpdatedByName = user.Name,
         };
 
         Result<CreateShipmentResult> result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
@@ -97,7 +99,7 @@ public class Create : ControllerBase
         {
             return BadRequest(result);
         }
-        
+
         Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/shipments/{result.Data.Id}");
         return Created(createdAt, result);
     }

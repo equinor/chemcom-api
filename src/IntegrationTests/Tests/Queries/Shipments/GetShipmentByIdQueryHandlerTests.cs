@@ -1,7 +1,7 @@
 ﻿using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
-using Application.Shipments.Queries;
+using Application.Shipments.Queries.GeyShipmentById;
 using IntegrationTests.Fixtures;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Tests.Commands.Shipments;
+namespace IntegrationTests.Tests.Queries.Shipments;
 
 [Collection("TestSetupCollection")]
 public sealed class GetShipmentByIdQueryHandlerTests

@@ -9,13 +9,14 @@ namespace Domain.Comments;
 
 public class Comment
 {
-    //public Comment(string comment, Guid? shipmentId, string updatedBy, string updatedByName)
-    //{
-    //    CommentText = comment;
-    //    ShipmentId = shipmentId;
-    //    UpdatedBy = updatedBy;
-    //    UpdatedByName = updatedByName;
-    //}
+    public Comment(string comment, Guid? shipmentId, string updatedBy, string updatedByName)
+    {
+        CommentText = comment;
+        ShipmentId = shipmentId;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+        Updated = DateTime.Now;
+    }
 
     public Guid Id { get; private set; }
     public string CommentText { get; private set; }
@@ -25,11 +26,16 @@ public class Comment
     public string UpdatedByName { get; private set; }
     public Shipment Shipment { get; set; }
 
-    public void Update(Guid shipmentId,string updatedBy, string updatedByName)
-    {       
+    public void Update(Guid shipmentId, string updatedBy, string updatedByName)
+    {
         ShipmentId = shipmentId;
         UpdatedBy = updatedBy;
         UpdatedByName = updatedByName;
+    }
+
+    public void SetNewId()
+    {
+        Id = Guid.NewGuid();
     }
 
     private Comment()
