@@ -2,6 +2,7 @@
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using IntegrationTests.Fixtures;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,6 +45,9 @@ public sealed class CreateShipmentComandTests
         };
 
         Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+
+        Assert.True(result.Status == ResultStatusConstants.Success);
         Assert.True(result.Data is not null);
+        Assert.True(result.Errors is null);
     }
 }

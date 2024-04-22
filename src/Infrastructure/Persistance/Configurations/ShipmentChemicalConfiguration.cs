@@ -17,9 +17,9 @@ public class ShipmentChemicalConfiguration : IEntityTypeConfiguration<ShipmentCh
 
         builder.Property(e => e.Id).ValueGeneratedNever();
 
-        builder.HasOne(bc => bc.Chemical)
-                .WithMany(b => b.ShipmentChemicals)
-                .HasForeignKey(bc => bc.ChemicalId);
+        //builder.HasOne(bc => bc.Chemical)
+        //        .WithMany(b => b.ShipmentChemicals)
+        //        .HasForeignKey(bc => bc.ChemicalId);
 
         builder.HasOne(bc => bc.Shipment)
              .WithMany(b => b.Chemicals)

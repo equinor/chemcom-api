@@ -1,7 +1,9 @@
 ﻿using Application.Common;
-using Application.Shipments.Queries;
+using Application.Shipments.Commands.Update;
+using Application.Shipments.Queries.GeyShipmentById;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
@@ -26,7 +28,9 @@ public class GetById : ControllerBase
     [Route("{id}")]
     [SwaggerOperation(Description = "Get shipment",
                         Summary = "Get shipment",
-                        Tags = new[] { "Shipments" })]
+                        Tags = new[] { "Shipments - new" })]
+    [ProducesResponseType(typeof(Result<GetShipmentByIdQueryResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id)
     {
         Result<GetShipmentByIdQueryResult> result = await _queryDispatcher.DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(id));

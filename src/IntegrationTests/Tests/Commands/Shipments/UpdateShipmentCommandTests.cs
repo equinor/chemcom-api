@@ -48,7 +48,7 @@ public sealed class UpdateShipmentCommandTests
 
         Dictionary<Guid, double> shipmentParts = new()
         {
-            { Guid.NewGuid(), 2.0 }           
+            { Guid.NewGuid(), 2.0 }
         };
 
         UpdateShipmentCommand updateCommand = new()
@@ -74,5 +74,7 @@ public sealed class UpdateShipmentCommandTests
         Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
+        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Errors is null);
     }
 }

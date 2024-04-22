@@ -1,7 +1,7 @@
 ﻿using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
-using Application.Shipments.Queries;
+using Application.Shipments.Queries.GeyShipmentById;
 using IntegrationTests.Fixtures;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Tests.Commands.Shipments;
+namespace IntegrationTests.Tests.Queries.Shipments;
 
 [Collection("TestSetupCollection")]
 public sealed class GetShipmentByIdQueryHandlerTests
@@ -49,5 +49,7 @@ public sealed class GetShipmentByIdQueryHandlerTests
         Result<GetShipmentByIdQueryResult> getResult = await _testSetupFixture.QueryDispatcher.DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(createResult.Data.Id));
 
         Assert.True(getResult.Status == ResultStatusConstants.Success);
+        Assert.True(getResult.Data is not null);
+        Assert.True(getResult.Errors is null);
     }
 }

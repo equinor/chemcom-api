@@ -50,7 +50,7 @@ public sealed record CreateShipmentCommand : ICommand
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
     public string UpdatedBy { get; set; }
-    public string UpdatedByName { get; set; }
+    public string UpdatedByName { get; set; }    
 
     public static ShipmentDetails Map(CreateShipmentCommand command)
     {

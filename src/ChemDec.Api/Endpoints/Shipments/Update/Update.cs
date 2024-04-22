@@ -6,10 +6,12 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace ChemDec.Api.Endpoints.Shipments.Update;
@@ -33,7 +35,10 @@ public class Update : ControllerBase
     [Route("{id}")]
     [SwaggerOperation(Description = "Update shipment",
                         Summary = "Update shipment",
-                        Tags = new[] { "Shipments" })]
+                        Tags = new[] { "Shipments - new" })]
+    [ProducesResponseType(typeof(Result<UpdateShipmentResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
@@ -84,7 +89,9 @@ public class Update : ControllerBase
             WaterHasBeenAnalyzed = request.WaterHasBeenAnalyzed,
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles
+            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
+            UpdatedBy = user.Email,
+            UpdatedByName = user.Name
         };
 
         Result<UpdateShipmentResult> result = await _commandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(command);

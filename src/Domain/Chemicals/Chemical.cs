@@ -1,4 +1,5 @@
-﻿using Domain.Installations;
+﻿using Domain.Common;
+using Domain.Installations;
 using Domain.ShipmentChemicals;
 using System;
 using System.Collections.Generic;
@@ -8,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Chemicals;
 
-public class Chemical
+public class Chemical : IAuditable
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; private set; }
     public string Name { get; set; }
     public string Description { get; set; }
 
@@ -35,9 +36,19 @@ public class Chemical
     public Installation ProposedByInstallation { get; set; }
     public Guid? ProposedByInstallationId { get; set; }
 
-    public ICollection<ShipmentChemical> ShipmentChemicals { get; set; }
+    //public ICollection<ShipmentChemical> ShipmentChemicals { get; set; }
 
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
+
+    public void Approve()
+    {
+        Tentative = false;
+    }
+
+    public void SetNewId()
+    {
+        Id = Guid.NewGuid();
+    }   
 }

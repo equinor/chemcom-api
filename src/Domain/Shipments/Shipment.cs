@@ -58,7 +58,6 @@ public class Shipment : IAuditable
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
         HasBeenOpened = shipmentDetails.HasBeenOpened;
-        //ShipmentParts = new List<ShipmentPart>();
     }
 
 
@@ -118,9 +117,6 @@ public class Shipment : IAuditable
     public string EvalBiocidesOkUpdatedBy { get; set; }
     public string EvalEnvImpact { get; set; }
     public string EvalComments { get; set; }
-
-    [ConcurrencyCheck]
-    public Guid Version { get; set; }
 
     //public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     //{

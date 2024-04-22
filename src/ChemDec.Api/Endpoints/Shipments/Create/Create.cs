@@ -1,10 +1,12 @@
 ﻿using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Application.Shipments.Commands.Update;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
@@ -31,7 +33,10 @@ public class Create : ControllerBase
     [HttpPost]
     [SwaggerOperation(Description = "Create new shipment",
                         Summary = "Create new shipment",
-                        Tags = new[] { "Shipments" })]
+                        Tags = new[] { "Shipments - new" })]
+    [ProducesResponseType(typeof(Result<CreateShipmentResult>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
         if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
@@ -54,6 +59,7 @@ public class Create : ControllerBase
         {
             SenderId = request.SenderId,
             Code = request.Code,
+            ReceiverId = receiverId,
             Title = request.Title,
             Type = request.Type,
             PlannedExecutionFrom = request.PlannedExecutionFrom.Value,
@@ -82,7 +88,9 @@ public class Create : ControllerBase
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
             IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
-            ShipmentParts = request.ShipmentParts
+            ShipmentParts = request.ShipmentParts,
+            UpdatedBy = user.Email,
+            UpdatedByName = user.Name,
         };
 
         Result<CreateShipmentResult> result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
@@ -92,6 +100,7 @@ public class Create : ControllerBase
             return BadRequest(result);
         }
 
-        return Ok(result);
+        Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/shipments/{result.Data.Id}");
+        return Created(createdAt, result);
     }
 }
