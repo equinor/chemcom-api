@@ -39,6 +39,9 @@ spec:
               memory: "512Mi"
               cpu: "200m"
         - environment: prod
+          identity: 
+            azure:
+              clientId: 31931248-fa75-4501-9de2-4d53cc28da35
           runAsNonRoot: true
           variables:
             ASPNETCORE_URLS: "http://*:5000"
