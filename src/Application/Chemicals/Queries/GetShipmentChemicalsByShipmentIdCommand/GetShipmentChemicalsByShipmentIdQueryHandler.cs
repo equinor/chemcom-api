@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 
 namespace Application.Chemicals.Queries.GetShipmentChemicalsByShipmentIdCommand;
 
-public sealed class GetShipmentChemicalsByShipmentIdCommandHandler :
-    IQueryHandler<GetShipmentChemicalsByShipmentIdCommand, Result<GetShipmentChemicalsByShipmentIdResult>>
+public sealed class GetShipmentChemicalsByShipmentIdQueryHandler :
+    IQueryHandler<GetShipmentChemicalsByShipmentIdQuery, Result<GetShipmentChemicalsByShipmentIdResult>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
 
-    public GetShipmentChemicalsByShipmentIdCommandHandler(IShipmentsRepository shipmentsRepository)
+    public GetShipmentChemicalsByShipmentIdQueryHandler(IShipmentsRepository shipmentsRepository)
     {
         _shipmentsRepository = shipmentsRepository;
     }
-    public async Task<Result<GetShipmentChemicalsByShipmentIdResult>> ExecuteAsync(GetShipmentChemicalsByShipmentIdCommand command)
+    public async Task<Result<GetShipmentChemicalsByShipmentIdResult>> ExecuteAsync(GetShipmentChemicalsByShipmentIdQuery command)
     {
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
         if (shipment is null)
@@ -57,7 +57,7 @@ public sealed class GetShipmentChemicalsByShipmentIdCommandHandler :
 
         return Result<GetShipmentChemicalsByShipmentIdResult>.Success(new GetShipmentChemicalsByShipmentIdResult
         {
-            ResultsCount = results.Count(),
+            ResultsCount = results.Count,
             ShipmentChemicals = results
         });
     }

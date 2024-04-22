@@ -16,4 +16,5 @@ public interface IShipmentsRepository
     Task AddShipmentChemicalAsync(ShipmentChemical shipmentChemical);
     Task<ShipmentChemical> GetShipmentChemicalAsync(Guid shipmentId, Guid chemicalId);
     Task<List<ShipmentChemical>> GetShipmentChemicalsByShipmentIdAsync(Guid shipmentId);
+    void UpdateShipmentChemical(ShipmentChemical shipmentChemical);
 }

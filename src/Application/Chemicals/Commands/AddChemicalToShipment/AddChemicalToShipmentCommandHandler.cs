@@ -22,7 +22,7 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
     public async Task<Result<Guid>> HandleAsync(AddChemicalToShipmentCommand command)
     {
         List<string> errors = new();
-        if (!IsCorrectMeasureUnit(command.MeasureUnit))
+        if (!ValidationUtils.IsCorrectMeasureUnit(command.MeasureUnit))
         {
             errors.Add("Invalid measure unit");
             return Result<Guid>.Failed(errors);
@@ -50,13 +50,5 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
         await _shipmentsRepository.AddShipmentChemicalAsync(shipmentChemical);
         await _unitOfWork.CommitChangesAsync();
         return Result<Guid>.Success(shipmentChemical.Id);
-    }
-
-    private bool IsCorrectMeasureUnit(string measureUnit)
-    {
-        return measureUnit == MeasureUnit.Kilogram ||
-               measureUnit == MeasureUnit.Litre ||
-               measureUnit == MeasureUnit.Tonn ||
-               measureUnit == MeasureUnit.CubicMeter;
     }
 }

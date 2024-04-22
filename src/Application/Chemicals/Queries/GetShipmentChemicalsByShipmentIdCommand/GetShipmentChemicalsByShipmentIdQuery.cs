@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Application.Chemicals.Queries.GetShipmentChemicalsByShipmentIdCommand;
 
-public sealed record GetShipmentChemicalsByShipmentIdCommand : IQuery
+public sealed record GetShipmentChemicalsByShipmentIdQuery : IQuery
 {
-    public GetShipmentChemicalsByShipmentIdCommand(Guid shipmentId)
+    public GetShipmentChemicalsByShipmentIdQuery(Guid shipmentId)
     {
         ShipmentId = shipmentId;
     }

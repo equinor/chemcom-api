@@ -69,7 +69,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         DateTime plannedExecutionTo = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
 
         int days = plannedExecutionTo.Subtract(plannedExecutionFrom).Days + 1;
-        int shipmentPartsCount = command.ShipmentParts.Count();
+        int shipmentPartsCount = command.ShipmentParts.Count;
         if (shipmentPartsCount != days)
         {
             errors.Add("Days does not match the execution dates. This should normally not happen");

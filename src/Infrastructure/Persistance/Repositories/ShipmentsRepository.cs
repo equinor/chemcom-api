@@ -50,4 +50,9 @@ public sealed class ShipmentsRepository : IShipmentsRepository
     {
         await _dbContext.ShipmentChemicals.AddAsync(shipmentChemical);
     }
+
+    public void UpdateShipmentChemical(ShipmentChemical shipmentChemical)
+    {
+        _dbContext.ShipmentChemicals.Update(shipmentChemical);
+    }
 }
