@@ -26,7 +26,7 @@ public class ApproveChemical : ControllerBase
         _userService = userService;
     }
 
-    [HttpPatch("{id}")]
+    [HttpPatch("{id}/approve")]
     [SwaggerOperation(Description = "Approve chemical",
                         Summary = "Approve chemical",
                         Tags = new[] { "Chemicals - new" })]
@@ -34,7 +34,7 @@ public class ApproveChemical : ControllerBase
     {
         User user = await _userService.GetUser(User);
 
-        ApproveChemicalCommand command = new ApproveChemicalCommand(id, user.Email, user.Name);
+        ApproveChemicalCommand command = new(id, user.Email, user.Name);
         Result<bool> result = await _commandDispatcher.DispatchAsync<ApproveChemicalCommand, Result<bool>>(command);
 
         if (result.Status == ResultStatusConstants.NotFound)

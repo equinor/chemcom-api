@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace ChemDec.Api.Endpoints.Chemicals.AddChemicalToShipment;
+namespace ChemDec.Api.Endpoints.Chemicals.UpdateShipmentChemical;
 
-public sealed record AddChemicalToShipmentRequest
+public sealed record UpdateShipmentChemicalRequest
 {
-    public Guid ChemicalId { get; set; }   
+    public Guid ShipmentId { get; set; }
     public string MeasureUnit { get; set; }
     public double Amount { get; set; }
     public double CalculatedWeightUnrinsed { get; set; }

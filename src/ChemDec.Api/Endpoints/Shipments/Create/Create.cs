@@ -55,7 +55,7 @@ public class Create : ControllerBase
             receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
         }
 
-        CreateShipmentCommand command = new CreateShipmentCommand()
+        CreateShipmentCommand command = new()
         {
             SenderId = request.SenderId,
             Code = request.Code,
@@ -100,7 +100,7 @@ public class Create : ControllerBase
             return BadRequest(result);
         }
 
-        Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/shipments/{result.Data.Id}");
+        Uri createdAt = new($"{HttpContext.Request.Host}/api/shipments/{result.Data.Id}");
         return Created(createdAt, result);
     }
 }
