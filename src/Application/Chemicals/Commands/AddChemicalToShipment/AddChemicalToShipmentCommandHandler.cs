@@ -1,6 +1,7 @@
 ﻿using Application.Common;
 using Application.Common.Repositories;
 using Domain.ShipmentChemicals;
+using Domain.Shipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,12 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
     }
     public async Task<Result<Guid>> HandleAsync(AddChemicalToShipmentCommand command, CancellationToken cancellationToken = default)
     {
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
+        if (shipment is null)
+        {
+            return Result<Guid>.NotFound(new List<string> { "Shipment not found" });
+        }
+
         List<string> errors = new();
         if (!ValidationUtils.IsCorrectMeasureUnit(command.MeasureUnit))
         {

@@ -33,6 +33,7 @@ public class UpdateShipmentChemical : ControllerBase
                               Tags = new[] { "Shipments - new" })]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid chemicalId, UpdateShipmentChemicalRequest request)
     {
         User user = await _userService.GetUser(User);

@@ -4,6 +4,7 @@ using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
@@ -30,6 +31,8 @@ public class ApproveChemical : ControllerBase
     [SwaggerOperation(Description = "Approve chemical",
                         Summary = "Approve chemical",
                         Tags = new[] { "Chemicals - new" })]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id)
     {
         User user = await _userService.GetUser(User);

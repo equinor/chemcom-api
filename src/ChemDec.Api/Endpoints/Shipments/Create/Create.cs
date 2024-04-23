@@ -35,7 +35,6 @@ public class Create : ControllerBase
                         Summary = "Create new shipment",
                         Tags = new[] { "Shipments - new" })]
     [ProducesResponseType(typeof(Result<CreateShipmentResult>), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
