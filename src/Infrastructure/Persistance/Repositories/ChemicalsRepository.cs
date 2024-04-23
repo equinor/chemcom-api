@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories;
 
-public class ChemicalsRepository : IChemicalsRepository
+public sealed class ChemicalsRepository : IChemicalsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 

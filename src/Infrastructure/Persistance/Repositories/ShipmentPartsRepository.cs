@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories;
 
-public class ShipmentPartsRepository : IShipmentPartsRepository
+public sealed class ShipmentPartsRepository : IShipmentPartsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -21,7 +21,7 @@ public class ShipmentPartsRepository : IShipmentPartsRepository
     public async Task InsertManyAsync(List<ShipmentPart> shipmentParts)
     {
         await _dbContext.ShipmentParts.AddRangeAsync(shipmentParts);
-    } 
+    }
 
     public void Delete(ICollection<ShipmentPart> shipmentParts)
     {

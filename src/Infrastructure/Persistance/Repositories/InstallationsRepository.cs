@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories;
 
-public class InstallationsRepository : IInstallationsRepository
+public sealed class InstallationsRepository : IInstallationsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 

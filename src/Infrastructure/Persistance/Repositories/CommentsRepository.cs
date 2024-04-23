@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Infrastructure.Persistance.Repositories;
 
 
-public class CommentsRepository : ICommentsRepository
+public sealed class CommentsRepository : ICommentsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
