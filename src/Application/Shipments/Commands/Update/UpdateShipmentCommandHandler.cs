@@ -31,10 +31,10 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<UpdateShipmentResult>> HandleAsync(UpdateShipmentCommand command)
+    public async Task<Result<UpdateShipmentResult>> HandleAsync(UpdateShipmentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.Id);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (shipment is null)
         {
@@ -62,7 +62,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
             errors.Add("User do not have access to save from this installation");
         }
 
-        Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId);
+        Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
         DateTime plannedExecutionFrom = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
         DateTime plannedExecutionTo = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
@@ -80,14 +80,14 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         }
 
         ShipmentDetails shipmentDetails = UpdateShipmentCommand.Map(command);
-        List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id);
+        List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id, cancellationToken);
         _shipmentPartsRepository.Delete(shipmentPartsToDelete);
         List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts.Select(shipmentPart => (int)shipmentPart.Value).ToList(), plannedExecutionFrom, days);
-        await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd);
+        await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd, cancellationToken);
         shipment.Update(shipmentDetails);
         _shipmentsRepository.Update(shipment);
         //Note: Should we change the status to "Changed" when updating a shipment?
-        await _unitOfWork.CommitChangesAsync();
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment);
         return Result<UpdateShipmentResult>.Success(updateShipmentResult);
     }

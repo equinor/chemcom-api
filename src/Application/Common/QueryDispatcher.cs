@@ -14,10 +14,10 @@ public sealed class QueryDispatcher : IQueryDispatcher
     {
         _serviceProvider = serviceProvider;
     }
-    public async Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery
+    public async Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery
     {
         return _serviceProvider.GetService(typeof(IQueryHandler<TQuery, TResult>)) is not IQueryHandler<TQuery, TResult> handler
             ? throw new ApplicationException($"No Queryhandler registered for handling {typeof(TQuery)}")
-            : await handler.ExecuteAsync(query);
+            : await handler.ExecuteAsync(query,cancellationToken);
     }
 }

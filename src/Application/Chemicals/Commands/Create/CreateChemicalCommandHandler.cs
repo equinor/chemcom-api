@@ -18,7 +18,7 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
         _chemicalsRepository = chemicalsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<CreateChemicalResult>> HandleAsync(CreateChemicalCommand command)
+    public async Task<Result<CreateChemicalResult>> HandleAsync(CreateChemicalCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
 
@@ -42,7 +42,7 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
             errors.Add("Chemical description cannot contain semicolons");
         }
 
-        bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim());
+        bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim(), cancellationToken);
 
         if (chemicalExists)
         {
@@ -56,8 +56,8 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
 
         Chemical chemical = CreateChemicalCommand.Map(command);
         chemical.SetNewId();
-        await _chemicalsRepository.InsertAsync(chemical);
-        await _unitOfWork.CommitChangesAsync();
+        await _chemicalsRepository.InsertAsync(chemical, cancellationToken);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         CreateChemicalResult result = CreateChemicalResult.Map(chemical);
         return Result<CreateChemicalResult>.Success(result);
     }

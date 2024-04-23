@@ -9,8 +9,8 @@ namespace Application.Common.Repositories;
 
 public interface IShipmentPartsRepository
 {
-    Task InsertAsync(ShipmentPart shipmentPart);
-    Task InsertManyAsync(List<ShipmentPart> shipmentParts);
+    Task InsertAsync(ShipmentPart shipmentPart, CancellationToken cancellationToken = default);
+    Task InsertManyAsync(List<ShipmentPart> shipmentParts, CancellationToken cancellationToken = default);
     void Delete(ICollection<ShipmentPart> shipmentParts);
-    Task<List<ShipmentPart>> GetByShipmentIdAsync(Guid shipmentId);
+    Task<List<ShipmentPart>> GetByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default);
 }

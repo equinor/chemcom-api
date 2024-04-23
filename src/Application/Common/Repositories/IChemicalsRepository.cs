@@ -10,11 +10,16 @@ namespace Application.Common.Repositories;
 
 public interface IChemicalsRepository
 {
-    Task<bool> ExistsAsync(string name);
-    Task<Chemical> GetByIdAsync(Guid id);
-    Task<Chemical> GetByNameAsync(string name);
-    Task<List<Chemical>> GetChemicalsAsync(bool excludeActive = false, bool excludeDisabled = true, bool excludeProposed = true, bool excludeNotProposed = false, Guid? forInstallation = null);
-    Task<List<ShipmentChemical>> GetShipmentChemicalsByChemicalIdAsync(Guid chemicalId);
-    Task InsertAsync(Chemical chemical);
+    Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default);
+    Task<Chemical> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Chemical> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task<List<Chemical>> GetChemicalsAsync(bool excludeActive = false,
+        bool excludeDisabled = true,
+        bool excludeProposed = true,
+        bool excludeNotProposed = false,
+        Guid? forInstallation = null,
+        CancellationToken cancellationToken = default);
+    Task<List<ShipmentChemical>> GetShipmentChemicalsByChemicalIdAsync(Guid chemicalId, CancellationToken cancellationToken = default);
+    Task InsertAsync(Chemical chemical, CancellationToken cancellationToken = default);
     void Update(Chemical chemical);
 }

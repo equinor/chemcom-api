@@ -34,7 +34,7 @@ public sealed class Delete : ControllerBase
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid attachmentId)
     {
         DeleteAttachmentCommand command = new(attachmentId, shipmentId);
-        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteAttachmentCommand, Result<bool>>(command);
+        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteAttachmentCommand, Result<bool>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

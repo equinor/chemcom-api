@@ -19,7 +19,7 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
         _shipmentsRepository = shipmentsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<Guid>> HandleAsync(AddChemicalToShipmentCommand command)
+    public async Task<Result<Guid>> HandleAsync(AddChemicalToShipmentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
         if (!ValidationUtils.IsCorrectMeasureUnit(command.MeasureUnit))
@@ -28,7 +28,7 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
             return Result<Guid>.Failed(errors);
         }
 
-        ShipmentChemical shipmentChemical = await _shipmentsRepository.GetShipmentChemicalAsync(command.ShipmentId, command.ChemicalId);
+        ShipmentChemical shipmentChemical = await _shipmentsRepository.GetShipmentChemicalAsync(command.ShipmentId, command.ChemicalId, cancellationToken);
         if (shipmentChemical is not null)
         {
             return Result<Guid>.Failed(new List<string> { "Chemical already added to shipment" });
@@ -47,8 +47,8 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
                                                 command.UpdatedBy,
                                                 command.UpdatedByName);
 
-        await _shipmentsRepository.AddShipmentChemicalAsync(shipmentChemical);
-        await _unitOfWork.CommitChangesAsync();
+        await _shipmentsRepository.AddShipmentChemicalAsync(shipmentChemical, cancellationToken);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<Guid>.Success(shipmentChemical.Id);
     }
 }

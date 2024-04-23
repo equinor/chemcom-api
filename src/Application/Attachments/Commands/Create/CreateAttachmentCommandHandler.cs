@@ -29,7 +29,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
         _fileUploadService = fileUploadService;
     }
 
-    public async Task<Result<bool>> HandleAsync(CreateAttachmentCommand command)
+    public async Task<Result<bool>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
     {
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
         if (shipment is null)
@@ -37,7 +37,11 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
             return Result<bool>.NotFound(new List<string> { "Shipment not found" });
         }
 
-        bool isFileUploadSuccessful = await _fileUploadService.UploadAsync(command.ShipmentId.ToString(), command.Path, command.FileContents);
+        bool isFileUploadSuccessful = await _fileUploadService.UploadAsync(
+                                                command.ShipmentId.ToString(),
+                                                command.Path,
+                                                command.FileContents,
+                                                cancellationToken);
         if (!isFileUploadSuccessful)
         {
             return Result<bool>.Failed(new List<string> { "File upload failed" });
@@ -49,8 +53,8 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
                                                 command.Extension,
                                                 command.UpdatedBy,
                                                 command.UpdatedByName);
-        await _attachmentsRepository.InsertAsync(attachment);
-        await _unitOfWork.CommitChangesAsync();
+        await _attachmentsRepository.InsertAsync(attachment, cancellationToken);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         return Result<bool>.Success(true);
     }

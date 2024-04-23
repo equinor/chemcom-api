@@ -21,9 +21,9 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
         _chemicalsRepository = chemicalsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<UpdateChemicalResult>> HandleAsync(UpdateChemicalCommand command)
+    public async Task<Result<UpdateChemicalResult>> HandleAsync(UpdateChemicalCommand command, CancellationToken cancellationToken = default)
     {
-        Chemical chemical = await _chemicalsRepository.GetByIdAsync(command.Id);
+        Chemical chemical = await _chemicalsRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (chemical is null)
         {
@@ -52,7 +52,7 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
             errors.Add("Chemical description cannot contain semicolons");
         }
 
-        bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim());
+        bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim(), cancellationToken);
 
         if (chemicalExists)
         {
@@ -64,7 +64,7 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
             return Result<UpdateChemicalResult>.Failed(errors);
         }
 
-        List<ShipmentChemical> shipmentChemicals = await _chemicalsRepository.GetShipmentChemicalsByChemicalIdAsync(command.Id);
+        List<ShipmentChemical> shipmentChemicals = await _chemicalsRepository.GetShipmentChemicalsByChemicalIdAsync(command.Id, cancellationToken);
 
         //TODO: Claculate chemicals
         foreach (ShipmentChemical item in shipmentChemicals)
@@ -74,7 +74,7 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
 
         chemical = UpdateChemicalCommand.Map(command);
         _chemicalsRepository.Update(chemical);
-        await _unitOfWork.CommitChangesAsync();
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<UpdateChemicalResult>.Success(UpdateChemicalResult.Map(chemical));
     }
 }

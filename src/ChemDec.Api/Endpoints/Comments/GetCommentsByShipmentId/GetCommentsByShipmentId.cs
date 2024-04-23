@@ -31,12 +31,14 @@ public class GetCommentsByShipmentId : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId)
     {
-        Result<GetCommentsByShipmentId> result = await _queryDispatcher.DispatchAsync<GetCommentsByShipmentIdQuery, Result<GetCommentsByShipmentId>>(new GetCommentsByShipmentIdQuery(shipmentId));
+        Result<GetCommentsByShipmentId> result = await _queryDispatcher.
+            DispatchAsync<GetCommentsByShipmentIdQuery, Result<GetCommentsByShipmentId>>
+                        (new GetCommentsByShipmentIdQuery(shipmentId), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {
             return NotFound(result);
-        }      
+        }
 
         return Ok(result);
     }

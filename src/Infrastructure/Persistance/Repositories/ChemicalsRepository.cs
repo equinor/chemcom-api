@@ -25,7 +25,8 @@ public sealed class ChemicalsRepository : IChemicalsRepository
                                                         bool excludeDisabled = true,
                                                         bool excludeProposed = true,
                                                         bool excludeNotProposed = false,
-                                                        Guid? forInstallation = null)
+                                                        Guid? forInstallation = null,
+                                                        CancellationToken cancellationToken = default)
     {
         IQueryable<Chemical> chemicals = _dbContext.Chemicals.AsQueryable();
 
@@ -44,27 +45,27 @@ public sealed class ChemicalsRepository : IChemicalsRepository
             }
         }
 
-        return await chemicals.ToListAsync();
+        return await chemicals.ToListAsync(cancellationToken);
     }
 
-    public async Task<Chemical> GetByNameAsync(string name)
+    public async Task<Chemical> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chemicals.FirstOrDefaultAsync(c => c.Name == name);
+        return await _dbContext.Chemicals.FirstOrDefaultAsync(c => c.Name == name, cancellationToken);
     }
 
-    public async Task<Chemical> GetByIdAsync(Guid id)
+    public async Task<Chemical> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chemicals.FindAsync(id);
+        return await _dbContext.Chemicals.FindAsync(id, cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(string name)
+    public async Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chemicals.AnyAsync(c => c.Name == name);
+        return await _dbContext.Chemicals.AnyAsync(c => c.Name == name, cancellationToken);
     }
 
-    public async Task InsertAsync(Chemical chemical)
+    public async Task InsertAsync(Chemical chemical, CancellationToken cancellationToken = default)
     {
-        await _dbContext.Chemicals.AddAsync(chemical);
+        await _dbContext.Chemicals.AddAsync(chemical, cancellationToken);
     }
 
     public void Update(Chemical chemical)
@@ -72,9 +73,9 @@ public sealed class ChemicalsRepository : IChemicalsRepository
         _dbContext.Chemicals.Update(chemical);
     }
 
- 
-    public async Task<List<ShipmentChemical>> GetShipmentChemicalsByChemicalIdAsync(Guid chemicalId)
+
+    public async Task<List<ShipmentChemical>> GetShipmentChemicalsByChemicalIdAsync(Guid chemicalId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ShipmentChemicals.Where(sc => sc.ChemicalId == chemicalId).ToListAsync();
+        return await _dbContext.ShipmentChemicals.Where(sc => sc.ChemicalId == chemicalId).ToListAsync(cancellationToken);
     }
 }

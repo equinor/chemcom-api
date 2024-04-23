@@ -35,7 +35,7 @@ public class ApproveChemical : ControllerBase
         User user = await _userService.GetUser(User);
 
         ApproveChemicalCommand command = new(id, user.Email, user.Name);
-        Result<bool> result = await _commandDispatcher.DispatchAsync<ApproveChemicalCommand, Result<bool>>(command);
+        Result<bool> result = await _commandDispatcher.DispatchAsync<ApproveChemicalCommand, Result<bool>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

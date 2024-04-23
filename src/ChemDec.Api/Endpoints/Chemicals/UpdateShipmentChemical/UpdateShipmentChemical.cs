@@ -54,7 +54,7 @@ public class UpdateShipmentChemical : ControllerBase
             UpdatedBy = user.Email
         };
 
-        Result<bool> result = await _commandDispatcher.DispatchAsync<UpdateShipmentChemicalCommand, Result<bool>>(command);
+        Result<bool> result = await _commandDispatcher.DispatchAsync<UpdateShipmentChemicalCommand, Result<bool>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

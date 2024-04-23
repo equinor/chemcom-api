@@ -62,7 +62,7 @@ public class Update : ControllerBase
             MeasureUnitDefault = request.MeasureUnitDefault
         };
 
-        Result<UpdateChemicalResult> result = await _commandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(command);
+        Result<UpdateChemicalResult> result = await _commandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

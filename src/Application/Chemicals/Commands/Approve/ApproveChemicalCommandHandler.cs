@@ -13,9 +13,9 @@ public sealed class ApproveChemicalCommandHandler : ICommandHandler<ApproveChemi
         _chemicalsRepository = chemicalsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<bool>> HandleAsync(ApproveChemicalCommand command)
+    public async Task<Result<bool>> HandleAsync(ApproveChemicalCommand command, CancellationToken cancellationToken = default)
     {
-        Chemical chemical = await _chemicalsRepository.GetByIdAsync(command.ChemicalId);
+        Chemical chemical = await _chemicalsRepository.GetByIdAsync(command.ChemicalId, cancellationToken);
 
         if (chemical is null)
         {
@@ -24,7 +24,7 @@ public sealed class ApproveChemicalCommandHandler : ICommandHandler<ApproveChemi
 
         chemical.Approve();
         _chemicalsRepository.Update(chemical);
-        await _unitOfWork.CommitChangesAsync();
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<bool>.Success(true);
     }
 }

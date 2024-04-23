@@ -17,9 +17,14 @@ public class GetChemicalsQueryHandler : IQueryHandler<GetChemicalsQuery, Result<
         _chemicalsRepository = chemicalsRepository;
     }
 
-    public async Task<Result<GetChemicalsQueryResult>> ExecuteAsync(GetChemicalsQuery query)
+    public async Task<Result<GetChemicalsQueryResult>> ExecuteAsync(GetChemicalsQuery query, CancellationToken cancellationToken = default)
     {
-        var chemicals = await _chemicalsRepository.GetChemicalsAsync(query.ExcludeActive, query.ExcludeDisabled, query.ExcludeProposed, query.ExcludeNotProposed, query.ForInstallation);
+        var chemicals = await _chemicalsRepository.GetChemicalsAsync(query.ExcludeActive, 
+                                                                    query.ExcludeDisabled, 
+                                                                    query.ExcludeProposed, 
+                                                                    query.ExcludeNotProposed, 
+                                                                    query.ForInstallation,
+                                                                    cancellationToken);
 
         if (chemicals is null)
         {

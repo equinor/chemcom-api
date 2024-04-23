@@ -34,7 +34,7 @@ public class Delete : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid id)
     {
-        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId));
+        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

@@ -21,15 +21,15 @@ public sealed class GetAttachmentsByShipmentIdQueryHandler : IQueryHandler<GetAt
         _shipmentsRepository = shipmentsRepository;
     }
 
-    public async Task<Result<GetAttachmentsByShipmentIdResult>> ExecuteAsync(GetAttachmentsByShipmentIdQuery query)
+    public async Task<Result<GetAttachmentsByShipmentIdResult>> ExecuteAsync(GetAttachmentsByShipmentIdQuery query, CancellationToken cancellationToken = default)
     {
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.ShipmentId, cancellationToken);
         if (shipment is null)
         {
             return Result<GetAttachmentsByShipmentIdResult>.NotFound(new List<string> { "Shipment not found" });
         }
 
-        List<Attachment> attachments = await _attachmentsRepository.GetAttachmentsByShipmentId(query.ShipmentId);
+        List<Attachment> attachments = await _attachmentsRepository.GetAttachmentsByShipmentIdAsync(query.ShipmentId, cancellationToken);
         if (attachments is null)
         {
             return Result<GetAttachmentsByShipmentIdResult>.NotFound(new List<string> { "Attachments not found in the shipment" });

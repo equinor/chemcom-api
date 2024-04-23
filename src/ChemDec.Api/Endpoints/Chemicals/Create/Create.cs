@@ -59,7 +59,8 @@ public class Create : ControllerBase
             MeasureUnitDefault = request.MeasureUnitDefault
         };
 
-        Result<CreateChemicalResult> result = await _commandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command);
+        Result<CreateChemicalResult> result = await _commandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command,
+                                                                                                                                          HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

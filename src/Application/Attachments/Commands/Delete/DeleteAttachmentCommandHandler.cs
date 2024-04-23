@@ -25,22 +25,22 @@ public sealed class DeleteAttachmentCommandHandler : ICommandHandler<DeleteAttac
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<bool>> HandleAsync(DeleteAttachmentCommand command)
+    public async Task<Result<bool>> HandleAsync(DeleteAttachmentCommand command, CancellationToken cancellationToken = default)
     {
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
         if (shipment is null)
         {
             return Result<bool>.NotFound(new List<string> { "Shipment not found" });
         }
 
-        Attachment attachment = await _attachmentsRepository.GetByIdAsync(command.AttachmentId);
+        Attachment attachment = await _attachmentsRepository.GetByIdAsync(command.AttachmentId, cancellationToken);
         if (attachment is null)
         {
             return Result<bool>.NotFound(new List<string> { "Attachment not found" });
         }
 
         _attachmentsRepository.Delete(attachment);
-        await _unitOfWork.CommitChangesAsync();
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<bool>.Success(true);
     }
 }

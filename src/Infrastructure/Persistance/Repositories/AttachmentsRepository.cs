@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Persistance.Repositories;
@@ -18,9 +19,9 @@ public sealed class AttachmentsRepository : IAttachmentsRepository
         _dbContext = dbContext;
     }
 
-    public async Task InsertAsync(Attachment attachment)
+    public async Task InsertAsync(Attachment attachment, CancellationToken cancellationToken = default)
     {
-        await _dbContext.Attachments.AddAsync(attachment);
+        await _dbContext.Attachments.AddAsync(attachment, cancellationToken);
     }
 
     public void Delete(Attachment attachment)
@@ -28,13 +29,13 @@ public sealed class AttachmentsRepository : IAttachmentsRepository
         _dbContext.Attachments.Remove(attachment);
     }
 
-    public async Task<List<Attachment>> GetAttachmentsByShipmentId(Guid shipmentId)
+    public async Task<List<Attachment>> GetAttachmentsByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Attachments.Where(x => x.ShipmentId == shipmentId).ToListAsync();
+        return await _dbContext.Attachments.Where(x => x.ShipmentId == shipmentId).ToListAsync(cancellationToken);
     }
 
-    public async Task<Attachment> GetByIdAsync(Guid id)
+    public async Task<Attachment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Attachments.FindAsync(id);
+        return await _dbContext.Attachments.FindAsync(id, cancellationToken);
     }
 }

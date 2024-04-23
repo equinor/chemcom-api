@@ -21,7 +21,7 @@ public sealed class AzureFileUploadService : IFileUploadService
         _configuration = configuration;
     }
 
-    public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent)
+    public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -29,7 +29,7 @@ public sealed class AzureFileUploadService : IFileUploadService
             await containerClient.CreateIfNotExistsAsync();
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
             var options = new BlobUploadOptions();
-            await blobClient.UploadAsync(new BinaryData(fileContent));
+            await blobClient.UploadAsync(new BinaryData(fileContent), cancellationToken);
             return true;
         }
         catch (Exception)
@@ -38,13 +38,13 @@ public sealed class AzureFileUploadService : IFileUploadService
         }
     }
 
-    public async Task<bool> DeleteAsync(string containerName, string fileName)
+    public async Task<bool> DeleteAsync(string containerName, string fileName, CancellationToken cancellationToken = default)
     {
         try
         {
             BlobContainerClient containerClient = GetBlobContainerClient(containerName);
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
-            await blobClient.DeleteIfExistsAsync();
+            await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
             return true;
         }
         catch (Exception)

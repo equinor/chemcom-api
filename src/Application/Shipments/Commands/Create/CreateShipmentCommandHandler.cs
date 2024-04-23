@@ -32,7 +32,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         _shipmentPartsRepository = shipmentPartsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command)
+    public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
         //TODO: Add fluent validation  
@@ -63,7 +63,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         //    result.Errors.Add("Missing specification on measures taken to minimize well fluids / water volume sent to land");
         //}
 
-        Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId);
+        Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
         DateTime plannedExecutionFrom = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
         DateTime plannedExecutionTo = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
@@ -84,11 +84,10 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         Shipment shipment = new Shipment(shipmentDetails);
         shipment.SetStatus(Statuses.Draft);
         shipment.SetNewId();
-        await _shipmentsRepository.InsertAsync(shipment);
+        await _shipmentsRepository.InsertAsync(shipment, cancellationToken);
         List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
-        await _shipmentPartsRepository.InsertManyAsync(shipmentParts);
-        await _unitOfWork.CommitChangesAsync();
-
+        await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment, shipmentParts);
         return Result<CreateShipmentResult>.Success(createShipmentResult);

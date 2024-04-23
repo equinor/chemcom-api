@@ -19,15 +19,17 @@ public sealed class GetShipmentChemicalsByShipmentIdQueryHandler :
     {
         _shipmentsRepository = shipmentsRepository;
     }
-    public async Task<Result<GetShipmentChemicalsByShipmentIdResult>> ExecuteAsync(GetShipmentChemicalsByShipmentIdQuery command)
+    public async Task<Result<GetShipmentChemicalsByShipmentIdResult>> ExecuteAsync(
+        GetShipmentChemicalsByShipmentIdQuery command,
+        CancellationToken cancellationToken = default)
     {
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
         if (shipment is null)
         {
             return Result<GetShipmentChemicalsByShipmentIdResult>.NotFound(new List<string> { "Shipment not found" });
         }
 
-        List<ShipmentChemical> shipmentChemicals = await _shipmentsRepository.GetShipmentChemicalsByShipmentIdAsync(command.ShipmentId);
+        List<ShipmentChemical> shipmentChemicals = await _shipmentsRepository.GetShipmentChemicalsByShipmentIdAsync(command.ShipmentId, cancellationToken);
 
         if (shipmentChemicals is null)
         {

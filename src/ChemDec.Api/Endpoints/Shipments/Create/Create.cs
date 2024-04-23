@@ -93,7 +93,8 @@ public class Create : ControllerBase
             UpdatedByName = user.Name,
         };
 
-        Result<CreateShipmentResult> result = await _commandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<CreateShipmentResult> result = await _commandDispatcher.
+            DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

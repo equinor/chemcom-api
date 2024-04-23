@@ -54,7 +54,7 @@ public class AddChemicalToShipment : ControllerBase
             UpdatedBy = user.Email
         };
 
-        Result<Guid> result = await _commandDispatcher.DispatchAsync<AddChemicalToShipmentCommand, Result<Guid>>(command);
+        Result<Guid> result = await _commandDispatcher.DispatchAsync<AddChemicalToShipmentCommand, Result<Guid>>(command, HttpContext.RequestAborted);
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);

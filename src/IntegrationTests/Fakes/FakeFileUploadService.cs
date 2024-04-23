@@ -9,22 +9,22 @@ namespace IntegrationTests.Fakes;
 
 public sealed class FakeFileUploadService : IFileUploadService
 {
-    public async Task<bool> DeleteAsync(string containerName, string fileName)
+    public async Task<bool> DeleteAsync(string containerName, string fileName, CancellationToken cancellationToken = default)
     {
         Task<bool> task = Task.Run(() =>
         {
             return true;
-        });
+        }, cancellationToken);
 
         return await task;
     }
 
-    public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent)
+    public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
     {
         Task<bool> task = Task.Run(() =>
         {
             return true;
-        });
+        }, cancellationToken);
 
         return await task;
     }

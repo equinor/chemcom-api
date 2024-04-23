@@ -13,7 +13,7 @@ public sealed class CommandDispatcher : ICommandDispatcher
     {
         _serviceProvider = serviceProvider;
     }
-    public async Task DispatchAsync<T>(T command) where T : ICommand
+    public async Task DispatchAsync<T>(T command, CancellationToken cancellationToken = default) where T : ICommand
     {
         if (_serviceProvider.GetService(typeof(ICommandHandler<T>)) is not ICommandHandler<T> handler)
         {
@@ -22,7 +22,7 @@ public sealed class CommandDispatcher : ICommandDispatcher
         await handler.HandleAsync(command);
     }
 
-    public async Task<TResult> DispatchAsync<TCommand, TResult>(TCommand command) where TCommand : ICommand
+    public async Task<TResult> DispatchAsync<TCommand, TResult>(TCommand command, CancellationToken cancellationToken = default) where TCommand : ICommand
     {
         return _serviceProvider.GetService(typeof(ICommandHandler<TCommand, TResult>)) is not ICommandHandler<TCommand, TResult> handler
             ? throw new ApplicationException($"No Commandhandler registered for handling {typeof(TCommand)}")

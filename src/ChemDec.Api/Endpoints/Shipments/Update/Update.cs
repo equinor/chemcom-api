@@ -94,7 +94,8 @@ public class Update : ControllerBase
             UpdatedByName = user.Name
         };
 
-        Result<UpdateShipmentResult> result = await _commandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(command);
+        Result<UpdateShipmentResult> result = await _commandDispatcher
+            .DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

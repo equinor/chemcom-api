@@ -30,7 +30,7 @@ public class GetChemicals : ControllerBase
                         Tags = new[] { "Chemicals - new" })]
     [ProducesResponseType(typeof(Result<GetChemicalsQueryResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> HandleAsync([FromQuery]GetChemicalsRequest request)
+    public async Task<IActionResult> HandleAsync([FromQuery] GetChemicalsRequest request)
     {
         Result<GetChemicalsQueryResult> result = await _queryDispatcher.
             DispatchAsync<GetChemicalsQuery, Result<GetChemicalsQueryResult>>(new GetChemicalsQuery
@@ -38,7 +38,7 @@ public class GetChemicals : ControllerBase
                                                                                     request.ExcludeDisabled,
                                                                                     request.ExcludeProposed,
                                                                                     request.ExcludeNotProposed,
-                                                                                    request.ForInstallation));
+                                                                                    request.ForInstallation), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

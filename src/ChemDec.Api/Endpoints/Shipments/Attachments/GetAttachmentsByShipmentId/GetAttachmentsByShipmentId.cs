@@ -33,7 +33,8 @@ public class GetAttachmentsByShipmentId : ControllerBase
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId)
     {
         GetAttachmentsByShipmentIdQuery query = new(shipmentId);
-        Result<GetAttachmentsByShipmentIdResult> result = await _queryDispatcher.DispatchAsync<GetAttachmentsByShipmentIdQuery, Result<GetAttachmentsByShipmentIdResult>>(query);
+        Result<GetAttachmentsByShipmentIdResult> result = 
+            await _queryDispatcher.DispatchAsync<GetAttachmentsByShipmentIdQuery, Result<GetAttachmentsByShipmentIdResult>>(query, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {
