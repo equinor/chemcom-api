@@ -9,5 +9,5 @@ public static class MeasureUnit
     public static readonly string Kilogram = "kg";
     public static readonly string Tonn = "tonn";
     public static readonly string Litre = "l";
-    public static readonly string CubicMeter = "m3";
+    public static readonly string CubicMetre = "m3";
 }

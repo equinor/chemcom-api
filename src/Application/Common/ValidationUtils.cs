@@ -13,6 +13,6 @@ public static class ValidationUtils
         return measureUnit == MeasureUnit.Kilogram ||
                measureUnit == MeasureUnit.Litre ||
                measureUnit == MeasureUnit.Tonn ||
-               measureUnit == MeasureUnit.CubicMeter;
+               measureUnit == MeasureUnit.CubicMetre;
     }
 }

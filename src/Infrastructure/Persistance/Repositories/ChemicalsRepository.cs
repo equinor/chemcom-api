@@ -73,9 +73,8 @@ public sealed class ChemicalsRepository : IChemicalsRepository
         _dbContext.Chemicals.Update(chemical);
     }
 
-
     public async Task<List<ShipmentChemical>> GetShipmentChemicalsByChemicalIdAsync(Guid chemicalId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ShipmentChemicals.Where(sc => sc.ChemicalId == chemicalId).ToListAsync(cancellationToken);
+        return await _dbContext.ShipmentChemicals.Include(s => s.Shipment).Where(sc => sc.ChemicalId == chemicalId).ToListAsync(cancellationToken);
     }
 }

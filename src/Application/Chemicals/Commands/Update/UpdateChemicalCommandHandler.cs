@@ -1,25 +1,21 @@
-﻿using Application.Chemicals.Commands.Create;
-using Application.Common;
+﻿using Application.Common;
 using Application.Common.Repositories;
 using Domain.Chemicals;
 using Domain.ShipmentChemicals;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Chemicals.Commands.Update;
 
 public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemicalCommand, Result<UpdateChemicalResult>>
 {
     private readonly IChemicalsRepository _chemicalsRepository;
+    private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateChemicalCommandHandler(IChemicalsRepository chemicalsRepository, IUnitOfWork unitOfWork)
+    public UpdateChemicalCommandHandler(IChemicalsRepository chemicalsRepository, IUnitOfWork unitOfWork, IShipmentsRepository shipmentsRepository)
     {
         _chemicalsRepository = chemicalsRepository;
         _unitOfWork = unitOfWork;
+        _shipmentsRepository = shipmentsRepository;
     }
     public async Task<Result<UpdateChemicalResult>> HandleAsync(UpdateChemicalCommand command, CancellationToken cancellationToken = default)
     {
@@ -51,28 +47,53 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
         {
             errors.Add("Chemical description cannot contain semicolons");
         }
-
-        bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim(), cancellationToken);
-
-        if (chemicalExists)
-        {
-            errors.Add($"Chemical with the name {command.Name} already exists");
-        }
-
+       
         if (errors.Any())
         {
             return Result<UpdateChemicalResult>.Failed(errors);
-        }
+        }        
 
         List<ShipmentChemical> shipmentChemicals = await _chemicalsRepository.GetShipmentChemicalsByChemicalIdAsync(command.Id, cancellationToken);
 
-        //TODO: Claculate chemicals
-        foreach (ShipmentChemical item in shipmentChemicals)
+        if (chemical.TocWeight != command.TocWeight || chemical.NitrogenWeight != command.NitrogenWeight || chemical.Density != command.Density)
         {
+            foreach (ShipmentChemical shipmentChemical in shipmentChemicals)
+            {
+                if (shipmentChemical.MeasureUnit == MeasureUnit.Kilogram)
+                {
+                    shipmentChemical.CalculatedWeight = shipmentChemical.Amount;
+                }
 
+                if (shipmentChemical.MeasureUnit == MeasureUnit.Tonn)
+                {
+                    shipmentChemical.CalculatedWeight = shipmentChemical.Amount * 1000;
+                }
+
+                if (shipmentChemical.MeasureUnit == MeasureUnit.Litre)
+                {
+                    shipmentChemical.CalculatedWeight = shipmentChemical.Amount * chemical.Density;
+                }
+
+                if (shipmentChemical.MeasureUnit == MeasureUnit.CubicMetre)
+                {
+                    shipmentChemical.CalculatedWeight = shipmentChemical.Amount * chemical.Density * 1000;
+                }
+
+                shipmentChemical.CalculatedWeightUnrinsed = shipmentChemical.CalculatedWeight;
+                shipmentChemical.CalculatedNitrogenUnrinsed = shipmentChemical.CalculatedWeight * chemical.NitrogenWeight / 100;
+                shipmentChemical.CalculatedTocUnrinsed = shipmentChemical.CalculatedWeight * chemical.TocWeight / 100;
+                shipmentChemical.CalculatedBiocidesUnrinsed = shipmentChemical.CalculatedWeight * chemical.BiocideWeight / 100;
+                shipmentChemical.CalculatedWeight = shipmentChemical.CalculatedWeight * ((100 - shipmentChemical.Shipment.RinsingOffshorePercent) / 100);
+                shipmentChemical.CalculatedNitrogen = shipmentChemical.CalculatedWeight * chemical.NitrogenWeight / 100;
+                shipmentChemical.CalculatedToc = shipmentChemical.CalculatedWeight * chemical.TocWeight / 100;
+                shipmentChemical.CalculatedBiocides = shipmentChemical.CalculatedWeight * chemical.BiocideWeight / 100;
+
+                _shipmentsRepository.UpdateShipmentChemical(shipmentChemical);
+            }
         }
 
-        chemical = UpdateChemicalCommand.Map(command);
+
+        chemical = UpdateChemicalCommand.Map(command, chemical);
         _chemicalsRepository.Update(chemical);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<UpdateChemicalResult>.Success(UpdateChemicalResult.Map(chemical));

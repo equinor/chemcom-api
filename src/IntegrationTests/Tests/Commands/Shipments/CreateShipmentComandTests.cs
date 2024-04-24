@@ -23,8 +23,6 @@ public sealed class CreateShipmentComandTests
     [Fact]
     public async Task DispatchShouldCreateShipment()
     {
-        bool isInstallationPartOfUserRoles = true;
-
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
             Code = "pov",
@@ -33,7 +31,7 @@ public sealed class CreateShipmentComandTests
             ReceiverId = new Guid("c4d2d827-48e6-45a8-9fb4-dbd8e7a54a67"),
             Type = "wellintervention",
             Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
+            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,

@@ -18,6 +18,6 @@ public sealed class QueryDispatcher : IQueryDispatcher
     {
         return _serviceProvider.GetService(typeof(IQueryHandler<TQuery, TResult>)) is not IQueryHandler<TQuery, TResult> handler
             ? throw new ApplicationException($"No Queryhandler registered for handling {typeof(TQuery)}")
-            : await handler.ExecuteAsync(query,cancellationToken);
+            : await handler.ExecuteAsync(query, cancellationToken);
     }
 }
