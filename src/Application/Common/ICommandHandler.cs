@@ -8,11 +8,11 @@ namespace Application.Common;
 
 public interface ICommandHandler<T> where T : ICommand
 {
-    Task HandleAsync(T command);
+    Task HandleAsync(T command, CancellationToken cancellationToken = default);
 }
 
 public interface ICommandHandler<TCommand, TResult> where TCommand : ICommand
 {
-    Task<TResult> HandleAsync(TCommand command);
+    Task<TResult> HandleAsync(TCommand command, CancellationToken cancellationToken = default);
 }
 

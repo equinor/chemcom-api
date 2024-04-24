@@ -38,7 +38,7 @@ public class Create : ControllerBase
     {
         User user = await _userService.GetUser(User);
         CreateCommentCommand command = new CreateCommentCommand(request.CommentText, shipmentId, user.Email, user.Name);
-        Result<CreateCommentResult> result = await _commandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(command);
+        Result<CreateCommentResult> result = await _commandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

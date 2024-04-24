@@ -8,5 +8,5 @@ namespace Application.Common.Repositories;
 
 public interface IUnitOfWork
 {
-    Task CommitChangesAsync();
+    Task CommitChangesAsync(CancellationToken cancellationToken = default);
 }

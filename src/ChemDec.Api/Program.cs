@@ -27,6 +27,8 @@ using Infrastructure.Persistance;
 using Application.Common;
 using Application.Common.Repositories;
 using Infrastructure.Persistance.Repositories;
+using Application.Comments.Services;
+using Infrastructure.BlobService;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -131,7 +133,9 @@ builder.Services.AddScoped<IInstallationsRepository, InstallationsRepository>();
 builder.Services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
 builder.Services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
 builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
+builder.Services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
 builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
+builder.Services.AddScoped<IFileUploadService, AzureFileUploadService>();
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(IQueryHandler<,>));

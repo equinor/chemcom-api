@@ -32,9 +32,10 @@ public class Delete : ControllerBase
                                Tags = new[] { "Shipments - new" })]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid id)
     {
-        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId));
+        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

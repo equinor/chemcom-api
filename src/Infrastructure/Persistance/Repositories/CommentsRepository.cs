@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Infrastructure.Persistance.Repositories;
 
 
-public class CommentsRepository : ICommentsRepository
+public sealed class CommentsRepository : ICommentsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -19,14 +19,14 @@ public class CommentsRepository : ICommentsRepository
         _dbContext = dbContext;
     }
 
-    public async Task<Comment> GetByIdAsync(Guid id)
+    public async Task<Comment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Comments.FindAsync(id);
+        return await _dbContext.Comments.FindAsync(id, cancellationToken);
     }
 
-    public async Task InsertAsync(Comment comment)
+    public async Task InsertAsync(Comment comment, CancellationToken cancellationToken = default)
     {
-        await _dbContext.Comments.AddAsync(comment);
+        await _dbContext.Comments.AddAsync(comment, cancellationToken);
     }
 
     public void Delete(Comment comment)
@@ -34,8 +34,8 @@ public class CommentsRepository : ICommentsRepository
         _dbContext.Comments.Remove(comment);
     }
 
-    public async Task<List<Comment>> GetByShipmentIdAsync(Guid shipmentId)
+    public async Task<List<Comment>> GetByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Comments.Where(c => c.ShipmentId == shipmentId).ToListAsync();
+        return await _dbContext.Comments.Where(c => c.ShipmentId == shipmentId).ToListAsync(cancellationToken);
     }
 }

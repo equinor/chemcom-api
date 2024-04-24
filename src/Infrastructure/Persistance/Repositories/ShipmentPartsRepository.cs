@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistance.Repositories;
 
-public class ShipmentPartsRepository : IShipmentPartsRepository
+public sealed class ShipmentPartsRepository : IShipmentPartsRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -13,23 +13,23 @@ public class ShipmentPartsRepository : IShipmentPartsRepository
         _dbContext = dbContext;
     }
 
-    public async Task InsertAsync(ShipmentPart shipmentPart)
+    public async Task InsertAsync(ShipmentPart shipmentPart, CancellationToken cancellationToken = default)
     {
-        await _dbContext.ShipmentParts.AddAsync(shipmentPart);
+        await _dbContext.ShipmentParts.AddAsync(shipmentPart, cancellationToken);
     }
 
-    public async Task InsertManyAsync(List<ShipmentPart> shipmentParts)
+    public async Task InsertManyAsync(List<ShipmentPart> shipmentParts, CancellationToken cancellationToken = default)
     {
-        await _dbContext.ShipmentParts.AddRangeAsync(shipmentParts);
-    } 
+        await _dbContext.ShipmentParts.AddRangeAsync(shipmentParts, cancellationToken);
+    }
 
     public void Delete(ICollection<ShipmentPart> shipmentParts)
     {
         _dbContext.ShipmentParts.RemoveRange(shipmentParts);
     }
 
-    public async Task<List<ShipmentPart>> GetByShipmentIdAsync(Guid shipmentId)
+    public async Task<List<ShipmentPart>> GetByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.ShipmentParts.Where(x => x.ShipmentId == shipmentId).ToListAsync();
+        return await _dbContext.ShipmentParts.Where(x => x.ShipmentId == shipmentId).ToListAsync(cancellationToken);
     }
 }

@@ -13,6 +13,8 @@ using Application.Common.Repositories;
 using Infrastructure.Persistance.Repositories;
 using Infrastructure.Persistance.Interceptors;
 using Domain.Installations;
+using Application.Comments.Services;
+using IntegrationTests.Fakes;
 
 namespace IntegrationTests.Fixtures;
 
@@ -55,7 +57,9 @@ public class TestSetupFixture : IDisposable
                 services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
                 services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
                 services.AddScoped<ICommentsRepository, CommentsRepository>();
+                services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
                 services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
+                services.AddScoped<IFileUploadService, FakeFileUploadService>();
                 AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));
                 AddCommandOrQueryHandlers(services, typeof(ICommandHandler<,>));
                 AddCommandOrQueryHandlers(services, typeof(IQueryHandler<,>));

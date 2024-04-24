@@ -8,5 +8,5 @@ namespace Application.Common;
 
 public interface IQueryDispatcher
 {
-    Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery;
+    Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query, CancellationToken cancellationToken = default) where TQuery : IQuery;
 }

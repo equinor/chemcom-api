@@ -22,11 +22,11 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<CreateCommentResult>> HandleAsync(CreateCommentCommand command)
+    public async Task<Result<CreateCommentResult>> HandleAsync(CreateCommentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
 
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
 
         if (shipment is null)
         {
@@ -46,8 +46,8 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
 
         Comment comment = new(command.CommentText, command.ShipmentId, command.UpdatedBy, command.UpdatedByName);
         comment.SetNewId();
-        await _commentsRepository.InsertAsync(comment);
-        await _unitOfWork.CommitChangesAsync();
+        await _commentsRepository.InsertAsync(comment, cancellationToken);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         return Result<CreateCommentResult>.Success(
             new CreateCommentResult(

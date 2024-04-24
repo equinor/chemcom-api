@@ -9,5 +9,5 @@ namespace Application.Common.Repositories;
 
 public interface IInstallationsRepository
 {
-    Task<Installation> GetByIdAsync(Guid id);
+    Task<Installation> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

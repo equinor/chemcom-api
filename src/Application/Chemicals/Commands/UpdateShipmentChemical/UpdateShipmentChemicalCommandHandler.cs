@@ -20,7 +20,7 @@ public sealed class UpdateShipmentChemicalCommandHandler : ICommandHandler<Updat
         _unitOfWork = unitOfWork;
 
     }
-    public async Task<Result<Guid>> HandleAsync(UpdateShipmentChemicalCommand command)
+    public async Task<Result<Guid>> HandleAsync(UpdateShipmentChemicalCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
         if (!ValidationUtils.IsCorrectMeasureUnit(command.MeasureUnit))
@@ -29,7 +29,7 @@ public sealed class UpdateShipmentChemicalCommandHandler : ICommandHandler<Updat
             return Result<Guid>.Failed(errors);
         }
 
-        ShipmentChemical shipmentChemical = await _shipmentsRepository.GetShipmentChemicalAsync(command.ShipmentId, command.ChemicalId);
+        ShipmentChemical shipmentChemical = await _shipmentsRepository.GetShipmentChemicalAsync(command.ShipmentId, command.ChemicalId, cancellationToken);
         if (shipmentChemical is null)
         {
             return Result<Guid>.NotFound(new List<string> { "Chemical not found in shipment" });
@@ -47,7 +47,7 @@ public sealed class UpdateShipmentChemicalCommandHandler : ICommandHandler<Updat
                                 command.UpdatedByName);
 
         _shipmentsRepository.UpdateShipmentChemical(shipmentChemical);
-        await _unitOfWork.CommitChangesAsync();
+        await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<Guid>.Success(shipmentChemical.Id);
     }
 }

@@ -38,9 +38,9 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     //public DbSet<UserTokenCache> UserTokenCache { get; set; }
     //public DbSet<Notification> Notifications { get; set; }
 
-    public async Task CommitChangesAsync()
+    public async Task CommitChangesAsync(CancellationToken cancellationToken = default)
     {        
-        await SaveChangesAsync();
+        await SaveChangesAsync(cancellationToken);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

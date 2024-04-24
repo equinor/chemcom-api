@@ -10,11 +10,11 @@ namespace Application.Common.Repositories;
 
 public interface IShipmentsRepository
 {
-    Task InsertAsync(Shipment shipment);
-    Task<Shipment> GetByIdAsync(Guid id);
+    Task InsertAsync(Shipment shipment, CancellationToken cancellationToken = default);
+    Task<Shipment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     void Update(Shipment shipment);
-    Task AddShipmentChemicalAsync(ShipmentChemical shipmentChemical);
-    Task<ShipmentChemical> GetShipmentChemicalAsync(Guid shipmentId, Guid chemicalId);
-    Task<List<ShipmentChemical>> GetShipmentChemicalsByShipmentIdAsync(Guid shipmentId);
+    Task AddShipmentChemicalAsync(ShipmentChemical shipmentChemical, CancellationToken cancellationToken = default);
+    Task<ShipmentChemical> GetShipmentChemicalAsync(Guid shipmentId, Guid chemicalId, CancellationToken cancellationToken = default);
+    Task<List<ShipmentChemical>> GetShipmentChemicalsByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default);
     void UpdateShipmentChemical(ShipmentChemical shipmentChemical);
 }

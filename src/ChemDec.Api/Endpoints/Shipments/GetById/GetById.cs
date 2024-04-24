@@ -33,7 +33,8 @@ public class GetById : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id)
     {
-        Result<GetShipmentByIdQueryResult> result = await _queryDispatcher.DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(id));
+        Result<GetShipmentByIdQueryResult> result = await _queryDispatcher
+            .DispatchAsync<GetShipmentByIdQuery, Result<GetShipmentByIdQueryResult>>(new GetShipmentByIdQuery(id), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

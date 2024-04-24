@@ -21,15 +21,15 @@ public sealed class GetCommentsByShipmentIdQueryHandler : IQueryHandler<GetComme
         _shipmentsRepository = shipmentsRepository;
     }
 
-    public async Task<Result<GetCommentsByShipmentIdResult>> ExecuteAsync(GetCommentsByShipmentIdQuery query)
+    public async Task<Result<GetCommentsByShipmentIdResult>> ExecuteAsync(GetCommentsByShipmentIdQuery query, CancellationToken cancellationToken = default)
     {
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.ShipmentId, cancellationToken);
         if (shipment is null)
         {
             return Result<GetCommentsByShipmentIdResult>.NotFound(new List<string> { "Shipment not found" });
         }
 
-        List<Comment> comments = await _commentsRepository.GetByShipmentIdAsync(query.ShipmentId);
+        List<Comment> comments = await _commentsRepository.GetByShipmentIdAsync(query.ShipmentId, cancellationToken);
         if (comments is null)
         {
             return Result<GetCommentsByShipmentIdResult>.NotFound(new List<string> { "Comments not found" });

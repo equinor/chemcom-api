@@ -22,7 +22,7 @@ public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQ
 
     }
 
-    public async Task<Result<GetShipmentByIdQueryResult>> ExecuteAsync(GetShipmentByIdQuery query)
+    public async Task<Result<GetShipmentByIdQueryResult>> ExecuteAsync(GetShipmentByIdQuery query, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(query.Id);
