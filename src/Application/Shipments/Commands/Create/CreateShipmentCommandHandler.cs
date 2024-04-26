@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Common.Repositories;
 using Application.Shipments.Commands;
@@ -40,22 +41,27 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         //TODO: Should validate volumehasbeenminimizedcomment
         if (command.SenderId == Guid.Empty)
         {
-            errors.Add("Sender is required");
+            errors.Add(ShipmentValidationErrors.SenderRequiredText);
         }
 
-        if (command.PlannedExecutionFrom is null || command.PlannedExecutionTo is null)
+        if (command.PlannedExecutionFrom is null)
         {
-            errors.Add("Planned execution from date is required");
+            errors.Add(ShipmentValidationErrors.PlannedExecutionFromDateRequiredText);
         }
 
         if (command.PlannedExecutionTo is null)
         {
-            errors.Add("Planned execution to date is required");
+            errors.Add(ShipmentValidationErrors.PlannedExecutionToDateRequiredText);
         }
 
         if (command.Initiator == Initiator.Offshore && !command.IsInstallationPartOfUserRoles)
         {
-            errors.Add("User do not have access to save from this installation");
+            errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
+        }
+
+        if (errors.Any())
+        {
+            return Result<CreateShipmentResult>.Failed(errors);
         }
 
         //if (string.IsNullOrWhiteSpace(command.VolumeHasBeenMinimizedComment))
@@ -72,7 +78,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         int shipmentPartsCount = command.ShipmentParts.Count;
         if (shipmentPartsCount != days)
         {
-            errors.Add("Days does not match the execution dates. This should normally not happen");
+            errors.Add(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText);
         }
 
         if (errors.Any())

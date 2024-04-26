@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Common.Repositories;
 using Application.Shipments.Commands.Create;
@@ -38,28 +39,33 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
         if (shipment is null)
         {
-            errors.Add("Shipment not found");
+            errors.Add(ShipmentValidationErrors.ShipmentNotFoundText);
             return Result<UpdateShipmentResult>.NotFound(errors);
         }
         //TODO: Add fluent validation  
         if (command.SenderId == Guid.Empty)
         {
-            errors.Add("Sender is required");
+            errors.Add(ShipmentValidationErrors.SenderRequiredText);
         }
 
-        if (command.PlannedExecutionFrom is null || command.PlannedExecutionTo is null)
+        if (command.PlannedExecutionFrom is null)
         {
-            errors.Add("Planned execution from date is required");
+            errors.Add(ShipmentValidationErrors.PlannedExecutionFromDateRequiredText);
         }
 
         if (command.PlannedExecutionTo is null)
         {
-            errors.Add("Planned execution to date is required");
+            errors.Add(ShipmentValidationErrors.PlannedExecutionToDateRequiredText);
         }
 
         if (command.Initiator == Initiator.Offshore && !command.IsInstallationPartOfUserRoles)
         {
-            errors.Add("User do not have access to save from this installation");
+            errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
+        }
+
+        if (errors.Any())
+        {
+            return Result<UpdateShipmentResult>.Failed(errors);
         }
 
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
@@ -71,7 +77,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         int shipmentPartsCount = command.ShipmentParts.Count;
         if (shipmentPartsCount != days)
         {
-            errors.Add("Days does not match the execution dates. This should normally not happen");
+            errors.Add(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText);
         }
 
         if (errors.Any())
