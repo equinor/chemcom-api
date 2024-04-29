@@ -38,12 +38,12 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
             return Result<CreateChemicalResult>.Failed(errors);
         }
 
-        if (command.Name.Contains(";"))
+        if (command.Name.Contains(';'))
         {
             errors.Add(ChemicalValidationErrors.ChemicalNameSemicolonNotAllowedText);
         }
 
-        if (command.Description.Contains(";"))
+        if (command.Description.Contains(';'))
         {
             errors.Add(ChemicalValidationErrors.ChemicalDescriptionSemicolonNotAllowedText);
         }
