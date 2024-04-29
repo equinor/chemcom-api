@@ -33,7 +33,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "7.0.x"
+
       - name: Test
-        env:
-          ConnectionString: ${{ secrets.CI_SQL_CONNECTION_STRING }}
-        run: dotnet test ./src/IntegrationTests --no-restore --verbosity normal
+        run: dotnet test ./src/IntegrationTests

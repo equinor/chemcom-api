@@ -15,10 +15,12 @@ using Infrastructure.Persistance.Interceptors;
 using Domain.Installations;
 using Application.Comments.Services;
 using IntegrationTests.Fakes;
+using IntegrationTests.Common;
+using Testcontainers.MsSql;
 
 namespace IntegrationTests.Fixtures;
 
-public class TestSetupFixture : IDisposable
+public class TestSetupFixture : IAsyncLifetime, IDisposable
 {
     public IHost Host { get; set; }
     public ICommandDispatcher CommandDispatcher { get; private set; }
@@ -26,45 +28,47 @@ public class TestSetupFixture : IDisposable
     public IConfigurationRoot Configuration { get; private set; }
 
     private readonly ApplicationDbContext _dbContext;
+    private readonly MsSqlContainer _msSqlContainer
+        = new MsSqlBuilder().Build();
 
+    //TODO: Add Faker
+    //TODO: Refactor to use IClassFixture<>
     public TestSetupFixture()
     {
+        _msSqlContainer.StartAsync().Wait();
         ConfigurationBuilder configurationBuilder = new();
         Configuration = configurationBuilder
                             .AddUserSecrets<TestSetupFixture>()
                             .AddEnvironmentVariables()
                             .Build();
 
-        string databaseName = GetRandomDatabaseName();
-        string connectionString = Configuration.GetValue<string>("ConnectionString").Replace("dbname", databaseName);
-
         Host = new HostBuilder()
-            .UseEnvironment("Development")
-            .ConfigureHostConfiguration(configHost => configHost.AddConfiguration(Configuration))
-            .ConfigureServices(services =>
-            {
-                services.AddSingleton<AuditableEntitiesInterceptor>();
-                services.
-                     AddDbContext<ApplicationDbContext>(options =>
-                     {
-                         options.UseSqlServer(connectionString)
-                                .EnableSensitiveDataLogging();
-                     });
-                services.AddScoped<ICommandDispatcher, CommandDispatcher>();
-                services.AddScoped<IQueryDispatcher, QueryDispatcher>();
-                services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
-                services.AddScoped<IInstallationsRepository, InstallationsRepository>();
-                services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
-                services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
-                services.AddScoped<ICommentsRepository, CommentsRepository>();
-                services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
-                services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
-                services.AddScoped<IFileUploadService, FakeFileUploadService>();
-                AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));
-                AddCommandOrQueryHandlers(services, typeof(ICommandHandler<,>));
-                AddCommandOrQueryHandlers(services, typeof(IQueryHandler<,>));
-            })
-            .Build();
+              .UseEnvironment("Development")
+              .ConfigureHostConfiguration(configHost => configHost.AddConfiguration(Configuration))
+              .ConfigureServices(services =>
+              {
+                  services.AddSingleton<AuditableEntitiesInterceptor>();
+                  services.
+                       AddDbContext<ApplicationDbContext>(options =>
+                       {
+                           options.UseSqlServer(_msSqlContainer.GetConnectionString())
+                                  .EnableSensitiveDataLogging();
+                       });
+                  services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+                  services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+                  services.AddScoped<IShipmentsRepository, ShipmentsRepository>();
+                  services.AddScoped<IInstallationsRepository, InstallationsRepository>();
+                  services.AddScoped<IShipmentPartsRepository, ShipmentPartsRepository>();
+                  services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
+                  services.AddScoped<ICommentsRepository, CommentsRepository>();
+                  services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
+                  services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
+                  services.AddScoped<IFileUploadService, FakeFileUploadService>();
+                  AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));
+                  AddCommandOrQueryHandlers(services, typeof(ICommandHandler<,>));
+                  AddCommandOrQueryHandlers(services, typeof(IQueryHandler<,>));
+              })
+              .Build();
 
 
         CommandDispatcher = Host.Services.GetService(typeof(ICommandDispatcher)) as ICommandDispatcher;
@@ -79,7 +83,7 @@ public class TestSetupFixture : IDisposable
 
         Installation sender = new Installation()
         {
-            Id = new Guid("B10FC741-EBE3-45C1-BC70-8ECA5BA5CED6"),
+            Id = Constants.SenderId,
             Name = "Oseberg C",
             Code = "OsebergC",
             Description = "Oseberg C",
@@ -93,7 +97,7 @@ public class TestSetupFixture : IDisposable
 
         Installation receiver = new Installation()
         {
-            Id = new Guid("C4D2D827-48E6-45A8-9FB4-DBD8E7A54A67"),
+            Id = Constants.ReceiverId,
             Name = "Sture",
             Code = "Sture",
             Description = "Sture Terminal",
@@ -122,13 +126,18 @@ public class TestSetupFixture : IDisposable
         }
     }
 
-    private static string GetRandomDatabaseName()
-    {
-        return Guid.NewGuid().ToString();
-    }
-
     public void Dispose()
     {
-        _dbContext.Database.EnsureDeleted();
+        //_dbContext.Database.EnsureDeleted();
+    }
+
+    public async Task InitializeAsync()
+    {
+        //await _msSqlContainer.StartAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _msSqlContainer.StopAsync();
     }
 }

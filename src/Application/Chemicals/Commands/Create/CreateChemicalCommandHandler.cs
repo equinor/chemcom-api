@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.Common.Constants;
 using Application.Common.Repositories;
 using Domain.Chemicals;
 using System;
@@ -24,29 +25,34 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
 
         if (string.IsNullOrWhiteSpace(command.Name))
         {
-            errors.Add("Chemical name must be set");
+            errors.Add(ChemicalValidationErrors.ChemicalNameRequiredText);
         }
 
         if (string.IsNullOrWhiteSpace(command.Description))
         {
-            errors.Add("Chemical description must be set");
+            errors.Add(ChemicalValidationErrors.ChemicalDescriptionRequiredText);
         }
 
-        if (command.Name.Contains(";"))
+        if (errors.Any())
         {
-            errors.Add("Chemical name cannot contain semicolons");
+            return Result<CreateChemicalResult>.Failed(errors);
         }
 
-        if (command.Description.Contains(";"))
+        if (command.Name.Contains(';'))
         {
-            errors.Add("Chemical description cannot contain semicolons");
+            errors.Add(ChemicalValidationErrors.ChemicalNameSemicolonNotAllowedText);
+        }
+
+        if (command.Description.Contains(';'))
+        {
+            errors.Add(ChemicalValidationErrors.ChemicalDescriptionSemicolonNotAllowedText);
         }
 
         bool chemicalExists = await _chemicalsRepository.ExistsAsync(command.Name.Trim(), cancellationToken);
 
         if (chemicalExists)
         {
-            errors.Add($"Chemical with the name {command.Name} already exists");
+            errors.Add(string.Format(ChemicalValidationErrors.ChemicalAlreadyExistsText, command.Name));
         }
 
         if (errors.Any())

@@ -28,8 +28,8 @@ public sealed class UpdateChemicalCommandTests
     {
         CreateChemicalCommand createCommand = new()
         {
-            Name = "Test Chemical",
-            Description = "Test Description",
+            Name = "Test chemical update",
+            Description = "Test description update",
             Tentative = true,
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
@@ -60,8 +60,7 @@ public sealed class UpdateChemicalCommandTests
         Assert.True(updateResult.Errors is null);
     }
 
-    [Fact(Skip = "This is not related to new shipment creation. Will comeback to this when working on chemical creation page")]
-    
+    [Fact(Skip = "This is not related to new shipment creation. Will comeback to this when working on chemical creation page")]    
     public async Task DispatchShouldUpdateChemicalWithShipmentChemicals()
     {
         CreateShipmentCommand command = new CreateShipmentCommand()
