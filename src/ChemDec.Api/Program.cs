@@ -29,6 +29,10 @@ using Application.Common.Repositories;
 using Infrastructure.Persistance.Repositories;
 using Application.Comments.Services;
 using Infrastructure.BlobService;
+using Application.Common.Services;
+using Infrastructure.EmailService;
+using Quartz;
+using ChemDec.Api.BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -136,6 +140,40 @@ builder.Services.AddScoped<ICommentsRepository, CommentsRepository>();
 builder.Services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
 builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
 builder.Services.AddScoped<IFileUploadService, AzureFileUploadService>();
+builder.Services.AddScoped<IEmailNotificationsRepository, EmailNotificationsRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddQuartz(options =>
+{
+    JobKey jobKey = JobKey.Create(nameof(EmailNotificationJob));
+    options.AddJob<EmailNotificationJob>(jobKey)
+           .AddTrigger(trigger =>
+           {
+               trigger.ForJob(jobKey);                      
+               if (builder.Environment.IsDevelopment())
+               {
+                   int intervalInSeconds = 10;
+                   trigger.WithSimpleSchedule(schedule =>
+                   {
+                       schedule.WithIntervalInSeconds(intervalInSeconds)
+                               .RepeatForever();
+                   });                  
+               }
+               else
+               {
+                   int intervalInMinutes = 5;
+                   trigger.ForJob(jobKey)
+                      .WithSimpleSchedule(schedule =>
+                      {
+                          schedule.WithIntervalInMinutes(intervalInMinutes)
+                                  .RepeatForever();
+                      });
+               }
+           });
+});
+builder.Services.AddQuartzHostedService(options =>
+{
+    options.WaitForJobsToComplete = true;
+});
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(IQueryHandler<,>));

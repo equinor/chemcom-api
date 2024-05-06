@@ -46,6 +46,8 @@ public sealed class UpdateShipmentChemicalCommandHandler : ICommandHandler<Updat
                                 command.UpdatedBy,
                                 command.UpdatedByName);
 
+        //TODO: Update shipment as well? Yes
+
         _shipmentsRepository.UpdateShipmentChemical(shipmentChemical);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<Guid>.Success(shipmentChemical.Id);

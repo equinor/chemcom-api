@@ -1,6 +1,9 @@
 ﻿using Application.Common;
 using Application.Common.Constants;
+using Application.Common.Enums;
 using Application.Common.Repositories;
+using Domain.EmailNotifications;
+using Domain.Installations;
 using Domain.Shipments;
 using System;
 using System.Collections.Generic;
@@ -13,10 +16,19 @@ namespace Application.Shipments.Commands.Submit;
 public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmentCommand, Result<bool>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
+    private readonly IEmailNotificationsRepository _emailNotificationsRepository;
+    private readonly IInstallationsRepository _installationsRepository;
     private readonly IUnitOfWork _unitOfWork;
-    public SubmitShipmentCommandHandler(IShipmentsRepository shipmentsRepository, IUnitOfWork unitOfWork)
+
+    //TODO: check if submitting is always from Offshore
+    public SubmitShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
+        IEmailNotificationsRepository emailNotificationsRepository,
+        IInstallationsRepository installationsRepository,
+        IUnitOfWork unitOfWork)
     {
         _shipmentsRepository = shipmentsRepository;
+        _emailNotificationsRepository = emailNotificationsRepository;
+        _installationsRepository = installationsRepository;
         _unitOfWork = unitOfWork;
     }
     public async Task<Result<bool>> HandleAsync(SubmitShipmentCommand command, CancellationToken cancellationToken = default)
@@ -32,6 +44,19 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
             return Result<bool>.Failed(new List<string> { "Can't re-submit shipment" });
         }
 
+        Installation receiver = await _installationsRepository.GetByIdAsync(shipment.ReceiverId, cancellationToken);
+
+        EmailNotification emailNotification = new()
+        {
+            Id = Guid.NewGuid(),
+            Subject = $"Shipment form was submitted to {receiver.Name}",
+            Body = $"Shipment form was submitted to {receiver.Name} by {command.UpdatedByName}",
+            Recipients = receiver.Contact,
+            EmailNotificationType = (int)EmailNotificationType.EmailNotificationFromOffshore,
+            IsSent = false
+        };
+
+
         if (command.TakePrecaution)
         {
             shipment.Precautions = command.Precautions;
@@ -44,6 +69,12 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
             shipment.Ra228 = command.Ra228;
         }
 
+        if (command.AvailableForDailyContact.Value)
+        {
+            shipment.NormalProcedure = null;
+            shipment.OnlyWayToGetRidOf = null;
+        }
+
         shipment.AvailableForDailyContact = command.AvailableForDailyContact;
         shipment.HeightenedLra = command.HeightenedLra;
         shipment.TakePrecaution = command.TakePrecaution;
@@ -52,8 +83,17 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         shipment.UpdatedByName = command.UpdatedByName;
         shipment.Status = ShipmentStatuses.Submitted;
 
+        _shipmentsRepository.Update(shipment);
+        await _emailNotificationsRepository.AddAsync(emailNotification, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         return Result<bool>.Success(true);
+    }
+
+
+    private string BuldEmailTemplate()
+    {
+
+        return "";
     }
 }

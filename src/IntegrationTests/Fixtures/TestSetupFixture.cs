@@ -62,6 +62,7 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
                   services.AddScoped<IChemicalsRepository, ChemicalsRepository>();
                   services.AddScoped<ICommentsRepository, CommentsRepository>();
                   services.AddScoped<IAttachmentsRepository, AttachmentsRepository>();
+                  services.AddScoped<IEmailNotificationsRepository, EmailNotificationsRepository>();
                   services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
                   services.AddScoped<IFileUploadService, FakeFileUploadService>();
                   AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));

@@ -19,9 +19,11 @@ namespace ChemDec.Api.Endpoints.Shipments.Attachments.Delete;
 public sealed class Delete : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    public Delete(ICommandDispatcher commandDispatcher)
+    private readonly UserService _userService;
+    public Delete(ICommandDispatcher commandDispatcher, UserService userService)
     {
         _commandDispatcher = commandDispatcher;
+        _userService = userService;
     }
 
     [HttpDelete("{shipmentId}/attachments/{attachmentId}")]
@@ -33,7 +35,8 @@ public sealed class Delete : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid attachmentId)
     {
-        DeleteAttachmentCommand command = new(attachmentId, shipmentId);
+        User user = await _userService.GetUser(User);
+        DeleteAttachmentCommand command = new(attachmentId, shipmentId, user.Email, user.Name);
         Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteAttachmentCommand, Result<bool>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)

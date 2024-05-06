@@ -10,6 +10,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Threading.Tasks;
 using System;
 using Application.Comments.Commands.Delete;
+using ChemDec.Api.Model;
 
 namespace ChemDec.Api.Endpoints.Comments.Delete;
 
@@ -20,10 +21,12 @@ namespace ChemDec.Api.Endpoints.Comments.Delete;
 public class Delete : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
+    private readonly UserService _userService;
 
-    public Delete(ICommandDispatcher commandDispatcher)
+    public Delete(ICommandDispatcher commandDispatcher, UserService userService)
     {
         _commandDispatcher = commandDispatcher;
+        _userService = userService;
     }
 
     [HttpDelete("{shipmentId}/comments/{id}")]
@@ -35,7 +38,9 @@ public class Delete : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid id)
     {
-        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId), HttpContext.RequestAborted);
+        User user = await _userService.GetUser(User);
+
+        Result<bool> result = await _commandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(new DeleteCommentCommand(id, shipmentId, user.Email, user.Name), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {

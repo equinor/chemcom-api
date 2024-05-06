@@ -15,6 +15,7 @@ namespace IntegrationTests.Tests.CommandHandlers.Shipments;
 [Collection("TestSetupCollection")]
 public sealed class CreateShipmentComandTests
 {
+    //TODO: create tests for onshore and offshore shipments
     private readonly TestSetupFixture _testSetupFixture;
     public CreateShipmentComandTests(TestSetupFixture testSetupFixture)
     {

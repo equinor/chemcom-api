@@ -11,10 +11,14 @@ public sealed record DeleteAttachmentCommand : ICommand
 {
     public Guid AttachmentId { get; set; }
     public Guid ShipmentId { get; set; }
+    public string UpdatedBy { get; set; }
+    public string UpdatedByName { get; set; }
 
-    public DeleteAttachmentCommand(Guid attachmentId, Guid shipmentId)
+    public DeleteAttachmentCommand(Guid attachmentId, Guid shipmentId, string updatedBy, string updatedByName)
     {
         AttachmentId = attachmentId;
         ShipmentId = shipmentId;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
     }
 }

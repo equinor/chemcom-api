@@ -53,6 +53,8 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
                                                 command.Extension,
                                                 command.UpdatedBy,
                                                 command.UpdatedByName);
+        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        _shipmentsRepository.Update(shipment);
         await _attachmentsRepository.InsertAsync(attachment, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
 

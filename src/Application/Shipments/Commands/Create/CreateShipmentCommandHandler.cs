@@ -20,7 +20,6 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
     private readonly IInstallationsRepository _installationsRepository;
     private readonly IShipmentPartsRepository _shipmentPartsRepository;
     private readonly IUnitOfWork _unitOfWork;
-
     //TODO: Add logging
 
     public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
