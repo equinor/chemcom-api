@@ -46,7 +46,11 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
 
         Comment comment = new(command.CommentText, command.ShipmentId, command.UpdatedBy, command.UpdatedByName);
         comment.SetNewId();
+
+        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+
         await _commentsRepository.InsertAsync(comment, cancellationToken);
+        _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         return Result<CreateCommentResult>.Success(

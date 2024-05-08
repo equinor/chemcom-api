@@ -52,7 +52,7 @@ public sealed class DeleteCommentCommandTests
         Result<CreateCommentResult> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
             new CreateCommentCommand("Test comment A", createShipmentResult.Data.Id, "ABCD@equinor.com", "ABCD"));
 
-        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data.Id, createShipmentResult.Data.Id);
+        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data.Id, createShipmentResult.Data.Id,"ABCD@equinor.com", "ABCD");
         Result<bool> deleteCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(deleteCommentCommand);
 
         Assert.True(deleteCommentResult.Status == ResultStatusConstants.Success);

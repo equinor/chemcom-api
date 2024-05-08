@@ -39,6 +39,8 @@ public sealed class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentC
             return Result<bool>.NotFound(new List<string> { "Comment not found" });
         }
 
+        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        _shipmentsRepository.Update(shipment);
         _commentsRepository.Delete(comment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<bool>.Success(true);

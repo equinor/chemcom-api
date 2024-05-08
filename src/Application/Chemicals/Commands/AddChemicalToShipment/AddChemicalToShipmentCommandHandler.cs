@@ -53,7 +53,8 @@ public sealed class AddChemicalToShipmentCommandHandler : ICommandHandler<AddChe
                                                 command.CalculatedTocUnrinsed,
                                                 command.UpdatedBy,
                                                 command.UpdatedByName);
-
+        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        _shipmentsRepository.Update(shipment);
         await _shipmentsRepository.AddShipmentChemicalAsync(shipmentChemical, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<Guid>.Success(shipmentChemical.Id);

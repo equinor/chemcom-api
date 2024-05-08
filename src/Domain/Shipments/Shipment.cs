@@ -62,7 +62,7 @@ public class Shipment : IAuditable
 
 
     public Guid Id { get; private set; }
-    public string Code { get; private set; } 
+    public string Code { get; private set; }
     public string Title { get; private set; }
     public Guid SenderId { get; set; }
     public Installation Sender { get; private set; }
@@ -106,7 +106,7 @@ public class Shipment : IAuditable
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
     public bool HasBeenOpened { get; set; }
-   
+
     public bool? EvalCapacityOk { get; set; }
     public string EvalCapacityOkUpdatedBy { get; set; }
     public bool? EvalContaminationRisk { get; set; }
@@ -133,6 +133,13 @@ public class Shipment : IAuditable
     //        //ShipmentParts.Add(shipmentPart);
     //    }
     //}
+
+    public void SetUpdatedInfo(string updatedBy, string updatedByName)
+    {
+        Updated = DateTime.Now;
+        UpdatedBy = updatedBy;
+        UpdatedByName = updatedByName;
+    }
 
     public List<ShipmentPart> AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
     {
@@ -199,7 +206,7 @@ public class Shipment : IAuditable
         Updated = DateTime.Now;
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
-        HasBeenOpened = shipmentDetails.HasBeenOpened;       
+        HasBeenOpened = shipmentDetails.HasBeenOpened;
     }
 
     private Shipment()

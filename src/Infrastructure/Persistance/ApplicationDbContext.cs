@@ -17,6 +17,7 @@ using Domain.UserTokenCaches;
 using Domain.Notifications;
 using Domain.FieldChanges;
 using Application.Common.Repositories;
+using Domain.EmailNotifications;
 
 namespace Infrastructure.Persistance;
 
@@ -37,9 +38,10 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<InstallationPlant> InstallationPlants { get; set; }
     //public DbSet<UserTokenCache> UserTokenCache { get; set; }
     //public DbSet<Notification> Notifications { get; set; }
+    public DbSet<EmailNotification> EmailNotifications { get; set; }
 
     public async Task CommitChangesAsync(CancellationToken cancellationToken = default)
-    {        
+    {
         await SaveChangesAsync(cancellationToken);
     }
 
