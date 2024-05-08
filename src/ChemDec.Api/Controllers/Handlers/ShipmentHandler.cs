@@ -1122,7 +1122,6 @@ namespace ChemDec.Api.Controllers.Handlers
                 {
                     subject = "Shipment form was submitted to " + destination.Name;
                 }
-
             }
             else if (initiator == Initiator.Onshore)
             {

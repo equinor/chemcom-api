@@ -17,19 +17,19 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IEmailNotificationsRepository _emailNotificationsRepository;
-    private readonly IInstallationsRepository _installationsRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEnvironmentContext _environmentContext;
 
     //TODO: check if submitting is always from Offshore
     public SubmitShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IEmailNotificationsRepository emailNotificationsRepository,
-        IInstallationsRepository installationsRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IEnvironmentContext environmentContext)
     {
         _shipmentsRepository = shipmentsRepository;
         _emailNotificationsRepository = emailNotificationsRepository;
-        _installationsRepository = installationsRepository;
         _unitOfWork = unitOfWork;
+        _environmentContext = environmentContext;
     }
     public async Task<Result<bool>> HandleAsync(SubmitShipmentCommand command, CancellationToken cancellationToken = default)
     {
@@ -44,14 +44,12 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
             return Result<bool>.Failed(new List<string> { "Can't re-submit shipment" });
         }
 
-        Installation receiver = await _installationsRepository.GetByIdAsync(shipment.ReceiverId, cancellationToken);
-
         EmailNotification emailNotification = new()
         {
             Id = Guid.NewGuid(),
-            Subject = $"Shipment form was submitted to {receiver.Name}",
-            Body = $"Shipment form was submitted to {receiver.Name} by {command.UpdatedByName}",
-            Recipients = receiver.Contact,
+            Subject = $"{_environmentContext.GetEnvironmentPrefix()}Shipment form was submitted to {shipment.Receiver.Name}",
+            Body = BuldEmailTemplate(shipment.Receiver.Name, shipment.Sender.Name, command.UpdatedBy, command.UpdatedByName),
+            Recipients = shipment.Receiver.Contact,
             EmailNotificationType = (int)EmailNotificationType.EmailNotificationFromOffshore,
             IsSent = false
         };
@@ -91,9 +89,11 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
     }
 
 
-    private string BuldEmailTemplate()
+    private string BuldEmailTemplate(string receiver, string destination, string updatedBy, string updatedByName)
     {
-
-        return "";
+        StringBuilder template = new();
+        template.AppendLine($"{_environmentContext.GetEnvironmentPrefix}Shipment form was submitted to {receiver}");
+        template.AppendLine($"Submitted by {updatedByName} on {destination} ({updatedBy})");
+        return template.ToString();
     }
 }

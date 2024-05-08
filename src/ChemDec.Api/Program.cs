@@ -33,6 +33,7 @@ using Application.Common.Services;
 using Infrastructure.EmailService;
 using Quartz;
 using ChemDec.Api.BackgroundJobs;
+using ChemDec.Api.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -142,6 +143,7 @@ builder.Services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRe
 builder.Services.AddScoped<IFileUploadService, AzureFileUploadService>();
 builder.Services.AddScoped<IEmailNotificationsRepository, EmailNotificationsRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IEnvironmentContext, EnvironmentContext>();
 builder.Services.AddQuartz(options =>
 {
     JobKey jobKey = JobKey.Create(nameof(EmailNotificationJob));
