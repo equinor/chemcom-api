@@ -46,7 +46,7 @@ public sealed class Create : ControllerBase
             var fileContents = stream.ToArray();
             string extension = Path.GetExtension(attachment.FileName);
             CreateAttachmentCommand command = new(shipmentId, attachment.FileName, attachment.ContentType, extension, fileContents, user.Email, user.Name);
-            Result<bool> result = await _commandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<bool>>(command, HttpContext.RequestAborted);
+            Result<CreateAttachmentResult> result = await _commandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(command, HttpContext.RequestAborted);
 
             if (result.Status == ResultStatusConstants.NotFound)
             {

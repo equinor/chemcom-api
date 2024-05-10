@@ -1,11 +1,11 @@
 ﻿using Application.Attachments.Commands.Create;
+using Application.Attachments.Commands.Delete;
 using Application.Common;
 using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
-using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,17 +15,17 @@ using System.Threading.Tasks;
 namespace IntegrationTests.Tests.Commands.Attachments;
 
 [Collection("TestSetupCollection")]
-public class CreateAttachmentTests
+public class DeleteAttachmentTests
 {
     private readonly TestSetupFixture _testSetupFixture;
 
-    public CreateAttachmentTests(TestSetupFixture testSetupFixture)
+    public DeleteAttachmentTests(TestSetupFixture testSetupFixture)
     {
         _testSetupFixture = testSetupFixture;
     }
 
     [Fact]
-    public async Task DispatchShouldCreateAttachment()
+    public async Task DispatchShouldDeleteAttachment()
     {
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
@@ -47,30 +47,32 @@ public class CreateAttachmentTests
         };
         Result<CreateShipmentResult> createResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
-
         CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], "ABCD@equinor.com", "ABCD");
-        Result<CreateAttachmentResult> createAttachmentResult = await _testSetupFixture
-            .CommandDispatcher
-            .DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
+        Result<CreateAttachmentResult> createAttachmentResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
 
-        Assert.True(createAttachmentResult.Status == ResultStatusConstants.Success);
-        Assert.True(createAttachmentResult.Data is not null);
+        DeleteAttachmentCommand deleteAttachmentCommand =
+            new(createAttachmentResult.Data.AttachmentId, createAttachmentResult.Data.ShipmentId, "ABCD@equinor.com", "ABCD");
+        Result<bool> deleteAttachmentResult = await _testSetupFixture.
+                                                        CommandDispatcher.
+                                                        DispatchAsync<DeleteAttachmentCommand, Result<bool>>(deleteAttachmentCommand);
+
+        Assert.True(deleteAttachmentResult.Status == ResultStatusConstants.Success);
+        Assert.True(deleteAttachmentResult.Data == true);
         Assert.True(createAttachmentResult.Errors is null);
     }
 
     [Fact]
-    public async Task DispatchShouldNotCreateAttachmentReturnsShipmentNotFound()
+    public async Task DispatchShouldNotDeleteAttachmentReturnsAttachmentNotFound()
     {
-        CreateAttachmentCommand createAttachmentCommand = new(Guid.NewGuid(), "C:/", "jpg", "image/jpeg", new byte['f'], "ABCD@equinor.com", "ABCD");
-        Result<CreateAttachmentResult> createAttachmentResult = await _testSetupFixture
-                    .CommandDispatcher
-                    .DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
+        DeleteAttachmentCommand deleteAttachmentCommand = new(Guid.NewGuid(), Guid.NewGuid(), "ABCD@equinor.com", "ABCD");
+        Result<bool> result = await _testSetupFixture.
+                                                        CommandDispatcher.
+                                                        DispatchAsync<DeleteAttachmentCommand, Result<bool>>(deleteAttachmentCommand);
 
-        Assert.True(createAttachmentResult.Status == ResultStatusConstants.NotFound);
-        Assert.True(createAttachmentResult.Data is null);
-        Assert.True(createAttachmentResult.Errors is not null);
-        Assert.Contains(ShipmentValidationErrors.ShipmentNotFoundText, createAttachmentResult.Errors);
+        Assert.True(result.Status == ResultStatusConstants.NotFound);
+        Assert.True(result.Data == false);
+        Assert.True(result.Errors is not null);
+        Assert.Contains(ShipmentValidationErrors.ShipmentNotFoundText, result.Errors);
     }
-
-    //TODO: File upload failed Test. Might have to use mock for this
 }

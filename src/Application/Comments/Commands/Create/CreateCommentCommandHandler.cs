@@ -2,6 +2,7 @@
 using Application.Common.Repositories;
 using Domain.Comments;
 using Domain.Shipments;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +16,16 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
     private readonly ICommentsRepository _commentsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IUnitOfWork _unitOfWork;
-    public CreateCommentCommandHandler(ICommentsRepository commentsRepository, IShipmentsRepository shipmentsRepository, IUnitOfWork unitOfWork)
+    private readonly ILogger<CreateCommentCommandHandler> _logger;
+    public CreateCommentCommandHandler(ICommentsRepository commentsRepository,
+        IShipmentsRepository shipmentsRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<CreateCommentCommandHandler> logger)
     {
         _commentsRepository = commentsRepository;
         _shipmentsRepository = shipmentsRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Result<CreateCommentResult>> HandleAsync(CreateCommentCommand command, CancellationToken cancellationToken = default)
@@ -52,7 +58,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
         await _commentsRepository.InsertAsync(comment, cancellationToken);
         _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-
+        _logger.LogInformation("Comment with id {commentId} for shipment {shipmentId} has been created", comment.Id, shipment.Id);
         return Result<CreateCommentResult>.Success(
             new CreateCommentResult(
                 comment.Id,

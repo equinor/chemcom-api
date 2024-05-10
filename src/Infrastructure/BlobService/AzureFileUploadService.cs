@@ -4,6 +4,7 @@ using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,12 @@ namespace Infrastructure.BlobService;
 public sealed class AzureFileUploadService : IFileUploadService
 {
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AzureFileUploadService> _logger;
 
-    public AzureFileUploadService(IConfiguration configuration)
+    public AzureFileUploadService(IConfiguration configuration, ILogger<AzureFileUploadService> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
@@ -32,8 +35,9 @@ public sealed class AzureFileUploadService : IFileUploadService
             await blobClient.UploadAsync(new BinaryData(fileContent), cancellationToken);
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Attachment upload failed to the container ({containerName})", containerName);
             throw;
         }
     }
@@ -47,8 +51,9 @@ public sealed class AzureFileUploadService : IFileUploadService
             await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Attachment delete failed in the container ({containerName})", containerName);
             throw;
         }
     }

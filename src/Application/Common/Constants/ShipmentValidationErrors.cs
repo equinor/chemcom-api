@@ -18,4 +18,6 @@ public static class ShipmentValidationErrors
     public const string ChemicalDescriptionSemicolonNotAllowedText = "Chemical description cannot contain semicolons.";
     public const string ShipmentPartsDaysDoesNotMatchText = "Days does not match the execution dates. This should normally not happen";
     public const string ShipmentNotFoundText = "Shipment not found";
+    public const string FileUploadFailedText = "File upload failed";
+    public const string AttachmentNotFound = "Attachment not found";
 }
