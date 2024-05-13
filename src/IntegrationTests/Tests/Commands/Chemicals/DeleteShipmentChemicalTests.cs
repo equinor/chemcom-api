@@ -1,6 +1,6 @@
-﻿using Application.Attachments.Commands.Create;
-using Application.Chemicals.Commands.AddChemicalToShipment;
+﻿using Application.Chemicals.Commands.AddChemicalToShipment;
 using Application.Chemicals.Commands.Create;
+using Application.Chemicals.Commands.DeleteShipmentChemical;
 using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
@@ -15,17 +15,17 @@ using System.Threading.Tasks;
 namespace IntegrationTests.Tests.Commands.Chemicals;
 
 [Collection("TestSetupCollection")]
-public sealed class AddShipmentChemicalCommandTests
+public sealed class DeleteShipmentChemicalTests
 {
     private readonly TestSetupFixture _testSetupFixture;
 
-    public AddShipmentChemicalCommandTests(TestSetupFixture testSetupFixture)
+    public DeleteShipmentChemicalTests(TestSetupFixture testSetupFixture)
     {
         _testSetupFixture = testSetupFixture;
     }
 
     [Fact]
-    public async Task DispatchShouldAddShipmentChemical()
+    public async Task DispatchShouldDeleteShipmentChemical()
     {
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
@@ -50,8 +50,8 @@ public sealed class AddShipmentChemicalCommandTests
 
         CreateChemicalCommand createChemicalCommand = new CreateChemicalCommand
         {
-            Name = "Testing adding chemical",
-            Description = "Testing adding chemical Description",
+            Name = "Testing deleting chemical",
+            Description = "Testing deleting chemical Description",
             Tentative = false,
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
@@ -74,8 +74,12 @@ public sealed class AddShipmentChemicalCommandTests
         Result<Guid> addShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<AddChemicalToShipmentCommand, Result<Guid>>(addShipmentChemicalCommand);
 
-        Assert.True(addShipmentChemicalResult.Status == ResultStatusConstants.Success);
-        Assert.True(addShipmentChemicalResult.Data != Guid.Empty);
-        Assert.True(addShipmentChemicalResult.Errors is null);
+        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(addShipmentChemicalResult.Data, createShipmentResult.Data.Id, "abcd@equinor.com", "ABCD");
+        Result<bool> deleteShipmentChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteShipmentChemicalCommand, Result<bool>>(deleteShipmentChemicalCommand);
+
+        Assert.True(deleteShipmentChemicalResult.Status == ResultStatusConstants.Success);
+        Assert.True(deleteShipmentChemicalResult.Data);
+        Assert.True(deleteShipmentChemicalResult.Errors is null);
     }
 }

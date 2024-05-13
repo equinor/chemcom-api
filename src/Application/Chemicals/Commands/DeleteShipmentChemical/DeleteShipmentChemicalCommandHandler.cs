@@ -26,7 +26,7 @@ public sealed class DeleteShipmentChemicalCommandHandler : ICommandHandler<Delet
     public async Task<Result<bool>> HandleAsync(DeleteShipmentChemicalCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.Id, cancellationToken);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
 
         if (shipment is null)
         {
@@ -43,6 +43,8 @@ public sealed class DeleteShipmentChemicalCommandHandler : ICommandHandler<Delet
         }
 
         _shipmentsRepository.DeleteShipmentChemical(shipmentChemical);
+        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
 
         return Result<bool>.Success(true);

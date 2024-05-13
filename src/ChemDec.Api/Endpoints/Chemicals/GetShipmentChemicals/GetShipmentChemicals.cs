@@ -36,6 +36,11 @@ public sealed class GetShipmentChemicals : ControllerBase
             return NotFound(result);
         }
 
+        if (result.Status == ResultStatusConstants.Failed)
+        {
+            return BadRequest(result);
+        }
+
         return Ok(result);
     }
 }
