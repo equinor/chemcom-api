@@ -55,14 +55,29 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<ChemContext>(options =>
 {
-    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"));
+    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(20),
+                errorNumbersToAdd: null);
+        });
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
+    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"),
+        sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(20),
+                errorNumbersToAdd: null);
+        });
 
-    options.UseSqlServer(configuration.GetConnectionString("chemcomdb"))
-            .EnableSensitiveDataLogging();
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+    }
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -150,7 +165,7 @@ builder.Services.AddQuartz(options =>
     options.AddJob<EmailNotificationJob>(jobKey)
            .AddTrigger(trigger =>
            {
-               trigger.ForJob(jobKey);                      
+               trigger.ForJob(jobKey);
                if (builder.Environment.IsDevelopment())
                {
                    int intervalInSeconds = 10;
@@ -158,7 +173,7 @@ builder.Services.AddQuartz(options =>
                    {
                        schedule.WithIntervalInSeconds(intervalInSeconds)
                                .RepeatForever();
-                   });                  
+                   });
                }
                else
                {

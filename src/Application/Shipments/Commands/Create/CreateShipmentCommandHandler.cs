@@ -6,6 +6,7 @@ using Application.Shipments.Commands;
 using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,17 +21,20 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
     private readonly IInstallationsRepository _installationsRepository;
     private readonly IShipmentPartsRepository _shipmentPartsRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CreateShipmentCommandHandler> _logger;
     //TODO: Add logging
 
     public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IInstallationsRepository installationsRepository,
         IShipmentPartsRepository shipmentPartsRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<CreateShipmentCommandHandler> logger)
     {
         _shipmentsRepository = shipmentsRepository;
         _installationsRepository = installationsRepository;
         _shipmentPartsRepository = shipmentPartsRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
     public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command, CancellationToken cancellationToken = default)
     {
@@ -93,6 +97,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
+        _logger.LogInformation("Shipment updated with id: {ShipmentId}", shipment.Id);
 
         CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment, shipmentParts);
         return Result<CreateShipmentResult>.Success(createShipmentResult);

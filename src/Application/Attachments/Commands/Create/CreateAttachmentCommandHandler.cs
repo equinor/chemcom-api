@@ -1,8 +1,10 @@
 ﻿using Application.Comments.Services;
 using Application.Common;
+using Application.Common.Constants;
 using Application.Common.Repositories;
 using Domain.Attachments;
 using Domain.Shipments;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,30 +13,32 @@ using System.Threading.Tasks;
 
 namespace Application.Attachments.Commands.Create;
 
-public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttachmentCommand, Result<bool>>
+public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttachmentCommand, Result<CreateAttachmentResult>>
 {
     private readonly IAttachmentsRepository _attachmentsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IFileUploadService _fileUploadService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CreateAttachmentCommandHandler> _logger;
 
     public CreateAttachmentCommandHandler(IAttachmentsRepository attachmentsRepository,
         IShipmentsRepository shipmentsRepository,
         IUnitOfWork unitOfWork, IFileUploadService
-        fileUploadService)
+        fileUploadService, ILogger<CreateAttachmentCommandHandler> logger)
     {
         _attachmentsRepository = attachmentsRepository;
         _shipmentsRepository = shipmentsRepository;
         _unitOfWork = unitOfWork;
         _fileUploadService = fileUploadService;
+        _logger = logger;
     }
 
-    public async Task<Result<bool>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<CreateAttachmentResult>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
     {
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
         if (shipment is null)
         {
-            return Result<bool>.NotFound(new List<string> { "Shipment not found" });
+            return Result<CreateAttachmentResult>.NotFound(new List<string> { ShipmentValidationErrors.ShipmentNotFoundText });
         }
 
         bool isFileUploadSuccessful = await _fileUploadService.UploadAsync(
@@ -44,7 +48,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
                                                 cancellationToken);
         if (!isFileUploadSuccessful)
         {
-            return Result<bool>.Failed(new List<string> { "File upload failed" });
+            return Result<CreateAttachmentResult>.Failed(new List<string> { ShipmentValidationErrors.FileUploadFailedText });
         }
 
         Attachment attachment = new Attachment(command.ShipmentId,
@@ -57,7 +61,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
         _shipmentsRepository.Update(shipment);
         await _attachmentsRepository.InsertAsync(attachment, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-
-        return Result<bool>.Success(true);
+        _logger.LogInformation("Attachment for shipment {shipmentId} added successfully", shipment.Id);
+        return Result<CreateAttachmentResult>.Success(new CreateAttachmentResult(attachment.Id, shipment.Id));
     }
 }

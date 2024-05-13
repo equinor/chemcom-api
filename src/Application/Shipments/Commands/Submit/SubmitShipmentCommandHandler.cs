@@ -5,6 +5,7 @@ using Application.Common.Repositories;
 using Domain.EmailNotifications;
 using Domain.Installations;
 using Domain.Shipments;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,17 +20,20 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
     private readonly IEmailNotificationsRepository _emailNotificationsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEnvironmentContext _environmentContext;
+    private readonly ILogger<SubmitShipmentCommandHandler> _logger;
 
     //TODO: check if submitting is always from Offshore
     public SubmitShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IEmailNotificationsRepository emailNotificationsRepository,
         IUnitOfWork unitOfWork,
-        IEnvironmentContext environmentContext)
+        IEnvironmentContext environmentContext,
+        ILogger<SubmitShipmentCommandHandler> logger)
     {
         _shipmentsRepository = shipmentsRepository;
         _emailNotificationsRepository = emailNotificationsRepository;
         _unitOfWork = unitOfWork;
         _environmentContext = environmentContext;
+        _logger = logger;
     }
     public async Task<Result<bool>> HandleAsync(SubmitShipmentCommand command, CancellationToken cancellationToken = default)
     {
@@ -84,7 +88,7 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         _shipmentsRepository.Update(shipment);
         await _emailNotificationsRepository.AddAsync(emailNotification, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-
+        _logger.LogInformation("Shipment with id {shipmentId} has been submitted", shipment.Id);
         return Result<bool>.Success(true);
     }
 

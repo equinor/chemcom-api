@@ -2,6 +2,7 @@
 using Application.Common.Repositories;
 using Domain.Comments;
 using Domain.Shipments;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,17 @@ public sealed class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentC
     private readonly ICommentsRepository _commentsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<DeleteCommentCommandHandler> _logger;
 
-    public DeleteCommentCommandHandler(ICommentsRepository commentsRepository, IShipmentsRepository shipmentsRepository, IUnitOfWork unitOfWork)
+    public DeleteCommentCommandHandler(ICommentsRepository commentsRepository,
+        IShipmentsRepository shipmentsRepository,
+        IUnitOfWork unitOfWork,
+        ILogger<DeleteCommentCommandHandler> logger)
     {
         _commentsRepository = commentsRepository;
         _shipmentsRepository = shipmentsRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Result<bool>> HandleAsync(DeleteCommentCommand command, CancellationToken cancellationToken = default)
@@ -43,6 +49,7 @@ public sealed class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentC
         _shipmentsRepository.Update(shipment);
         _commentsRepository.Delete(comment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
+        _logger.LogInformation("Comment {commentId} for shipment {shipmentId} has been deleted", comment.Id, shipment.Id);
         return Result<bool>.Success(true);
     }
 }

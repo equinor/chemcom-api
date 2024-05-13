@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IntegrationTests.Tests.CommandHandlers.Shipments;
+namespace IntegrationTests.Tests.Commands.Shipments;
 
 [Collection("TestSetupCollection")]
 public sealed class CreateShipmentComandTests

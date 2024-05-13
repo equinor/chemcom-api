@@ -1,6 +1,7 @@
 ﻿using Application.Common.Services;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,11 @@ namespace Infrastructure.EmailService;
 public class EmailService : IEmailService
 {
     private readonly IConfiguration _configuration;
-    public EmailService(IConfiguration configuration)
+    private readonly ILogger<EmailService> _logger;
+    public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
     {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<EmailResponse> SendAsync(IEnumerable<string> emails, string subject, string body, CancellationToken cancellationToken = default)
@@ -60,7 +63,7 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            //TODO: log exception
+            _logger.LogError(ex, "Error sending email");
             return EmailResponse.Fail(ex.Message);
         }        
     }
