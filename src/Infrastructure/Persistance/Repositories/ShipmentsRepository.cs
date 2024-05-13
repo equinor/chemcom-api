@@ -46,6 +46,11 @@ public sealed class ShipmentsRepository : IShipmentsRepository
             .ToListAsync(cancellationToken);
     }
 
+    public void DeleteShipmentChemical(ShipmentChemical shipmentChemical)
+    {
+        _dbContext.ShipmentChemicals.Remove(shipmentChemical);
+    }
+
     public async Task AddShipmentChemicalAsync(ShipmentChemical shipmentChemical, CancellationToken cancellationToken = default)
     {
         await _dbContext.ShipmentChemicals.AddAsync(shipmentChemical, cancellationToken);
@@ -54,5 +59,10 @@ public sealed class ShipmentsRepository : IShipmentsRepository
     public void UpdateShipmentChemical(ShipmentChemical shipmentChemical)
     {
         _dbContext.ShipmentChemicals.Update(shipmentChemical);
+    }
+
+    public async Task<ShipmentChemical> GetShipmentChemicalByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _dbContext.ShipmentChemicals.FindAsync(id, cancellationToken);
     }
 }

@@ -17,4 +17,6 @@ public interface IShipmentsRepository
     Task<ShipmentChemical> GetShipmentChemicalAsync(Guid shipmentId, Guid chemicalId, CancellationToken cancellationToken = default);
     Task<List<ShipmentChemical>> GetShipmentChemicalsByShipmentIdAsync(Guid shipmentId, CancellationToken cancellationToken = default);
     void UpdateShipmentChemical(ShipmentChemical shipmentChemical);
+    void DeleteShipmentChemical(ShipmentChemical shipmentChemical);
+    Task<ShipmentChemical> GetShipmentChemicalByIdAsync(Guid id, CancellationToken cancellationToken);
 }
