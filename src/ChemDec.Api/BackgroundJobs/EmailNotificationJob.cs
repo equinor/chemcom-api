@@ -15,7 +15,6 @@ namespace ChemDec.Api.BackgroundJobs;
 [DisallowConcurrentExecution]
 public class EmailNotificationJob : IJob
 {
-    //TODO: Add exception handling
     private readonly IEmailNotificationsRepository _emailNotificationsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
