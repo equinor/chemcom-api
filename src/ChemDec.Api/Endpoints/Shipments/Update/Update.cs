@@ -91,7 +91,8 @@ public class Update : ControllerBase
             RinsingOffshorePercent = request.RinsingOffshorePercent,
             IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
             UpdatedBy = user.Email,
-            UpdatedByName = user.Name
+            UpdatedByName = user.Name,
+            ShipmentParts = request.ShipmentParts,
         };
 
         Result<UpdateShipmentResult> result = await _commandDispatcher

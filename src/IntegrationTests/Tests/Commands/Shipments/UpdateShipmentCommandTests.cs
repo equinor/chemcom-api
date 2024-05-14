@@ -40,18 +40,13 @@ public sealed class UpdateShipmentCommandTests
             WaterAmount = 1,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = new List<int> { 1 },
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
-
-        Dictionary<Guid, double> shipmentParts = new()
-        {
-            { Guid.NewGuid(), 2.0 }
-        };
-
+                
         UpdateShipmentCommand updateCommand = new()
         {
             Id = createResult.Data.Id,
@@ -67,7 +62,7 @@ public sealed class UpdateShipmentCommandTests
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = shipmentParts,
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };
@@ -82,11 +77,6 @@ public sealed class UpdateShipmentCommandTests
     [Fact]
     public async Task DispatchShouldNotUpdateShipmentWithNotFound()
     {
-        Dictionary<Guid, double> shipmentParts = new()
-        {
-            { Guid.NewGuid(), 2.0 }
-        };
-
         UpdateShipmentCommand updateCommand = new()
         {
             Id = Guid.NewGuid(),
@@ -102,7 +92,7 @@ public sealed class UpdateShipmentCommandTests
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = shipmentParts,
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };
@@ -131,18 +121,13 @@ public sealed class UpdateShipmentCommandTests
             WaterAmount = 1,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = new List<int> { 1 },
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
-
-        Dictionary<Guid, double> shipmentParts = new()
-        {
-            { Guid.NewGuid(), 2.0 }
-        };
-
+               
         UpdateShipmentCommand updateCommand = new()
         {
             Id = createResult.Data.Id,
@@ -158,7 +143,7 @@ public sealed class UpdateShipmentCommandTests
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = shipmentParts,
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };

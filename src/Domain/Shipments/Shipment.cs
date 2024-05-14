@@ -141,7 +141,7 @@ public class Shipment : IAuditable
         UpdatedByName = updatedByName;
     }
 
-    public List<ShipmentPart> AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
+    public List<ShipmentPart> AddNewShipmentParts(List<double> shipmentParts, DateTime plannedExecutionFrom, int days)
     {
         var list = new List<ShipmentPart>();
         for (int i = 0; i < days; i++)

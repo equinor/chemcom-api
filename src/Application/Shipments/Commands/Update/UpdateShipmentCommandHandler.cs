@@ -88,7 +88,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         ShipmentDetails shipmentDetails = UpdateShipmentCommand.Map(command);
         List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id, cancellationToken);
         _shipmentPartsRepository.Delete(shipmentPartsToDelete);
-        List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts.Select(shipmentPart => (int)shipmentPart.Value).ToList(), plannedExecutionFrom, days);
+        List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd, cancellationToken);
         shipment.Update(shipmentDetails);
         _shipmentsRepository.Update(shipment);

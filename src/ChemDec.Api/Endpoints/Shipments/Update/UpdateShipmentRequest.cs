@@ -35,5 +35,5 @@ public sealed record UpdateShipmentRequest
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
-    public Dictionary<Guid, double> ShipmentParts { get; set; }
+    public List<double> ShipmentParts { get; set; }
 }
