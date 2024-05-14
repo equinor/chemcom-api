@@ -29,7 +29,7 @@ public sealed class ShipmentsRepository : IShipmentsRepository
 
     public async Task<Shipment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Shipments.FindAsync(id, cancellationToken);
+        return await _dbContext.Shipments.FindAsync(new object[] { id }, cancellationToken);
     }
 
     public async Task<ShipmentChemical> GetShipmentChemicalAsync(Guid shipmentId, Guid chemicalId, CancellationToken cancellationToken = default)
@@ -63,6 +63,6 @@ public sealed class ShipmentsRepository : IShipmentsRepository
 
     public async Task<ShipmentChemical> GetShipmentChemicalByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _dbContext.ShipmentChemicals.FindAsync(id, cancellationToken);
+        return await _dbContext.ShipmentChemicals.FindAsync(new object[] { id }, cancellationToken);
     }
 }

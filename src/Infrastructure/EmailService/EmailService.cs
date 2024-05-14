@@ -33,10 +33,10 @@ public class EmailService : IEmailService
             ChainedTokenCredential chainedTokenCredential = new(new WorkloadIdentityCredential(), clientSecretCredential);
             GraphServiceClient graphClient = new(chainedTokenCredential);
 
-            List<Recipient> recipients = new List<Recipient>();
+            List<Recipient> recipients = new();
             foreach (var emailAddress in emails)
             {
-                Recipient recipient = new Recipient
+                Recipient recipient = new()
                 {
                     EmailAddress = new EmailAddress { Address = emailAddress }
                 };
@@ -65,6 +65,6 @@ public class EmailService : IEmailService
         {
             _logger.LogError(ex, "Error sending email");
             return EmailResponse.Fail(ex.Message);
-        }        
+        }
     }
 }

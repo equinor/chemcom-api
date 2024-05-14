@@ -35,7 +35,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
 
     public async Task<Result<CreateAttachmentResult>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
     {
-        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId);
+        Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
         if (shipment is null)
         {
             return Result<CreateAttachmentResult>.NotFound(new List<string> { ShipmentValidationErrors.ShipmentNotFoundText });
@@ -51,7 +51,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
             return Result<CreateAttachmentResult>.Failed(new List<string> { ShipmentValidationErrors.FileUploadFailedText });
         }
 
-        Attachment attachment = new Attachment(command.ShipmentId,
+        Attachment attachment = new(command.ShipmentId,
                                                 command.Path,
                                                 command.MimeType,
                                                 command.Extension,

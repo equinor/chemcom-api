@@ -10,17 +10,17 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace ChemDec.Api.Endpoints.Chemicals.DeleteShipmentChemical;
+namespace ChemDec.Api.Endpoints.Chemicals.Delete;
 
 [Route("api/shipments")]
 [Authorize]
 [ApiController]
 [EnableCors("_myAllowSpecificOrigins")]
-public sealed class DeleteShipmentChemical : ControllerBase
+public sealed class Delete : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
     private readonly UserService _userService;
-    public DeleteShipmentChemical(ICommandDispatcher commandDispatcher, UserService userService)
+    public Delete(ICommandDispatcher commandDispatcher, UserService userService)
     {
         _commandDispatcher = commandDispatcher;
         _userService = userService;

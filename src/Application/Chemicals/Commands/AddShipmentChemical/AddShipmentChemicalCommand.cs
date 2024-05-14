@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Chemicals.Commands.AddChemicalToShipment;
+namespace Application.Chemicals.Commands.AddShipmentChemical;
 
-public sealed class AddChemicalToShipmentCommand : ICommand
+public sealed class AddShipmentChemicalCommand : ICommand
 {
     public Guid Id { get; set; }
     public Guid ChemicalId { get; set; }

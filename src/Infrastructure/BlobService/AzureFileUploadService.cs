@@ -29,7 +29,7 @@ public sealed class AzureFileUploadService : IFileUploadService
         try
         {
             BlobContainerClient containerClient = GetBlobContainerClient(containerName);
-            await containerClient.CreateIfNotExistsAsync();
+            await containerClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
             var options = new BlobUploadOptions();
             await blobClient.UploadAsync(new BinaryData(fileContent), cancellationToken);
@@ -61,8 +61,8 @@ public sealed class AzureFileUploadService : IFileUploadService
     private BlobContainerClient GetBlobContainerClient(string containerName)
     {
         var storageSharedKeyCredentials = new StorageSharedKeyCredential(_configuration["AzureBlobAccount"], _configuration["AzureBlobKey"]);
-        Uri uri = new Uri($"https://{_configuration["AzureBlobAccount"]}.blob.core.windows.net");
-        BlobClientOptions blobClientOptions = new BlobClientOptions
+        Uri uri = new($"https://{_configuration["AzureBlobAccount"]}.blob.core.windows.net");
+        BlobClientOptions blobClientOptions = new()
         {
             Retry =
             {

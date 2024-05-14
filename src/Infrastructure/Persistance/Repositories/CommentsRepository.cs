@@ -21,7 +21,7 @@ public sealed class CommentsRepository : ICommentsRepository
 
     public async Task<Comment> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Comments.FindAsync(id, cancellationToken);
+        return await _dbContext.Comments.FindAsync(new object[] { id }, cancellationToken);
     }
 
     public async Task InsertAsync(Comment comment, CancellationToken cancellationToken = default)

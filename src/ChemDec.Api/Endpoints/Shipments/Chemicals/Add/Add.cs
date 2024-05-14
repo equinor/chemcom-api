@@ -1,5 +1,4 @@
-﻿using Application.Chemicals.Commands.AddChemicalToShipment;
-using Application.Chemicals.Commands.UpdateShipmentChemical;
+﻿using Application.Chemicals.Commands.AddShipmentChemical;
 using Application.Common;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
@@ -11,36 +10,37 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace ChemDec.Api.Endpoints.Chemicals.UpdateShipmentChemical;
+namespace ChemDec.Api.Endpoints.Shipments.Chemicals.Add;
 
 [Route("api/shipments")]
 [Authorize]
 [ApiController]
 [EnableCors("_myAllowSpecificOrigins")]
-public class UpdateShipmentChemical : ControllerBase
+public class Add : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
     private readonly UserService _userService;
-    public UpdateShipmentChemical(ICommandDispatcher commandDispatcher, UserService userService)
+    public Add(ICommandDispatcher commandDispatcher, UserService userService)
     {
         _commandDispatcher = commandDispatcher;
         _userService = userService;
+
     }
 
-    [HttpPut("{shipmentId}/chemicals/{chemicalId}")]
-    [SwaggerOperation(Description = "Update chemical in shipment",
-                              Summary = "Update chemical in shipment",
-                              Tags = new[] { "Shipments - new" })]
+    [HttpPost("{shipmentId}/chemicals")]
+    [SwaggerOperation(Description = "Add chemical to shipment",
+                               Summary = "Add chemical to shipment",
+                               Tags = new[] { "Shipments - new" })]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid chemicalId, UpdateShipmentChemicalRequest request)
+    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] AddShipmentChemicalRequest request)
     {
         User user = await _userService.GetUser(User);
-        UpdateShipmentChemicalCommand command = new()
+        AddShipmentChemicalCommand command = new AddShipmentChemicalCommand()
         {
             ShipmentId = shipmentId,
-            ChemicalId = chemicalId,
+            ChemicalId = request.ChemicalId,
             MeasureUnit = request.MeasureUnit,
             Amount = request.Amount,
             CalculatedWeightUnrinsed = request.CalculatedWeightUnrinsed,
@@ -55,18 +55,13 @@ public class UpdateShipmentChemical : ControllerBase
             UpdatedBy = user.Email
         };
 
-        Result<bool> result = await _commandDispatcher.DispatchAsync<UpdateShipmentChemicalCommand, Result<bool>>(command, HttpContext.RequestAborted);
-
+        Result<Guid> result = await _commandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(command, HttpContext.RequestAborted);
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
 
-        if (result.Status == ResultStatusConstants.NotFound)
-        {
-            return NotFound(result);
-        }
-
-        return Ok(result);
+        Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/shipments/{shipmentId}/chemicals/{result.Data}");
+        return Created(createdAt, result);
     }
 }

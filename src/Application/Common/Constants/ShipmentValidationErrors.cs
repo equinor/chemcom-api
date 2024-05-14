@@ -21,4 +21,6 @@ public static class ShipmentValidationErrors
     public const string FileUploadFailedText = "File upload failed";
     public const string AttachmentNotFound = "Attachment not found";
     public const string ShipmentChemicalNotFoundText = "Shipment chemical not found";
+    public const string ChemicalAlreadyAddedText = "Chemical already added to shipment";
+    public const string InvalidMeasureUnitText = "Invalid measure unit";
 }

@@ -55,7 +55,7 @@ public sealed class ChemicalsRepository : IChemicalsRepository
 
     public async Task<Chemical> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Chemicals.FindAsync(id, cancellationToken);
+        return await _dbContext.Chemicals.FindAsync(new object[] { id }, cancellationToken);
     }
 
     public async Task<bool> ExistsAsync(string name, CancellationToken cancellationToken = default)

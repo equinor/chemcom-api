@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+namespace Application.Common.Constants;
+
 public static class MeasureUnit
 {
     public static readonly string Kilogram = "kg";
