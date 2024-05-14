@@ -30,7 +30,7 @@ public sealed record UpdateShipmentCommand : ICommand
     public double WaterAmount { get; set; }
     public double WaterAmountPerHour { get; set; }
     public string Well { get; set; }
-    public Dictionary<Guid, double> ShipmentParts { get; set; }
+    public List<double> ShipmentParts { get; set; }
     public bool VolumePersentageOffspec { get; set; }
     public bool ContainsChemicals { get; set; }
     public bool ContainsStableOilEmulsion { get; set; }

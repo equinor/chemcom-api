@@ -38,7 +38,7 @@ public sealed class CreateCommentCommandHandlerTests
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
-            ShipmentParts = new List<int> { 1 },
+            ShipmentParts = new List<double> { 1 },
             UpdatedBy = "ABCD@equinor.com",
             UpdatedByName = "ABCD",
         };

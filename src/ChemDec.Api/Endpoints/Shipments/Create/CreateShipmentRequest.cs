@@ -35,5 +35,5 @@ public sealed record CreateShipmentRequest
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
-    public List<int> ShipmentParts { get; set; }
+    public List<double> ShipmentParts { get; set; }
 }

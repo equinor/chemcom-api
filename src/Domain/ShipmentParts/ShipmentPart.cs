@@ -10,7 +10,7 @@ namespace Domain.ShipmentParts;
 
 public class ShipmentPart : IAuditable
 {
-    public ShipmentPart(int water, DateTime shippedDate)
+    public ShipmentPart(double water, DateTime shippedDate)
     {
         Water = water;
         Shipped = shippedDate;
