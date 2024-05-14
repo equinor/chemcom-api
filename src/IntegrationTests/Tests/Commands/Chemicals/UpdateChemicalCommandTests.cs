@@ -1,4 +1,4 @@
-﻿using Application.Chemicals.Commands.AddChemicalToShipment;
+﻿using Application.Chemicals.Commands.AddShipmentChemical;
 using Application.Chemicals.Commands.Create;
 using Application.Chemicals.Commands.Update;
 using Application.Common;
@@ -99,7 +99,7 @@ public sealed class UpdateChemicalCommandTests
         Result<CreateChemicalResult> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
 
 
-        AddChemicalToShipmentCommand addChemicalToShipmentCommand = new()
+        AddShipmentChemicalCommand addShipmentChemicalCommand = new()
         {
             ShipmentId = createShipment.Data.Id,
             ChemicalId = createChemicalResult.Data.Id,
@@ -108,7 +108,7 @@ public sealed class UpdateChemicalCommandTests
             UpdatedBy = ""
         };
 
-        Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddChemicalToShipmentCommand, Result<Guid>>(addChemicalToShipmentCommand);
+        Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(addShipmentChemicalCommand);
 
 
         UpdateChemicalCommand updateCommand = new()

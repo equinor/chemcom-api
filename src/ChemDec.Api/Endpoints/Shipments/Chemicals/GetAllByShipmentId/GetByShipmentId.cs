@@ -7,17 +7,17 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
-namespace ChemDec.Api.Endpoints.Chemicals.GetShipmentChemicals;
+namespace ChemDec.Api.Endpoints.Chemicals.GetByShipmentId;
 
 [Route("api/shipments")]
 [Authorize]
 [ApiController]
 [EnableCors("_myAllowSpecificOrigins")]
-public sealed class GetShipmentChemicals : ControllerBase
+public sealed class GetByShipmentId : ControllerBase
 {
     private readonly IQueryDispatcher _queryDispatcher;
 
-    public GetShipmentChemicals(IQueryDispatcher queryDispatcher)
+    public GetByShipmentId(IQueryDispatcher queryDispatcher)
     {
         _queryDispatcher = queryDispatcher;
     }

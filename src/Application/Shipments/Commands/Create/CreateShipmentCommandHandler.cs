@@ -22,7 +22,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
     private readonly IShipmentPartsRepository _shipmentPartsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateShipmentCommandHandler> _logger;
-   
+
     public CreateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
         IInstallationsRepository installationsRepository,
         IShipmentPartsRepository shipmentPartsRepository,
@@ -89,7 +89,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         }
 
         ShipmentDetails shipmentDetails = CreateShipmentCommand.Map(command);
-        Shipment shipment = new Shipment(shipmentDetails);
+        Shipment shipment = new(shipmentDetails);
         shipment.SetStatus(Statuses.Draft);
         shipment.SetNewId();
         await _shipmentsRepository.InsertAsync(shipment, cancellationToken);
