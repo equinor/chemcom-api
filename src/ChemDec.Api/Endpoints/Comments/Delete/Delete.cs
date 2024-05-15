@@ -33,7 +33,7 @@ public class Delete : ControllerBase
     [SwaggerOperation(Description = "Delete comment",
                                Summary = "Delete comment",
                                Tags = new[] { "Shipments - new" })]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid id)
