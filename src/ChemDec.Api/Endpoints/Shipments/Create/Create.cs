@@ -100,7 +100,8 @@ public class Create : ControllerBase
             return BadRequest(result);
         }
 
-        Uri createdAt = new($"{HttpContext.Request.Host}/api/shipments/{result.Data.Id}");
+        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data.Id}";
+
         return Created(createdAt, result);
     }
 }
