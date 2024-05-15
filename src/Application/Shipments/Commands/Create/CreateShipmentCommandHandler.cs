@@ -71,14 +71,17 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         //    result.Errors.Add("Missing specification on measures taken to minimize well fluids / water volume sent to land");
         //}
 
+
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
-        DateTime plannedExecutionFrom = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
-        DateTime plannedExecutionTo = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
+        DateTime plannedExecutionFromLocal = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
+        DateTime plannedExecutionToLocal = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
 
-        int days = plannedExecutionTo.Subtract(plannedExecutionFrom).Days + 1;
-        int shipmentPartsCount = command.ShipmentParts.Count;
-        if (shipmentPartsCount != days)
+        DateTime to = new DateTime(plannedExecutionToLocal.Year, plannedExecutionToLocal.Month, plannedExecutionToLocal.Day, 23, 59, 59);
+        DateTime from = new DateTime(plannedExecutionFromLocal.Year, plannedExecutionFromLocal.Month, plannedExecutionFromLocal.Day);
+
+        int days = to.Subtract(from).Days + 1;       
+        if (command.ShipmentParts.Count != days)
         {
             errors.Add(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText);
         }
@@ -93,7 +96,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         shipment.SetStatus(Statuses.Draft);
         shipment.SetNewId();
         await _shipmentsRepository.InsertAsync(shipment, cancellationToken);
-        List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
+        List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, command.PlannedExecutionFrom.Value, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         _logger.LogInformation("Shipment created with id: {ShipmentId}", shipment.Id);
