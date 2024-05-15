@@ -96,7 +96,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-        _logger.LogInformation("Shipment updated with id: {ShipmentId}", shipment.Id);
+        _logger.LogInformation("Shipment created with id: {ShipmentId}", shipment.Id);
 
         CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment, shipmentParts);
         return Result<CreateShipmentResult>.Success(createShipmentResult);

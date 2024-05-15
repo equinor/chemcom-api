@@ -168,7 +168,7 @@ builder.Services.AddQuartz(options =>
                trigger.ForJob(jobKey);
                if (builder.Environment.IsDevelopment())
                {
-                   int intervalInSeconds = 10;
+                   int intervalInSeconds = 1000;
                    trigger.WithSimpleSchedule(schedule =>
                    {
                        schedule.WithIntervalInSeconds(intervalInSeconds)
