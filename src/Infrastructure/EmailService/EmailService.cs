@@ -3,6 +3,8 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
+using Microsoft.Graph.Me.SendMail;
+using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,22 +45,40 @@ public class EmailService : IEmailService
                 recipients.Add(recipient);
             }
 
-            Message message = new()
+            Microsoft.Graph.Users.Item.SendMail.SendMailPostRequestBody sendMailPostRequestBody = new()
             {
-                Subject = subject,
-                Body = new ItemBody
+                Message = new Message
                 {
-                    ContentType = BodyType.Html,
-                    Content = body
+                    Subject = subject,
+                    Body = new ItemBody
+                    {
+                        ContentType = BodyType.Html,
+                        Content = body
+                    },
+                    ToRecipients = recipients
                 },
-                ToRecipients = recipients
+                SaveToSentItems = true
             };
 
-            bool saveToSentItems = true;
             await graphClient.Users[_configuration["FromEmailAddress"]]
-                             .SendMail(message, saveToSentItems)
-                             .Request()
-                             .PostAsync(cancellationToken);
+                             .SendMail
+                             .PostAsync(sendMailPostRequestBody, cancellationToken: cancellationToken);
+            //Message message = new()
+            //{
+            //    Subject = subject,
+            //    Body = new ItemBody
+            //    {
+            //        ContentType = BodyType.Html,
+            //        Content = body
+            //    },
+            //    ToRecipients = recipients
+            //};
+
+            //bool saveToSentItems = true;
+            //await graphClient.Users[_configuration["FromEmailAddress"]]
+            //                 .SendMail(message, saveToSentItems)
+            //                 .Request()
+            //                 .PostAsync(cancellationToken);
             return EmailResponse.Success();
         }
         catch (Exception ex)
