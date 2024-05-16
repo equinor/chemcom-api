@@ -23,7 +23,7 @@ public sealed record GetShipmentByIdQueryResult
     public double WaterAmount { get; set; }
     public double WaterAmountPerHour { get; set; }
     public string Well { get; set; }
-    public Dictionary<Guid, double> ShipmentParts { get; set; }
+    public List<double> ShipmentParts { get; set; }
     public bool VolumePersentageOffspec { get; set; }
     public bool ContainsChemicals { get; set; }
     public bool ContainsStableOilEmulsion { get; set; }
@@ -62,7 +62,7 @@ public sealed record GetShipmentByIdQueryResult
             WaterAmount = shipment.WaterAmount,
             WaterAmountPerHour = shipment.WaterAmountPerHour,
             Well = shipment.Well,
-            ShipmentParts = shipmentParts.ToDictionary(x => x.Id, x => x.Water),
+            ShipmentParts = shipmentParts.OrderBy(s => s.Shipped).Select(s => s.Water).ToList(),
             VolumePersentageOffspec = shipment.VolumePersentageOffspec,
             ContainsChemicals = shipment.ContainsChemicals,
             ContainsStableOilEmulsion = shipment.ContainsStableOilEmulsion,
