@@ -54,13 +54,14 @@ public class Update : ControllerBase
         if (role != null)
         {
             isInstallationPartOfUserRoles = true;
-            receiverId = role.Installation.Id;
+            receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
         }
 
         UpdateShipmentCommand command = new()
         {
             Id = id,
             SenderId = request.SenderId,
+            ReceiverId = receiverId,
             Code = request.Code,
             Title = request.Title,
             Type = request.Type,
