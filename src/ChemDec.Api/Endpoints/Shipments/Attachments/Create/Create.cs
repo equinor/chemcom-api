@@ -36,7 +36,7 @@ public sealed class Create : ControllerBase
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromForm] IFormFile attachment)
+    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, IFormFile attachment)
     {
         User user = await _userService.GetUser(User);
 

@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -38,23 +39,26 @@ namespace ChemDec.Api.Infrastructure.Utils
                         EmailAddress = new EmailAddress { Address = emailAddress }
                     };
                     recipients.Add(recipient);
-                }
+                }               
 
-                Message message = new()
+                Microsoft.Graph.Users.Item.SendMail.SendMailPostRequestBody sendMailPostRequestBody = new()
                 {
-                    Subject = subject,
-                    Body = new ItemBody
+                    Message = new Message
                     {
-                        ContentType = BodyType.Html,
-                        Content = infoHtml
+                        Subject = subject,
+                        Body = new ItemBody
+                        {
+                            ContentType = BodyType.Html,
+                            Content = infoHtml
+                        },
+                        ToRecipients = recipients
                     },
-                    ToRecipients = recipients
+                    SaveToSentItems = true
                 };
-                bool saveToSentItems = true;
+
                 await graphClient.Users[_config["FromEmailAddress"]]
-                                 .SendMail(message, saveToSentItems)
-                                 .Request()
-                                 .PostAsync();               
+                                 .SendMail
+                                 .PostAsync(sendMailPostRequestBody);
             }
             catch (Exception ex)
             {

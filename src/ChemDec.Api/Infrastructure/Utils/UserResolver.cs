@@ -8,13 +8,10 @@ namespace ChemDec.Api.Infrastructure.Utils
     public class UserResolver
     {
         private readonly IHttpContextAccessor _context;
-        private readonly EquinorMsGraphHandler graphHandler;
-        private readonly IAppCache cache;
 
         public UserResolver(IHttpContextAccessor context)
         {
-            _context = context;
-          
+            _context = context;          
         }
 
        
