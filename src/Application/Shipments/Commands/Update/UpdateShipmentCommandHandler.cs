@@ -70,12 +70,14 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
-        DateTime plannedExecutionFrom = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
-        DateTime plannedExecutionTo = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
+        DateTime plannedExecutionFromLocal = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
+        DateTime plannedExecutionToLocal = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionTo.Value, timeZone);
 
-        int days = plannedExecutionTo.Subtract(plannedExecutionFrom).Days + 1;
-        int shipmentPartsCount = command.ShipmentParts.Count;
-        if (shipmentPartsCount != days)
+        DateTime to = new DateTime(plannedExecutionToLocal.Year, plannedExecutionToLocal.Month, plannedExecutionToLocal.Day, 23, 59, 59);
+        DateTime from = new DateTime(plannedExecutionFromLocal.Year, plannedExecutionFromLocal.Month, plannedExecutionFromLocal.Day);
+
+        int days = to.Subtract(from).Days + 1;
+        if (command.ShipmentParts.Count != days)
         {
             errors.Add(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText);
         }
@@ -88,7 +90,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         ShipmentDetails shipmentDetails = UpdateShipmentCommand.Map(command);
         List<ShipmentPart> shipmentPartsToDelete = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id, cancellationToken);
         _shipmentPartsRepository.Delete(shipmentPartsToDelete);
-        List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts, plannedExecutionFrom, days);
+        List<ShipmentPart> shipmentPartsToAdd = shipment.AddNewShipmentParts(command.ShipmentParts, command.PlannedExecutionFrom.Value, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentPartsToAdd, cancellationToken);
         shipment.Update(shipmentDetails);
         _shipmentsRepository.Update(shipment);
