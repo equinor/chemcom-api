@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ChemDec.Api.Endpoints.Shipments.Chemicals.Add;
@@ -30,38 +32,46 @@ public class Add : ControllerBase
     [HttpPost("{shipmentId}/chemicals")]
     [SwaggerOperation(Description = "Add chemical to shipment",
                                Summary = "Add chemical to shipment",
-                               Tags = new[] { "Shipments - new" })]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
+                               Tags = ["Shipments - new"])]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] AddShipmentChemicalRequest request)
+    public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] List<AddShipmentChemicalRequest> request)
     {
         User user = await _userService.GetUser(User);
-        AddShipmentChemicalCommand command = new AddShipmentChemicalCommand()
+        AddShipmentChemicalsCommand command = new AddShipmentChemicalsCommand()
         {
             ShipmentId = shipmentId,
-            ChemicalId = request.ChemicalId,
-            MeasureUnit = request.MeasureUnit,
-            Amount = request.Amount,
-            CalculatedWeightUnrinsed = request.CalculatedWeightUnrinsed,
-            CalculatedTocUnrinsed = request.CalculatedTocUnrinsed,
-            CalculatedNitrogenUnrinsed = request.CalculatedNitrogenUnrinsed,
-            CalculatedBiocidesUnrinsed = request.CalculatedBiocidesUnrinsed,
-            CalculatedWeight = request.CalculatedWeight,
-            CalculatedToc = request.CalculatedToc,
-            CalculatedNitrogen = request.CalculatedNitrogen,
-            CalculatedBiocides = request.CalculatedBiocides,
             UpdatedByName = user.Name,
             UpdatedBy = user.Email
         };
 
-        Result<Guid> result = await _commandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(command, HttpContext.RequestAborted);
+        foreach (AddShipmentChemicalRequest item in request)
+        {
+            command.ShipmentChemicalItems.Add(
+                new ShipmentChemicalItem
+                {
+                    ChemicalId = item.ChemicalId,
+                    MeasureUnit = item.MeasureUnit,
+                    Amount = item.Amount,
+                    CalculatedWeightUnrinsed = item.CalculatedWeightUnrinsed,
+                    CalculatedTocUnrinsed = item.CalculatedTocUnrinsed,
+                    CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed,
+                    CalculatedBiocidesUnrinsed = item.CalculatedBiocidesUnrinsed,
+                    CalculatedWeight = item.CalculatedWeight,
+                    CalculatedToc = item.CalculatedToc,
+                    CalculatedNitrogen = item.CalculatedNitrogen,
+                    CalculatedBiocides = item.CalculatedBiocides
+                });
+        }
+
+
+        Result<List<Guid>> result = await _commandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(command, HttpContext.RequestAborted);
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
 
-        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data}";
-        return Created(createdAt, result);
+        return Ok(result);
     }
 }
