@@ -41,11 +41,14 @@ var clientId = configuration["azure:ClientId"];
 var clientSecret = configuration["azure:ClientSecret"];
 var tenantId = configuration["azure:TenantId"];
 
-var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-var chainedTokenCredential = new ChainedTokenCredential(new WorkloadIdentityCredential(), clientSecretCredential);
+if (!builder.Environment.IsDevelopment())
+{
+    var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    var chainedTokenCredential = new ChainedTokenCredential(new WorkloadIdentityCredential(), clientSecretCredential);
 
-var secretClient = new SecretClient(new Uri(keyVaultUrl), chainedTokenCredential);
-builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+    var secretClient = new SecretClient(new Uri(keyVaultUrl), chainedTokenCredential);
+    builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+}
 
 var corsDomainsFromConfig = Utils.GetCommaSeparatedConfigValue(configuration, "AllowCorsDomains");
 builder.Services.AddControllers();

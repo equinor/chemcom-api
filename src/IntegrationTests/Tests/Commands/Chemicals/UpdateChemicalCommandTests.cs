@@ -98,17 +98,25 @@ public sealed class UpdateChemicalCommandTests
 
         Result<CreateChemicalResult> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
 
+        List<ShipmentChemicalItem> shipmentChemicalItems =
+       [
+           new ShipmentChemicalItem
+            {
+                ChemicalId = createChemicalResult.Data.Id,
+                Amount = 10,
+                MeasureUnit = "kg",
+            },
+        ];
 
-        AddShipmentChemicalCommand addShipmentChemicalCommand = new()
+        AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
             ShipmentId = createShipment.Data.Id,
-            ChemicalId = createChemicalResult.Data.Id,
-            Amount = 1,
-            MeasureUnit = "kg",
-            UpdatedBy = ""
-        };
+            ShipmentChemicalItems = shipmentChemicalItems,
+            UpdatedBy = "ABCD@equinor.com",
+            UpdatedByName = "ABCD"
+        };      
 
-        Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(addShipmentChemicalCommand);
+        Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<Guid>>(addShipmentChemicalCommand);
 
 
         UpdateChemicalCommand updateCommand = new()

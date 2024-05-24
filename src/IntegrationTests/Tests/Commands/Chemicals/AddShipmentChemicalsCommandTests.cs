@@ -16,17 +16,17 @@ using System.Threading.Tasks;
 namespace IntegrationTests.Tests.Commands.Chemicals;
 
 [Collection("TestSetupCollection")]
-public sealed class AddShipmentChemicalCommandTests
+public sealed class AddShipmentChemicalsCommandTests
 {
     private readonly TestSetupFixture _testSetupFixture;
 
-    public AddShipmentChemicalCommandTests(TestSetupFixture testSetupFixture)
+    public AddShipmentChemicalsCommandTests(TestSetupFixture testSetupFixture)
     {
         _testSetupFixture = testSetupFixture;
     }
 
     [Fact]
-    public async Task DispatchShouldAddShipmentChemical()
+    public async Task DispatchShouldAddShipmentChemicals()
     {
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
@@ -64,19 +64,29 @@ public sealed class AddShipmentChemicalCommandTests
         Result<CreateChemicalResult> createChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createChemicalCommand);
 
-        AddShipmentChemicalCommand addShipmentChemicalCommand = new()
+        List<ShipmentChemicalItem> shipmentChemicalItems =
+        [
+            new ShipmentChemicalItem
+            {
+                ChemicalId = createChemicalResult.Data.Id,
+                Amount = 10,
+                MeasureUnit = "kg",
+            },
+        ];
+
+        AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
             ShipmentId = createShipmentResult.Data.Id,
-            ChemicalId = createChemicalResult.Data.Id,
-            Amount = 10,
-            MeasureUnit = "kg"
+            ShipmentChemicalItems = shipmentChemicalItems,
+            UpdatedBy = "ABCD@equinor.com",
+            UpdatedByName = "ABCD"
         };
 
-        Result<Guid> addShipmentChemicalResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(addShipmentChemicalCommand);
+        Result<List<Guid>> addShipmentChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(addShipmentChemicalCommand);
 
         Assert.True(addShipmentChemicalResult.Status == ResultStatusConstants.Success);
-        Assert.True(addShipmentChemicalResult.Data != Guid.Empty);
+        Assert.True(addShipmentChemicalResult.Data.Any());
         Assert.True(addShipmentChemicalResult.Errors is null);
     }
 
@@ -98,20 +108,30 @@ public sealed class AddShipmentChemicalCommandTests
         Result<CreateChemicalResult> createChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createChemicalCommand);
 
-        AddShipmentChemicalCommand addShipmentChemicalCommand = new()
+        List<ShipmentChemicalItem> shipmentChemicalItems =
+         [
+             new ShipmentChemicalItem
+            {
+                ChemicalId = createChemicalResult.Data.Id,
+                Amount = 10,
+                MeasureUnit = "kg",
+            },
+        ];
+
+        AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
             ShipmentId = Guid.NewGuid(),
-            ChemicalId = createChemicalResult.Data.Id,
-            Amount = 10,
-            MeasureUnit = "kg"
+            ShipmentChemicalItems = shipmentChemicalItems,
+            UpdatedBy = "ABCD@equinor.com",
+            UpdatedByName = "ABCD"
         };
 
-        Result<Guid> addShipmentChemicalResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(addShipmentChemicalCommand);
+        Result<List<Guid>> addShipmentChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(addShipmentChemicalCommand);
 
 
         Assert.True(addShipmentChemicalResult.Status == ResultStatusConstants.NotFound);
-        Assert.True(addShipmentChemicalResult.Data == Guid.Empty);
+        Assert.True(addShipmentChemicalResult.Data is null);
         Assert.True(addShipmentChemicalResult.Errors is not null);
         Assert.Contains(ShipmentValidationErrors.ShipmentNotFoundText, addShipmentChemicalResult.Errors);
     }
@@ -155,20 +175,30 @@ public sealed class AddShipmentChemicalCommandTests
         Result<CreateChemicalResult> createChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createChemicalCommand);
 
-        AddShipmentChemicalCommand addShipmentChemicalCommand = new()
+        List<ShipmentChemicalItem> shipmentChemicalItems =
+         [
+             new ShipmentChemicalItem
+            {
+                ChemicalId = createChemicalResult.Data.Id,
+                Amount = 10,
+                MeasureUnit = "kgc",
+            },
+        ];
+
+        AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
             ShipmentId = createShipmentResult.Data.Id,
-            ChemicalId = createChemicalResult.Data.Id,
-            Amount = 10,
-            MeasureUnit = "kgc"
+            ShipmentChemicalItems = shipmentChemicalItems,
+            UpdatedBy = "ABCD@equinor.com",
+            UpdatedByName = "ABCD"
         };
 
-        Result<Guid> addShipmentChemicalResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalCommand, Result<Guid>>(addShipmentChemicalCommand);
+        Result<List<Guid>> addShipmentChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(addShipmentChemicalCommand);
 
 
         Assert.True(addShipmentChemicalResult.Status == ResultStatusConstants.Failed);
-        Assert.True(addShipmentChemicalResult.Data == Guid.Empty);
+        Assert.True(addShipmentChemicalResult.Data is null);
         Assert.True(addShipmentChemicalResult.Errors is not null);
         Assert.Contains(ShipmentValidationErrors.InvalidMeasureUnitText, addShipmentChemicalResult.Errors);
     }
