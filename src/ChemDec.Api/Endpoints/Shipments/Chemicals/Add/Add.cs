@@ -30,8 +30,8 @@ public class Add : ControllerBase
     }
 
     [HttpPost("{shipmentId}/chemicals")]
-    [SwaggerOperation(Description = "Add chemical to shipment",
-                               Summary = "Add chemical to shipment",
+    [SwaggerOperation(Description = "Add/update chemicals to a shipment",
+                               Summary = "Add/update chemicals to a shipment",
                                Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
@@ -64,7 +64,6 @@ public class Add : ControllerBase
                     CalculatedBiocides = item.CalculatedBiocides
                 });
         }
-
 
         Result<List<Guid>> result = await _commandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(command, HttpContext.RequestAborted);
         if (result.Status == ResultStatusConstants.Failed)
