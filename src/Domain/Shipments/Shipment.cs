@@ -178,7 +178,6 @@ public class Shipment : IAuditable
         SenderId = shipmentDetails.SenderId;
         ReceiverId = shipmentDetails.ReceiverId;
         Type = shipmentDetails.Type;
-        Status = shipmentDetails.Status;
         RinsingOffshorePercent = shipmentDetails.RinsingOffshorePercent;
         PlannedExecutionFrom = shipmentDetails.PlannedExecutionFrom;
         PlannedExecutionTo = shipmentDetails.PlannedExecutionTo;

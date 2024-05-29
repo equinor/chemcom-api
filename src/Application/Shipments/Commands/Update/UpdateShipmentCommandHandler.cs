@@ -96,7 +96,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         _shipmentsRepository.Update(shipment);
         //Note: Should we change the status to "Changed" when updating a shipment?
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-        UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment);
+        UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment, shipmentPartsToAdd);
         return Result<UpdateShipmentResult>.Success(updateShipmentResult);
     }
 }

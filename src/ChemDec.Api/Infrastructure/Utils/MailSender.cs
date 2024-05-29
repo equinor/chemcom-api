@@ -65,6 +65,5 @@ namespace ChemDec.Api.Infrastructure.Utils
                 throw new Exception("Email notification failed:", ex);
             }
         }
-
     }
 }

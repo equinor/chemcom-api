@@ -14,6 +14,7 @@ public sealed record GetShipmentByIdQueryResult
     public Guid Id { get; set; }
     public string Code { get; set; }
     public string Title { get; set; }
+    public string Status { get; set; }
     public Guid SenderId { get; set; }
     public Guid ReceiverId { get; set; }
     public string Type { get; set; }
@@ -53,6 +54,7 @@ public sealed record GetShipmentByIdQueryResult
             Id = shipment.Id,
             Code = shipment.Code,
             Title = shipment.Title,
+            Status = shipment.Status,
             SenderId = shipment.SenderId,
             ReceiverId = shipment.ReceiverId,
             Type = shipment.Type,

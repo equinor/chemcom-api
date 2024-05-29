@@ -1,25 +1,12 @@
-﻿using Domain.Attachments;
-using Domain.Comments;
-using Domain.Installations;
-using Domain.LogEntries;
-using Domain.ShipmentChemicals;
-using Domain.ShipmentParts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Shipments;
+﻿namespace Domain.Shipments;
 
 public sealed class ShipmentDetails
-{   
+{
     public string Code { get; set; }
     public string Title { get; init; }
     public Guid SenderId { get; set; }
     public Guid ReceiverId { get; set; }
     public string Type { get; set; }
-    public string Status { get; set; }
     public double RinsingOffshorePercent { get; set; }
     public DateTime PlannedExecutionFrom { get; set; }
     public DateTime PlannedExecutionTo { get; set; }
