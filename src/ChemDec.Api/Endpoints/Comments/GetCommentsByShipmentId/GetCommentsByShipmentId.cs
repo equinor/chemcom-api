@@ -26,14 +26,14 @@ public class GetCommentsByShipmentId : ControllerBase
     [HttpGet("{shipmentId}/comments")]
     [SwaggerOperation(Description = "Get comments by shipment",
                                Summary = "Get comments by shipment",
-                               Tags = new[] { "Shipments - new" })]
-    [ProducesResponseType(typeof(Result<GetCommentsByShipmentId>), StatusCodes.Status200OK)]
+                               Tags = ["Shipments - new"])]
+    [ProducesResponseType(typeof(Result<GetCommentsByShipmentIdResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId)
     {
-        Result<GetCommentsByShipmentId> result = await _queryDispatcher.
-            DispatchAsync<GetCommentsByShipmentIdQuery, Result<GetCommentsByShipmentId>>
+        Result<GetCommentsByShipmentIdResult> result = await _queryDispatcher.
+            DispatchAsync<GetCommentsByShipmentIdQuery, Result<GetCommentsByShipmentIdResult>>
                         (new GetCommentsByShipmentIdQuery(shipmentId), HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
