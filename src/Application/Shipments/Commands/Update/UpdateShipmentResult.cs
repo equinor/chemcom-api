@@ -1,4 +1,5 @@
-﻿using Domain.Shipments;
+﻿using Domain.ShipmentParts;
+using Domain.Shipments;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ public sealed record UpdateShipmentResult
     public Guid Id { get; set; }
     public string Code { get; set; }
     public string Title { get; set; }
+    public string Status { get; set; }
     public Guid SenderId { get; set; }
     public Guid ReceiverId { get; set; }
     public string Type { get; set; }
@@ -21,7 +23,7 @@ public sealed record UpdateShipmentResult
     public double WaterAmount { get; set; }
     public double WaterAmountPerHour { get; set; }
     public string Well { get; set; }
-    public Dictionary<Guid, double> ShipmentParts { get; set; }
+    public List<double> ShipmentParts { get; set; }
     public bool VolumePersentageOffspec { get; set; }
     public bool ContainsChemicals { get; set; }
     public bool ContainsStableOilEmulsion { get; set; }
@@ -44,13 +46,14 @@ public sealed record UpdateShipmentResult
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
 
-    public static UpdateShipmentResult Map(Shipment shipment)
+    public static UpdateShipmentResult Map(Shipment shipment, List<ShipmentPart> shipmentParts)
     {
         UpdateShipmentResult result = new()
         {
             Id = shipment.Id,
             Code = shipment.Code,
             Title = shipment.Title,
+            Status = shipment.Status,
             SenderId = shipment.SenderId,
             ReceiverId = shipment.ReceiverId,
             Type = shipment.Type,
@@ -60,7 +63,7 @@ public sealed record UpdateShipmentResult
             WaterAmount = shipment.WaterAmount,
             WaterAmountPerHour = shipment.WaterAmountPerHour,
             Well = shipment.Well,
-            //ShipmentParts = shipment.ShipmentParts.ToDictionary(x => x.Id, x => x.Water),
+            ShipmentParts = shipmentParts.OrderBy(s => s.Shipped).Select(s => s.Water).ToList(),
             VolumePersentageOffspec = shipment.VolumePersentageOffspec,
             ContainsChemicals = shipment.ContainsChemicals,
             ContainsStableOilEmulsion = shipment.ContainsStableOilEmulsion,
