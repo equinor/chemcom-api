@@ -32,7 +32,7 @@ public sealed class Create : ControllerBase
     [HttpPost("{shipmentId}/attachments")]
     [SwaggerOperation(Description = "Create attachment in shipment",
                         Summary = "Create new attachment in shipment",
-                        Tags = new[] { "Shipments - new" })]
+                          Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]

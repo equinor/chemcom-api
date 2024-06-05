@@ -18,6 +18,7 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IEmailNotificationsRepository _emailNotificationsRepository;
+    private IInstallationsRepository _installationsRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEnvironmentContext _environmentContext;
     private readonly ILogger<SubmitShipmentCommandHandler> _logger;
@@ -27,13 +28,15 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         IEmailNotificationsRepository emailNotificationsRepository,
         IUnitOfWork unitOfWork,
         IEnvironmentContext environmentContext,
-        ILogger<SubmitShipmentCommandHandler> logger)
+        ILogger<SubmitShipmentCommandHandler> logger,
+        IInstallationsRepository installationsRepository)
     {
         _shipmentsRepository = shipmentsRepository;
         _emailNotificationsRepository = emailNotificationsRepository;
         _unitOfWork = unitOfWork;
         _environmentContext = environmentContext;
         _logger = logger;
+        _installationsRepository = installationsRepository;
     }
     public async Task<Result<bool>> HandleAsync(SubmitShipmentCommand command, CancellationToken cancellationToken = default)
     {
@@ -48,12 +51,15 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
             return Result<bool>.Failed(new List<string> { "Can't re-submit shipment" });
         }
 
+        Installation sender = await _installationsRepository.GetByIdAsync(shipment.SenderId, cancellationToken);
+        Installation receiver = await _installationsRepository.GetByIdAsync(shipment.ReceiverId, cancellationToken);
+
         EmailNotification emailNotification = new()
         {
             Id = Guid.NewGuid(),
-            Subject = $"{_environmentContext.GetEnvironmentPrefix()}Shipment form was submitted to {shipment.Receiver.Name}",
-            Body = BuldEmailTemplate(shipment.Receiver.Name, shipment.Sender.Name, command.UpdatedBy, command.UpdatedByName),
-            Recipients = shipment.Receiver.Contact,
+            Subject = $"{_environmentContext.GetEnvironmentPrefix()}Shipment form was submitted to {receiver.Name}",
+            Body = BuldEmailTemplate(receiver.Name, sender.Name, command.UpdatedBy, command.UpdatedByName),
+            Recipients = receiver.Contact,
             EmailNotificationType = (int)EmailNotificationType.EmailNotificationFromOffshore,
             IsSent = false
         };
@@ -71,7 +77,7 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
             shipment.Ra228 = command.Ra228;
         }
 
-        if (command.AvailableForDailyContact.Value)
+        if (command.AvailableForDailyContact.HasValue && command.AvailableForDailyContact.Value is true)
         {
             shipment.NormalProcedure = null;
             shipment.OnlyWayToGetRidOf = null;

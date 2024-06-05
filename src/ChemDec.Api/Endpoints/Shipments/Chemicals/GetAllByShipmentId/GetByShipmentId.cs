@@ -25,7 +25,7 @@ public sealed class GetByShipmentId : ControllerBase
     [HttpGet("{shipmentId}/chemicals")]
     [SwaggerOperation(Description = "Get shipment chemicals",
                                Summary = "Get shipment chemicals",
-                               Tags = new[] { "Shipments - new" })]
+                                 Tags = ["Shipments - new"])]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId)
     {
         Result<GetShipmentChemicalsByShipmentIdResult> result = await _queryDispatcher
