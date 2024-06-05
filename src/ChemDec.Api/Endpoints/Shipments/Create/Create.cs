@@ -33,7 +33,7 @@ public class Create : ControllerBase
     [HttpPost]
     [SwaggerOperation(Description = "Create new shipment",
                         Summary = "Create new shipment",
-                        Tags = new[] { "Shipments - new" })]
+                         Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<CreateShipmentResult>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)

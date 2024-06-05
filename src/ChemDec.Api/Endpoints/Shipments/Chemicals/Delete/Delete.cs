@@ -29,7 +29,7 @@ public sealed class Delete : ControllerBase
     [HttpDelete("{shipmentId}/chemicals/{shipmentChemicalId}")]
     [SwaggerOperation(Description = "Delete chemical from shipment",
                                       Summary = "Delete chemical from shipment. Pass shipment chemical id not chemical id.",
-                                      Tags = new[] { "Shipments - new" })]
+                                        Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]

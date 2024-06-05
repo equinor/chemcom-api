@@ -26,7 +26,7 @@ public class GetAttachmentsByShipmentId : ControllerBase
     [HttpGet("{shipmentId}/attachments")]
     [SwaggerOperation(Description = "Get all attachments by shipment",
                                Summary = "Get all attachments by shipment",
-                               Tags = new[] { "Shipments - new" })]
+                                 Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<GetAttachmentsByShipmentIdResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]

@@ -28,9 +28,9 @@ public class Submit : ControllerBase
     }
 
     [HttpPatch("{shipmentId}/submit")]
-    [SwaggerOperation(Description = "Create new shipment",
-                        Summary = "Create new shipment",
-                        Tags = new[] { "Shipments - new" })]
+    [SwaggerOperation(Description = "Submit a shipment",
+                        Summary = "Submit a shipment",
+                        Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]

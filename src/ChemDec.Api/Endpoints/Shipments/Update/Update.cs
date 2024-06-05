@@ -35,7 +35,7 @@ public class Update : ControllerBase
     [Route("{id}")]
     [SwaggerOperation(Description = "Update shipment",
                         Summary = "Update shipment",
-                        Tags = new[] { "Shipments - new" })]
+                        Tags = ["Shipments - new" ])]
     [ProducesResponseType(typeof(Result<UpdateShipmentResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
