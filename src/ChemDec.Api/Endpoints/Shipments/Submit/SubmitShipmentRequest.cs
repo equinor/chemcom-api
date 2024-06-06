@@ -1,15 +1,14 @@
 ﻿using System;
 
-namespace ChemDec.Api.Endpoints.Shipments.Submit
+namespace ChemDec.Api.Endpoints.Shipments.Submit;
+
+public sealed record SubmitShipmentRequest
 {
-    public class SubmitShipmentRequest
-    {
-        public bool? AvailableForDailyContact { get; internal set; }
-        public bool HeightenedLra { get; internal set; }
-        public bool TakePrecaution { get; internal set; }
-        public string Precautions { get; internal set; }
-        public double? Pb210 { get; internal set; }
-        public double? Ra226 { get; internal set; }
-        public double? Ra228 { get; internal set; }
-    }
+    public bool? AvailableForDailyContact { get; set; }
+    public bool HeightenedLra { get; set; }
+    public bool TakePrecaution { get; set; }
+    public string Precautions { get; set; }
+    public double? Pb210 { get; set; }
+    public double? Ra226 { get; set; }
+    public double? Ra228 { get; set; }
 }
