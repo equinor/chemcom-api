@@ -43,6 +43,7 @@ public sealed record UpdateShipmentResult
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
+    public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
 
@@ -83,6 +84,7 @@ public sealed record UpdateShipmentResult
             Precautions = shipment.Precautions,
             WaterHasBeenAnalyzed = shipment.WaterHasBeenAnalyzed,
             HasBeenOpened = shipment.HasBeenOpened,
+            Updated = shipment.Updated,
             UpdatedBy = shipment.UpdatedBy,
             UpdatedByName = shipment.UpdatedByName
         };
