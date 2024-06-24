@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,5 @@ public sealed record SubmitShipmentCommand : ICommand
     public double? Ra226 { get; set; }
     public double? Ra228 { get; set; }
     public bool? AvailableForDailyContact { get; set; }
-    public string UpdatedBy { get; set; }
-    public string UpdatedByName { get; set; }
+    public User User { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Domain.Shipments;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +10,12 @@ namespace Domain.Comments;
 
 public class Comment
 {
-    public Comment(string comment, Guid? shipmentId, string updatedBy, string updatedByName)
+    public Comment(string comment, Guid? shipmentId, User user)
     {
         CommentText = comment;
         ShipmentId = shipmentId;
-        UpdatedBy = updatedBy;
-        UpdatedByName = updatedByName;
+        UpdatedBy = user.Email;
+        UpdatedByName = user.Name;
         Updated = DateTime.Now;
     }
 

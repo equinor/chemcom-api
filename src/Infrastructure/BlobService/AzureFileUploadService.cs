@@ -42,18 +42,39 @@ public sealed class AzureFileUploadService : IFileUploadService
         }
     }
 
-    public async Task<bool> DeleteAsync(string containerName, string fileName, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(string containerName, string blobName, CancellationToken cancellationToken = default)
     {
         try
         {
             BlobContainerClient containerClient = GetBlobContainerClient(containerName);
-            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+            BlobClient blobClient = containerClient.GetBlobClient(blobName);
             await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.None, null, cancellationToken);
             return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Attachment delete failed in the container ({containerName})", containerName);
+            throw;
+        }
+    }
+
+    public async Task<Stream> GetAsync(string containerName, string blobName, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            BlobContainerClient containerClient = GetBlobContainerClient(containerName);
+            BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+            if (await blobClient.ExistsAsync())
+            {
+                return await blobClient.OpenReadAsync();
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Attachment retrieve failed in the container ({containerName})", containerName);
             throw;
         }
     }

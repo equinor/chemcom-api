@@ -19,6 +19,11 @@ public sealed class FakeFileUploadService : IFileUploadService
         return await task;
     }
 
+    public Task<Stream> GetAsync(string containerName, string fileName, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<bool> UploadAsync(string containerName, string fileName, byte[] fileContent, CancellationToken cancellationToken = default)
     {
         Task<bool> task = Task.Run(() =>

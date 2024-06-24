@@ -10,6 +10,8 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
+using User = Domain.Users.User;
+
 namespace ChemDec.Api.Endpoints.Chemicals.Delete;
 
 [Route("api/shipments")]
@@ -19,11 +21,12 @@ namespace ChemDec.Api.Endpoints.Chemicals.Delete;
 public sealed class Delete : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
-    public Delete(ICommandDispatcher commandDispatcher, UserService userService)
+    private readonly IUserProvider _userProvider;
+
+    public Delete(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
+        _userProvider = userProvider;
     }
 
     [HttpDelete("{shipmentId}/chemicals/{shipmentChemicalId}")]
@@ -35,9 +38,9 @@ public sealed class Delete : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromRoute] Guid shipmentChemicalId)
     {
-        User user = await _userService.GetUser(User);
+        User user = await _userProvider.GetUserAsync(User);
 
-        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new DeleteShipmentChemicalCommand(shipmentChemicalId, shipmentId, user.Email, user.Name);
+        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new DeleteShipmentChemicalCommand(shipmentChemicalId, shipmentId, user);
         Result<bool> result =
             await _commandDispatcher.DispatchAsync<DeleteShipmentChemicalCommand, Result<bool>>(deleteShipmentChemicalCommand, HttpContext.RequestAborted);
 

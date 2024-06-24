@@ -4,6 +4,7 @@ using Application.Common;
 using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Domain.Users;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using System;
@@ -27,27 +28,24 @@ public class DeleteAttachmentTests
     [Fact]
     public async Task DispatchShouldDeleteAttachment()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
         Result<CreateShipmentResult> createResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
-        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], "ABCD@equinor.com", "ABCD");
+        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], user);
         Result<CreateAttachmentResult> createAttachmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
 

@@ -42,7 +42,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
         }
 
         bool isFileUploadSuccessful = await _fileUploadService.UploadAsync(
-                                                command.ShipmentId.ToString(),
+                                                command.ShipmentId.ToString().ToLower(),
                                                 command.Path,
                                                 command.FileContents,
                                                 cancellationToken);
@@ -53,11 +53,11 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
 
         Attachment attachment = new(command.ShipmentId,
                                                 command.Path,
-                                                command.MimeType,
+                                                command.ContentType,
                                                 command.Extension,
-                                                command.UpdatedBy,
-                                                command.UpdatedByName);
-        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+                                                command.User.Email,
+                                                command.User.Name);
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
         _shipmentsRepository.Update(shipment);
         await _attachmentsRepository.InsertAsync(attachment, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);

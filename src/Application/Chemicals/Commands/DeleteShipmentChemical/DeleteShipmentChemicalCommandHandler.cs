@@ -43,7 +43,7 @@ public sealed class DeleteShipmentChemicalCommandHandler : ICommandHandler<Delet
         }
 
         _shipmentsRepository.DeleteShipmentChemical(shipmentChemical);
-        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
         _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
 

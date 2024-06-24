@@ -55,8 +55,8 @@ public sealed class AddShipmentChemicalsCommandHandler : ICommandHandler<AddShip
                 shipmentChemical.CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed;
                 shipmentChemical.CalculatedTocUnrinsed = item.CalculatedTocUnrinsed;
                 shipmentChemical.Updated = DateTime.Now;
-                shipmentChemical.UpdatedBy = command.UpdatedBy;
-                shipmentChemical.UpdatedByName = command.UpdatedByName;
+                shipmentChemical.UpdatedBy = command.User.Email;
+                shipmentChemical.UpdatedByName = command.User.Name;
                 _shipmentsRepository.UpdateShipmentChemical(shipmentChemical);
             }
             else
@@ -71,15 +71,15 @@ public sealed class AddShipmentChemicalsCommandHandler : ICommandHandler<AddShip
                                                                item.CalculatedBiocidesUnrinsed,
                                                                item.CalculatedNitrogenUnrinsed,
                                                                item.CalculatedTocUnrinsed,
-                                                               command.UpdatedBy,
-                                                               command.UpdatedByName);
+                                                               command.User.Email,
+                                                               command.User.Name);
                 await _shipmentsRepository.AddShipmentChemicalAsync(shipmentChemical, cancellationToken);
             }
 
             updatedList.Add(shipmentChemical.Id);
         }
 
-        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
         _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         return Result<List<Guid>>.Success(updatedList);

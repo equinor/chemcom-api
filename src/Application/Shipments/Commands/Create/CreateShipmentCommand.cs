@@ -5,6 +5,7 @@ using Domain.Attachments;
 using Domain.ShipmentChemicals;
 using Domain.ShipmentParts;
 using Domain.Shipments;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,10 +19,7 @@ public sealed record CreateShipmentCommand : ICommand
 {
     public string Code { get; set; }
     public string Title { get; set; }
-    public Guid SenderId { get; set; }
-    public Guid ReceiverId { get; set; }
-    public Initiator Initiator { get; set; }
-    public bool IsInstallationPartOfUserRoles { get; set; }
+    public Guid SenderId { get; set; }   
     public string Type { get; set; }
     public double RinsingOffshorePercent { get; set; }
     public DateTime? PlannedExecutionFrom { get; set; }
@@ -49,15 +47,13 @@ public sealed record CreateShipmentCommand : ICommand
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
-    public string UpdatedBy { get; set; }
-    public string UpdatedByName { get; set; }    
+    public User User { get; set; }
 
     public static ShipmentDetails Map(CreateShipmentCommand command)
     {
         return new ShipmentDetails()
         {
-            SenderId = command.SenderId,
-            ReceiverId = command.ReceiverId,
+            SenderId = command.SenderId,           
             Code = command.Code,
             Title = command.Title,
             Type = command.Type,
@@ -66,8 +62,8 @@ public sealed record CreateShipmentCommand : ICommand
             WaterAmount = command.WaterAmount,
             WaterAmountPerHour = command.WaterAmountPerHour,
             Well = command.Well,
-            UpdatedBy = command.UpdatedBy,
-            UpdatedByName = command.UpdatedByName,
+            UpdatedBy = command.User.Email,
+            UpdatedByName = command.User.Name,
             VolumePersentageOffspec = command.VolumePersentageOffspec,
             ContainsChemicals = command.ContainsChemicals,
             ContainsStableOilEmulsion = command.ContainsStableOilEmulsion,

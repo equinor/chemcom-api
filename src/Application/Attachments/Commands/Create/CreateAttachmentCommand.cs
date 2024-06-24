@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,22 +10,20 @@ namespace Application.Attachments.Commands.Create;
 
 public sealed record CreateAttachmentCommand : ICommand
 {
-    public CreateAttachmentCommand(Guid shipmentId, string path, string extension, string mimeType, byte[] fileContents, string updatedBy, string updatedByName)
+    public CreateAttachmentCommand(Guid shipmentId, string path, string extension, string contentType, byte[] fileContents, User user)
     {
         ShipmentId = shipmentId;
         Path = path;
         Extension = extension;
-        MimeType = mimeType;
+        ContentType = contentType;
         FileContents = fileContents;
-        UpdatedBy = updatedBy;
-        UpdatedByName = updatedByName;
+        User = user;
     }
 
     public Guid ShipmentId { get; set; }
     public string Path { get; set; }
     public string Extension { get; set; }
-    public string MimeType { get; set; }
+    public string ContentType { get; set; }
     public byte[] FileContents { get; set; }
-    public string UpdatedBy { get; set; }
-    public string UpdatedByName { get; set; }
+    public User User { get; set; }
 }

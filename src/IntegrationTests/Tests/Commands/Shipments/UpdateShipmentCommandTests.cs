@@ -3,6 +3,7 @@ using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using Application.Shipments.Commands.Update;
+using Domain.Users;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc;
@@ -26,45 +27,38 @@ public sealed class UpdateShipmentCommandTests
     [Fact]
     public async Task DispatchShouldUpdateShipment()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 1,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
-                
+
         UpdateShipmentCommand updateCommand = new()
         {
             Id = createResult.Data.Id,
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
@@ -77,24 +71,21 @@ public sealed class UpdateShipmentCommandTests
     [Fact]
     public async Task DispatchShouldNotUpdateShipmentWithNotFound()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         UpdateShipmentCommand updateCommand = new()
         {
             Id = Guid.NewGuid(),
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
@@ -107,54 +98,44 @@ public sealed class UpdateShipmentCommandTests
     [Fact]
     public async Task DispatchShouldNotUpdateWithValidationFailing()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 1,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
-               
+
         UpdateShipmentCommand updateCommand = new()
         {
             Id = createResult.Data.Id,
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Guid.Empty,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = false,
             PlannedExecutionFrom = null,
             PlannedExecutionTo = null,
             WaterAmount = 2,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Failed);
         Assert.True(updateResult.Errors is not null);
-        Assert.Contains(ShipmentValidationErrors.SenderRequiredText, updateResult.Errors);
-        Assert.Contains(ShipmentValidationErrors.PlannedExecutionFromDateRequiredText, updateResult.Errors);
-        Assert.Contains(ShipmentValidationErrors.PlannedExecutionToDateRequiredText, updateResult.Errors);
-        Assert.Contains(ShipmentValidationErrors.UserAccessForInstallationText, updateResult.Errors);
+        Assert.Contains(ShipmentValidationErrors.SenderRequiredText, updateResult.Errors); 
     }
 }

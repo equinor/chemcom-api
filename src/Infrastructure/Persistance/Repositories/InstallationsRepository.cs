@@ -1,5 +1,6 @@
 ﻿using Application.Common.Repositories;
 using Domain.Installations;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,10 @@ public sealed class InstallationsRepository : IInstallationsRepository
     public async Task<Installation> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Installations.FindAsync(id, cancellationToken);
+    }
+
+    public async Task<List<Installation>> GetInstallationsByCodesAsync(List<string> codes, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Installations.Where(i => codes.Contains(i.Code)).ToListAsync();
     }
 }

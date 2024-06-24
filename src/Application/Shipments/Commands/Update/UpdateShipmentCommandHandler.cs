@@ -6,6 +6,7 @@ using Application.Shipments.Commands.Create;
 using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,18 +35,24 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
     public async Task<Result<UpdateShipmentResult>> HandleAsync(UpdateShipmentCommand command, CancellationToken cancellationToken = default)
     {
+        //TODO: Validate receiver?
         List<string> errors = new();
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (shipment is null)
         {
-            errors.Add(ShipmentValidationErrors.ShipmentNotFoundText);
-            return Result<UpdateShipmentResult>.NotFound(errors);
+            return Result<UpdateShipmentResult>.NotFound([ShipmentValidationErrors.ShipmentNotFoundText]);
         }
-        //TODO: Add fluent validation  
+          
         if (command.SenderId == Guid.Empty)
-        {
-            errors.Add(ShipmentValidationErrors.SenderRequiredText);
+        {           
+            return Result<UpdateShipmentResult>.Failed([ShipmentValidationErrors.SenderRequiredText]);
+        }
+
+        Role role = command.User.Roles.FirstOrDefault(r => r.Installation != null && r.Installation.Id == command.SenderId);
+        if (role is null)
+        {           
+            return Result<UpdateShipmentResult>.Failed([ShipmentValidationErrors.UserAccessForInstallationText]);
         }
 
         if (command.PlannedExecutionFrom is null)
@@ -56,12 +63,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         if (command.PlannedExecutionTo is null)
         {
             errors.Add(ShipmentValidationErrors.PlannedExecutionToDateRequiredText);
-        }
-
-        if (command.Initiator == Initiator.Offshore && !command.IsInstallationPartOfUserRoles)
-        {
-            errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
-        }
+        }       
 
         if (errors.Any())
         {

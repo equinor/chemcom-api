@@ -17,6 +17,8 @@ using Application.Comments.Services;
 using IntegrationTests.Fakes;
 using IntegrationTests.Common;
 using Testcontainers.MsSql;
+using System.Security.Claims;
+using Domain.Users;
 
 namespace IntegrationTests.Fixtures;
 
@@ -26,6 +28,8 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
     public ICommandDispatcher CommandDispatcher { get; private set; }
     public IQueryDispatcher QueryDispatcher { get; private set; }
     public IConfigurationRoot Configuration { get; private set; }
+    public ClaimsPrincipal ClaimsPrincipal { get; private set; }
+    public IUserProvider UserProvider { get; private set; }
 
     private readonly ApplicationDbContext _dbContext;
     private readonly MsSqlContainer _msSqlContainer
@@ -66,6 +70,7 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
                   services.AddScoped<IUnitOfWork>(serivceProvider => serivceProvider.GetRequiredService<ApplicationDbContext>());
                   services.AddScoped<IFileUploadService, FakeFileUploadService>();
                   services.AddScoped<IEnvironmentContext, FakeEnvironmentContext>();
+                  services.AddScoped<IUserProvider, FakeUserProvider>();
                   AddCommandOrQueryHandlers(services, typeof(ICommandHandler<>));
                   AddCommandOrQueryHandlers(services, typeof(ICommandHandler<,>));
                   AddCommandOrQueryHandlers(services, typeof(IQueryHandler<,>));
@@ -76,6 +81,7 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
         CommandDispatcher = Host.Services.GetService(typeof(ICommandDispatcher)) as ICommandDispatcher;
         QueryDispatcher = Host.Services.GetService(typeof(IQueryDispatcher)) as IQueryDispatcher;
         _dbContext = Host.Services.GetService<ApplicationDbContext>();
+        UserProvider = Host.Services.GetService<IUserProvider>();
         SeedDatabase();
     }
 
@@ -128,14 +134,26 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
         }
     }
 
+    //public void MockClaimsPrincipal()
+    //{
+    //    var claims = new List<Claim>()
+    //        {
+    //            new Claim(ClaimTypes.Name, "username"),
+    //            new Claim(ClaimTypes.NameIdentifier, "userId"),
+    //            new Claim("name", "John Doe"),
+    //        };
+    //    var identity = new ClaimsIdentity(claims, "TestAuthType");
+    //    var claimsPrincipal = new ClaimsPrincipal(identity);
+    //}
+
     public void Dispose()
     {
-        //_dbContext.Database.EnsureDeleted();
+
     }
 
     public async Task InitializeAsync()
     {
-        //await _msSqlContainer.StartAsync();
+
     }
 
     public async Task DisposeAsync()

@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using User = Domain.Users.User;
+
 namespace ChemDec.Api.Endpoints.Shipments.Chemicals.Add;
 
 [Route("api/shipments")]
@@ -21,12 +23,11 @@ namespace ChemDec.Api.Endpoints.Shipments.Chemicals.Add;
 public class Add : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
-    public Add(ICommandDispatcher commandDispatcher, UserService userService)
+    private readonly IUserProvider _userProvider;
+    public Add(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
-
+        _userProvider = userProvider;
     }
 
     [HttpPost("{shipmentId}/chemicals")]
@@ -38,12 +39,11 @@ public class Add : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] List<AddShipmentChemicalRequest> request)
     {
-        User user = await _userService.GetUser(User);
+        User user = await _userProvider.GetUserAsync(User);
         AddShipmentChemicalsCommand command = new AddShipmentChemicalsCommand()
         {
             ShipmentId = shipmentId,
-            UpdatedByName = user.Name,
-            UpdatedBy = user.Email
+            User = user
         };
 
         foreach (AddShipmentChemicalRequest item in request)

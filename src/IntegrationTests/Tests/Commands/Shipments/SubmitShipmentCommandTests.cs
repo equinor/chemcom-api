@@ -2,6 +2,7 @@
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using Application.Shipments.Commands.Submit;
+using Domain.Users;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using System;
@@ -25,23 +26,20 @@ public sealed class SubmitShipmentCommandTests
     [Fact]
     public async Task DispatchShouldSubmitShipment()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -50,8 +48,7 @@ public sealed class SubmitShipmentCommandTests
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
             ShipmentId = createResult.Data.Id,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
             TakePrecaution = false,
             HeightenedLra = false,
             AvailableForDailyContact = false
@@ -67,23 +64,20 @@ public sealed class SubmitShipmentCommandTests
     [Fact]
     public async Task DispatchShouldSubmitShipmentWithHeightenedLra()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -92,8 +86,7 @@ public sealed class SubmitShipmentCommandTests
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
             ShipmentId = createResult.Data.Id,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
             TakePrecaution = false,
             HeightenedLra = true,
             Pb210 = 1,
@@ -112,11 +105,11 @@ public sealed class SubmitShipmentCommandTests
     [Fact]
     public async Task DispatchShouldReturnNotFound()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
             ShipmentId = Guid.NewGuid(),
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
             TakePrecaution = false,
             HeightenedLra = false,
             AvailableForDailyContact = false
@@ -132,23 +125,20 @@ public sealed class SubmitShipmentCommandTests
     [Fact]
     public async Task DispatchShouldNotAllowReSubmit()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -157,8 +147,7 @@ public sealed class SubmitShipmentCommandTests
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
             ShipmentId = createResult.Data.Id,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
             TakePrecaution = false,
             HeightenedLra = false,
             AvailableForDailyContact = false
@@ -176,23 +165,21 @@ public sealed class SubmitShipmentCommandTests
     [Fact]
     public async Task DispatchShouldSubmitShipmentWithTakePrecautions()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
+
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -201,8 +188,7 @@ public sealed class SubmitShipmentCommandTests
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
             ShipmentId = createResult.Data.Id,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
             TakePrecaution = true,
             Precautions = "Test precautions",
             HeightenedLra = true,

@@ -50,10 +50,10 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             return Result<CreateCommentResult>.Failed(errors);
         }
 
-        Comment comment = new(command.CommentText, command.ShipmentId, command.UpdatedBy, command.UpdatedByName);
+        Comment comment = new(command.CommentText, command.ShipmentId, command.User);
         comment.SetNewId();
 
-        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
 
         await _commentsRepository.InsertAsync(comment, cancellationToken);
         _shipmentsRepository.Update(shipment);

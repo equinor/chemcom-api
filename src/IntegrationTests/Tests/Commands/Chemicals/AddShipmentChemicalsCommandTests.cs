@@ -5,6 +5,7 @@ using Application.Common;
 using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Domain.Users;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using System;
@@ -28,23 +29,20 @@ public sealed class AddShipmentChemicalsCommandTests
     [Fact]
     public async Task DispatchShouldAddShipmentChemicals()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
         Result<CreateShipmentResult> createShipmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -78,8 +76,7 @@ public sealed class AddShipmentChemicalsCommandTests
         {
             ShipmentId = createShipmentResult.Data.Id,
             ShipmentChemicalItems = shipmentChemicalItems,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD"
+            User = user
         };
 
         Result<List<Guid>> addShipmentChemicalResult =
@@ -93,6 +90,8 @@ public sealed class AddShipmentChemicalsCommandTests
     [Fact]
     public async Task DispatchShouldNotAddShipmentChemicalReturnShipmentNotFound()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
+
         CreateChemicalCommand createChemicalCommand = new CreateChemicalCommand
         {
             Name = "adding chemical 200",
@@ -122,8 +121,7 @@ public sealed class AddShipmentChemicalsCommandTests
         {
             ShipmentId = Guid.NewGuid(),
             ShipmentChemicalItems = shipmentChemicalItems,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD"
+            User = user
         };
 
         Result<List<Guid>> addShipmentChemicalResult =
@@ -139,23 +137,20 @@ public sealed class AddShipmentChemicalsCommandTests
     [Fact]
     public async Task DispatchShouldNotAddShipmentChemicalReturnInvalidMeasureUnit()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
         Result<CreateShipmentResult> createShipmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -189,8 +184,7 @@ public sealed class AddShipmentChemicalsCommandTests
         {
             ShipmentId = createShipmentResult.Data.Id,
             ShipmentChemicalItems = shipmentChemicalItems,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD"
+            User = user
         };
 
         Result<List<Guid>> addShipmentChemicalResult =

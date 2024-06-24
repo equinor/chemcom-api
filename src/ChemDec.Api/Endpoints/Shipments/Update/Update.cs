@@ -3,7 +3,6 @@ using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using Application.Shipments.Commands.Update;
 using ChemDec.Api.Infrastructure.Utils;
-using ChemDec.Api.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +13,8 @@ using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
+using User = Domain.Users.User;
+
 namespace ChemDec.Api.Endpoints.Shipments.Update;
 
 [Route("api/shipments")]
@@ -23,45 +24,29 @@ namespace ChemDec.Api.Endpoints.Shipments.Update;
 public class Update : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
-
-    public Update(ICommandDispatcher commandDispatcher, UserService userService)
+    private readonly IUserProvider _userProvider;
+    public Update(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
+        _userProvider = userProvider;
     }
 
     [HttpPut]
     [Route("{id}")]
     [SwaggerOperation(Description = "Update shipment",
                         Summary = "Update shipment",
-                        Tags = ["Shipments - new" ])]
+                        Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<UpdateShipmentResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateShipmentRequest request)
     {
-        if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
-        {
-            return BadRequest("Invalid initiator");
-        }
-
-        User user = await _userService.GetUser(User);
-        bool isInstallationPartOfUserRoles = false;
-        Guid receiverId = Guid.Empty;
-        var role = user.Roles.FirstOrDefault(i => i.Installation.Id == request.SenderId);
-
-        if (role != null)
-        {
-            isInstallationPartOfUserRoles = true;
-            receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
-        }
+        User user = await _userProvider.GetUserAsync(User);
 
         UpdateShipmentCommand command = new()
         {
             Id = id,
             SenderId = request.SenderId,
-            ReceiverId = receiverId,
             Code = request.Code,
             Title = request.Title,
             Type = request.Type,
@@ -90,10 +75,8 @@ public class Update : ControllerBase
             WaterHasBeenAnalyzed = request.WaterHasBeenAnalyzed,
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
-            UpdatedBy = user.Email,
-            UpdatedByName = user.Name,
             ShipmentParts = request.ShipmentParts,
+            User = user
         };
 
         Result<UpdateShipmentResult> result = await _commandDispatcher

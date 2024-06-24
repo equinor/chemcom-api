@@ -4,6 +4,7 @@ using Application.Shipments.Commands.Create;
 using Application.Shipments.Commands.Update;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
+using Domain.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using User = Domain.Users.User;
 
 namespace ChemDec.Api.Endpoints.Shipments.Create;
 
@@ -22,12 +24,12 @@ namespace ChemDec.Api.Endpoints.Shipments.Create;
 public class Create : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
+    private readonly IUserProvider _userProvider;
 
-    public Create(ICommandDispatcher commandDispatcher, UserService userService)
+    public Create(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
+        _userProvider = userProvider;
     }
 
     [HttpPost]
@@ -38,27 +40,12 @@ public class Create : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
-        if (Enum.TryParse(request.Initiator, out Initiator initiator) is false)
-        {
-            return BadRequest("Invalid initiator");
-        }
-
-        User user = await _userService.GetUser(User);
-        bool isInstallationPartOfUserRoles = false;
-        Guid receiverId = Guid.Empty;
-        var role = user.Roles.FirstOrDefault(i => i.Installation.Id == request.SenderId);
-
-        if (role is not null)
-        {
-            isInstallationPartOfUserRoles = true;
-            receiverId = role.Installation.ShipsTo.FirstOrDefault().Id;
-        }
+        User user = await _userProvider.GetUserAsync(User);
 
         CreateShipmentCommand command = new()
         {
             SenderId = request.SenderId,
             Code = request.Code,
-            ReceiverId = receiverId,
             Title = request.Title,
             Type = request.Type,
             PlannedExecutionFrom = request.PlannedExecutionFrom.Value,
@@ -86,10 +73,7 @@ public class Create : ControllerBase
             WaterHasBeenAnalyzed = request.WaterHasBeenAnalyzed,
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
-            ShipmentParts = request.ShipmentParts,
-            UpdatedBy = user.Email,
-            UpdatedByName = user.Name,
+            ShipmentParts = request.ShipmentParts
         };
 
         Result<CreateShipmentResult> result = await _commandDispatcher.

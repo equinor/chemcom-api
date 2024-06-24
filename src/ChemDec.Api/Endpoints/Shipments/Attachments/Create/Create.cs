@@ -11,7 +11,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-
+using User = Domain.Users.User;
 namespace ChemDec.Api.Endpoints.Shipments.Attachments.Create;
 
 [Route("api/shipments")]
@@ -21,12 +21,12 @@ namespace ChemDec.Api.Endpoints.Shipments.Attachments.Create;
 public sealed class Create : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
+    private readonly IUserProvider _userProvider;
 
-    public Create(ICommandDispatcher commandDispatcher, UserService userService)
+    public Create(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
+        _userProvider = userProvider;
     }
 
     [HttpPost("{shipmentId}/attachments")]
@@ -38,14 +38,14 @@ public sealed class Create : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, IFormFile attachment)
     {
-        User user = await _userService.GetUser(User);
+        User user = await _userProvider.GetUserAsync(User);
 
         using (MemoryStream stream = new MemoryStream())
         {
             await attachment.CopyToAsync(stream);
             var fileContents = stream.ToArray();
             string extension = Path.GetExtension(attachment.FileName);
-            CreateAttachmentCommand command = new(shipmentId, attachment.FileName, attachment.ContentType, extension, fileContents, user.Email, user.Name);
+            CreateAttachmentCommand command = new(shipmentId, attachment.FileName, extension, attachment.ContentType, fileContents, user);
             Result<CreateAttachmentResult> result = await _commandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(command, HttpContext.RequestAborted);
 
             if (result.Status == ResultStatusConstants.NotFound)

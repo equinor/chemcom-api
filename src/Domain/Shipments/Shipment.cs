@@ -70,12 +70,11 @@ public class Shipment : IAuditable
     public Installation Receiver { get; set; }
     public string Type { get; set; }
     public string Status { get; set; } //Planned, changed etc. Kanskje vi trenger en "draft" også
-    public double RinsingOffshorePercent { get; set; } /*us292: denne skal inn igjen*/
+    public double RinsingOffshorePercent { get; set; }
     public DateTime PlannedExecutionFrom { get; set; }
     public DateTime PlannedExecutionTo { get; set; }
-    public double WaterAmount { get; private set; } //m3 //total amount of water
-    public double WaterAmountPerHour { get; set; } //m3
-
+    public double WaterAmount { get; private set; }
+    public double WaterAmountPerHour { get; set; }
     public bool VolumePersentageOffspec { get; set; } //true if above 0.5% 
     public string Well { get; set; }
 
@@ -100,7 +99,7 @@ public class Shipment : IAuditable
     public ICollection<Attachment> Attachments { get; set; }
     public ICollection<Comment> Comments { get; set; }
     public ICollection<ShipmentChemical> Chemicals { get; set; }
-    //public ICollection<ShipmentPart> ShipmentParts { get; private set; }
+
     public ICollection<LogEntry> LogEntries { get; set; }
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
@@ -117,22 +116,6 @@ public class Shipment : IAuditable
     public string EvalBiocidesOkUpdatedBy { get; set; }
     public string EvalEnvImpact { get; set; }
     public string EvalComments { get; set; }
-
-    //public void AddNewShipmentParts(List<int> shipmentParts, DateTime plannedExecutionFrom, int days)
-    //{
-    //    for (int i = 0; i < days; i++)
-    //    {
-    //        DateTime shippedDate = plannedExecutionFrom.AddDays(i);
-    //        ShipmentPart shipmentPart = new(shipmentParts[i], shippedDate)
-    //        {
-    //            Updated = DateTime.Now,
-    //            UpdatedByName = UpdatedByName,
-    //            UpdatedBy = UpdatedBy
-    //        };
-    //        shipmentPart.SetNewId();
-    //        //ShipmentParts.Add(shipmentPart);
-    //    }
-    //}
 
     public void SetUpdatedInfo(string updatedBy, string updatedByName)
     {
@@ -171,12 +154,16 @@ public class Shipment : IAuditable
         Id = Guid.NewGuid();
     }
 
+    public void SetReceiverId(Guid receiverId)
+    {
+        ReceiverId = receiverId;
+    }
+
     public void Update(ShipmentDetails shipmentDetails)
     {
         Code = shipmentDetails.Code;
         Title = shipmentDetails.Title;
-        SenderId = shipmentDetails.SenderId;
-        ReceiverId = shipmentDetails.ReceiverId;
+        SenderId = shipmentDetails.SenderId;        
         Type = shipmentDetails.Type;
         RinsingOffshorePercent = shipmentDetails.RinsingOffshorePercent;
         PlannedExecutionFrom = shipmentDetails.PlannedExecutionFrom;
