@@ -157,6 +157,8 @@ builder.Services.AddScoped<IFileUploadService, AzureFileUploadService>();
 builder.Services.AddScoped<IEmailNotificationsRepository, EmailNotificationsRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEnvironmentContext, EnvironmentContext>();
+builder.Services.AddScoped<IUserProvider, UserProvider>();
+
 builder.Services.AddQuartz(options =>
 {
     JobKey jobKey = JobKey.Create(nameof(EmailNotificationJob));

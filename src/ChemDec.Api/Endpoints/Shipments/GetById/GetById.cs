@@ -28,7 +28,7 @@ public class GetById : ControllerBase
     [Route("{id}")]
     [SwaggerOperation(Description = "Get shipment",
                         Summary = "Get shipment",
-                        Tags = new[] { "Shipments - new" })]
+                        Tags = ["Shipments - new"])]
     [ProducesResponseType(typeof(Result<GetShipmentByIdQueryResult>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id)

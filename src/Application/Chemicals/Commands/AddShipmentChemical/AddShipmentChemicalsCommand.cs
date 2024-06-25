@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,12 +11,11 @@ namespace Application.Chemicals.Commands.AddShipmentChemical;
 public sealed class AddShipmentChemicalsCommand : ICommand
 {
     public Guid ShipmentId { get; set; }
-    public string UpdatedByName { get; set; }
-    public string UpdatedBy { get; set; }
+    public User User { get; set; }
     public AddShipmentChemicalsCommand()
     {
         ShipmentChemicalItems = new List<ShipmentChemicalItem>();
-    }   
+    }
 
     public List<ShipmentChemicalItem> ShipmentChemicalItems { get; set; }
 }

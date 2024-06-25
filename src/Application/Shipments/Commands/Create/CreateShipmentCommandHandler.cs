@@ -6,6 +6,7 @@ using Application.Shipments.Commands;
 using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
+using Domain.Users;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,8 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         IInstallationsRepository installationsRepository,
         IShipmentPartsRepository shipmentPartsRepository,
         IUnitOfWork unitOfWork,
-        ILogger<CreateShipmentCommandHandler> logger)
+        ILogger<CreateShipmentCommandHandler> logger,
+        IUserProvider userProvider)
     {
         _shipmentsRepository = shipmentsRepository;
         _installationsRepository = installationsRepository;
@@ -41,9 +43,17 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         //TODO: Add fluent validation  
         //TODO: Validate receiver id as well?
         //TODO: Should validate volumehasbeenminimizedcomment
+
         if (command.SenderId == Guid.Empty)
         {
             errors.Add(ShipmentValidationErrors.SenderRequiredText);
+        }
+
+        Role role = command.User.Roles.FirstOrDefault(r => r.Installation != null && r.Installation.Id == command.SenderId);
+        if (role is null)
+        {
+            errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
+            return Result<CreateShipmentResult>.Failed(errors);
         }
 
         if (command.PlannedExecutionFrom is null)
@@ -56,22 +66,6 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
             errors.Add(ShipmentValidationErrors.PlannedExecutionToDateRequiredText);
         }
 
-        if (command.Initiator == Initiator.Offshore && !command.IsInstallationPartOfUserRoles)
-        {
-            errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
-        }
-
-        if (errors.Any())
-        {
-            return Result<CreateShipmentResult>.Failed(errors);
-        }
-
-        //if (string.IsNullOrWhiteSpace(command.VolumeHasBeenMinimizedComment))
-        //{
-        //    result.Errors.Add("Missing specification on measures taken to minimize well fluids / water volume sent to land");
-        //}
-
-
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
         TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(installation.TimeZone);
         DateTime plannedExecutionFromLocal = TimeZoneInfo.ConvertTimeFromUtc(command.PlannedExecutionFrom.Value, timeZone);
@@ -80,7 +74,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         DateTime to = new DateTime(plannedExecutionToLocal.Year, plannedExecutionToLocal.Month, plannedExecutionToLocal.Day, 23, 59, 59);
         DateTime from = new DateTime(plannedExecutionFromLocal.Year, plannedExecutionFromLocal.Month, plannedExecutionFromLocal.Day);
 
-        int days = to.Subtract(from).Days + 1;       
+        int days = to.Subtract(from).Days + 1;
         if (command.ShipmentParts.Count != days)
         {
             errors.Add(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText);
@@ -93,8 +87,10 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
 
         ShipmentDetails shipmentDetails = CreateShipmentCommand.Map(command);
         Shipment shipment = new(shipmentDetails);
+
         shipment.SetStatus(Statuses.Draft);
         shipment.SetNewId();
+        shipment.SetReceiverId(role.Installation.ShipsTo.Id);
         await _shipmentsRepository.InsertAsync(shipment, cancellationToken);
         List<ShipmentPart> shipmentParts = shipment.AddNewShipmentParts(command.ShipmentParts, command.PlannedExecutionFrom.Value, days);
         await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);

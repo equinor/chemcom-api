@@ -1,4 +1,5 @@
 ﻿using Application.Common;
+using Application.Common.Constants;
 using Application.Common.Repositories;
 using Domain.Comments;
 using Domain.Shipments;
@@ -35,7 +36,7 @@ public sealed class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentC
 
         if (shipment is null)
         {
-            return Result<bool>.NotFound(new List<string> { "Shipment not found" });
+            return Result<bool>.NotFound([ShipmentValidationErrors.ShipmentNotFoundText]);
         }
 
         Comment comment = await _commentsRepository.GetByIdAsync(command.Id, cancellationToken);
@@ -45,7 +46,7 @@ public sealed class DeleteCommentCommandHandler : ICommandHandler<DeleteCommentC
             return Result<bool>.NotFound(new List<string> { "Comment not found" });
         }
 
-        shipment.SetUpdatedInfo(command.UpdatedBy, command.UpdatedByName);
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
         _shipmentsRepository.Update(shipment);
         _commentsRepository.Delete(comment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);

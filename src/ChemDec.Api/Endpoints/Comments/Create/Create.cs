@@ -11,6 +11,8 @@ using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Threading.Tasks;
 
+using User = Domain.Users.User;
+
 namespace ChemDec.Api.Endpoints.Comments.Create;
 
 [Route("api/shipments")]
@@ -20,12 +22,12 @@ namespace ChemDec.Api.Endpoints.Comments.Create;
 public class Create : ControllerBase
 {
     private readonly ICommandDispatcher _commandDispatcher;
-    private readonly UserService _userService;
+    private readonly IUserProvider _userProvider;
 
-    public Create(ICommandDispatcher commandDispatcher, UserService userService)
+    public Create(ICommandDispatcher commandDispatcher, IUserProvider userProvider)
     {
         _commandDispatcher = commandDispatcher;
-        _userService = userService;
+        _userProvider = userProvider;
     }
 
     [HttpPost("{shipmentId}/comments")]
@@ -36,8 +38,8 @@ public class Create : ControllerBase
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] CreateCommentRequest request)
     {
-        User user = await _userService.GetUser(User);
-        CreateCommentCommand command = new CreateCommentCommand(request.CommentText, shipmentId, user.Email, user.Name);
+        User user = await _userProvider.GetUserAsync(User);
+        CreateCommentCommand command = new CreateCommentCommand(request.CommentText, shipmentId, user);
         Result<CreateCommentResult> result = await _commandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
@@ -45,7 +47,7 @@ public class Create : ControllerBase
             return BadRequest(result);
         }
 
-        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data.Id}";      
+        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data.Id}";
         return Created(createdAt, result);
     }
 }

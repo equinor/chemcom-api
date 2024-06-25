@@ -5,6 +5,7 @@ using Application.Common;
 using Application.Common.Constants;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Domain.Users;
 using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using System;
@@ -28,23 +29,20 @@ public sealed class DeleteShipmentChemicalTests
     [Fact]
     public async Task DispatchShouldDeleteShipmentChemical()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand createShipmentCommand = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
-            ReceiverId = Constants.ReceiverId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
         Result<CreateShipmentResult> createShipmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
@@ -78,14 +76,13 @@ public sealed class DeleteShipmentChemicalTests
         {
             ShipmentId = createShipmentResult.Data.Id,
             ShipmentChemicalItems = shipmentChemicalItems,
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD"
+            User = user
         };
 
         Result<List<Guid>> addShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(addShipmentChemicalCommand);
 
-        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(addShipmentChemicalResult.Data.First(), createShipmentResult.Data.Id, "abcd@equinor.com", "ABCD");
+        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(addShipmentChemicalResult.Data.First(), createShipmentResult.Data.Id, user);
         Result<bool> deleteShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteShipmentChemicalCommand, Result<bool>>(deleteShipmentChemicalCommand);
 
@@ -97,11 +94,11 @@ public sealed class DeleteShipmentChemicalTests
     [Fact]
     public async Task DispatchShouldNotDeleteShipmentChemicalReturnShipmentNotFound()
     {
-
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         Guid shipmentId = Guid.NewGuid();
         Guid shipmenChemicalId = Guid.NewGuid();
 
-        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(shipmenChemicalId, shipmentId, "abcd@equinor.com", "ABCD");
+        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(shipmenChemicalId, shipmentId, user);
         Result<bool> deleteShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteShipmentChemicalCommand, Result<bool>>(deleteShipmentChemicalCommand);
 

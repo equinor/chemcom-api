@@ -3,6 +3,8 @@ using Application.Comments.Commands.Delete;
 using Application.Common;
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
+using Domain.Users;
+using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -26,33 +28,28 @@ public sealed class DeleteCommentCommandTests
     [Fact]
     public async Task DispatchShouldDeleteCommant()
     {
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
-            SenderId = new Guid("b10fc741-ebe3-45c1-bc70-8eca5ba5ced6"),
-            ReceiverId = new Guid("c4d2d827-48e6-45a8-9fb4-dbd8e7a54a67"),
+            SenderId = Constants.SenderId,
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = true,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user,
         };
 
         Result<CreateShipmentResult> createShipmentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
 
-
-
         Result<CreateCommentResult> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
-            new CreateCommentCommand("Test comment A", createShipmentResult.Data.Id, "ABCD@equinor.com", "ABCD"));
+            new CreateCommentCommand("Test comment A", createShipmentResult.Data.Id, user));
 
-        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data.Id, createShipmentResult.Data.Id,"ABCD@equinor.com", "ABCD");
+        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data.Id, createShipmentResult.Data.Id, user);
         Result<bool> deleteCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(deleteCommentCommand);
 
         Assert.True(deleteCommentResult.Status == ResultStatusConstants.Success);

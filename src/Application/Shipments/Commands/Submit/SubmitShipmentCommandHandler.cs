@@ -43,12 +43,12 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
         if (shipment == null)
         {
-            return Result<bool>.NotFound(new List<string> { "Shipment not found" });
+            return Result<bool>.NotFound([ShipmentValidationErrors.ShipmentNotFoundText]);
         }
 
         if (shipment.Status != ShipmentStatuses.Draft)
         {
-            return Result<bool>.Failed(new List<string> { "Can't re-submit shipment" });
+            return Result<bool>.Failed([ShipmentValidationErrors.ShipmentCanNotBeResubmittedText]);
         }
 
         Installation sender = await _installationsRepository.GetByIdAsync(shipment.SenderId, cancellationToken);
@@ -58,7 +58,7 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         {
             Id = Guid.NewGuid(),
             Subject = $"{_environmentContext.GetEnvironmentPrefix()}Shipment form was submitted to {receiver.Name}",
-            Body = BuldEmailTemplate(receiver.Name, sender.Name, command.UpdatedBy, command.UpdatedByName),
+            Body = BuldEmailTemplate(receiver.Name, sender.Name, command.User.Email, command.User.Name),
             Recipients = receiver.Contact,
             EmailNotificationType = (int)EmailNotificationType.EmailNotificationFromOffshore,
             IsSent = false
@@ -86,10 +86,8 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
         shipment.AvailableForDailyContact = command.AvailableForDailyContact;
         shipment.HeightenedLra = command.HeightenedLra;
         shipment.TakePrecaution = command.TakePrecaution;
-        shipment.Updated = DateTime.Now;
-        shipment.UpdatedBy = command.UpdatedBy;
-        shipment.UpdatedByName = command.UpdatedByName;
-        shipment.Status = ShipmentStatuses.Submitted;
+        shipment.SetUpdatedInfo(command.User.Email, command.User.Name);
+        shipment.SetStatus(ShipmentStatuses.Submitted);
 
         _shipmentsRepository.Update(shipment);
         await _emailNotificationsRepository.AddAsync(emailNotification, cancellationToken);

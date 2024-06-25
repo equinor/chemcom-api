@@ -8,8 +8,7 @@ public sealed record CreateShipmentRequest
     public string Code { get; set; }
     public string Title { get; set; }
     public Guid SenderId { get; set; }
-    public string Type { get; set; }
-    public string Initiator { get; set; }
+    public string Type { get; set; }    
     public double RinsingOffshorePercent { get; set; }
     public DateTime? PlannedExecutionFrom { get; set; }
     public DateTime? PlannedExecutionTo { get; set; }

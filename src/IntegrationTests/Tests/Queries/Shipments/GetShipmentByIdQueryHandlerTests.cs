@@ -2,6 +2,8 @@
 using Application.Common.Enums;
 using Application.Shipments.Commands.Create;
 using Application.Shipments.Queries.GeyShipmentById;
+using Domain.Users;
+using IntegrationTests.Common;
 using IntegrationTests.Fixtures;
 using System;
 using System.Collections.Generic;
@@ -23,25 +25,22 @@ public sealed class GetShipmentByIdQueryHandlerTests
     [Fact]
     public async Task DispatchShouldGetShipmentById()
     {
-        bool isInstallationPartOfUserRoles = true;
+        User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
 
         CreateShipmentCommand command = new CreateShipmentCommand()
         {
             Code = "pov",
             Title = "Test bon integration test",
-            SenderId = new Guid("b10fc741-ebe3-45c1-bc70-8eca5ba5ced6"),
-            ReceiverId = new Guid("c4d2d827-48e6-45a8-9fb4-dbd8e7a54a67"),
+            SenderId = Constants.SenderId,
+
             Type = "wellintervention",
-            Initiator = Initiator.Offshore,
-            IsInstallationPartOfUserRoles = isInstallationPartOfUserRoles,
             PlannedExecutionFrom = new DateTime(2024, 3, 15),
             PlannedExecutionTo = new DateTime(2024, 3, 15),
             WaterAmount = 3,
             WaterAmountPerHour = 0,
             Well = "test",
             ShipmentParts = new List<double> { 1 },
-            UpdatedBy = "ABCD@equinor.com",
-            UpdatedByName = "ABCD",
+            User = user
         };
 
         Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
