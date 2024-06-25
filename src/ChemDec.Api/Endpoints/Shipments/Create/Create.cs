@@ -73,7 +73,8 @@ public class Create : ControllerBase
             WaterHasBeenAnalyzed = request.WaterHasBeenAnalyzed,
             HasBeenOpened = request.HasBeenOpened,
             RinsingOffshorePercent = request.RinsingOffshorePercent,
-            ShipmentParts = request.ShipmentParts
+            ShipmentParts = request.ShipmentParts,
+            User = user
         };
 
         Result<CreateShipmentResult> result = await _commandDispatcher.
