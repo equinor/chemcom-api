@@ -5,6 +5,7 @@ using Domain.Installations;
 using Domain.LogEntries;
 using Domain.ShipmentChemicals;
 using Domain.ShipmentParts;
+using Domain.Users;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -163,7 +164,7 @@ public class Shipment : IAuditable
     {
         Code = shipmentDetails.Code;
         Title = shipmentDetails.Title;
-        SenderId = shipmentDetails.SenderId;        
+        SenderId = shipmentDetails.SenderId;
         Type = shipmentDetails.Type;
         RinsingOffshorePercent = shipmentDetails.RinsingOffshorePercent;
         PlannedExecutionFrom = shipmentDetails.PlannedExecutionFrom;
@@ -193,6 +194,26 @@ public class Shipment : IAuditable
         UpdatedBy = shipmentDetails.UpdatedBy;
         UpdatedByName = shipmentDetails.UpdatedByName;
         HasBeenOpened = shipmentDetails.HasBeenOpened;
+    }
+
+    public void UpdateEvaluationValues(bool? evalAmountOk,
+        bool? evalBiocidesOk,
+        bool? evalCapacityOk,
+        bool? evalContaminationRisk,
+        string evalEnvImapact,
+        string evalComments,
+        User user)
+    {
+        EvalAmountOk = evalAmountOk;
+        EvalAmountOkUpdatedBy = user.Name;
+        EvalBiocidesOk = evalBiocidesOk;
+        EvalBiocidesOkUpdatedBy = user.Name;
+        EvalCapacityOk = evalCapacityOk;
+        EvalCapacityOkUpdatedBy = user.Name;
+        EvalContaminationRisk = evalContaminationRisk;
+        EvalContaminationRiskUpdatedBy = user.Name;
+        EvalEnvImpact = evalEnvImapact;
+        EvalComments = evalComments;
     }
 
     private Shipment()

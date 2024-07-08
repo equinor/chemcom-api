@@ -7,6 +7,7 @@ using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
 using Domain.Users;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,15 +23,18 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
     private readonly IInstallationsRepository _installationsRepository;
     private readonly IShipmentPartsRepository _shipmentPartsRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<UpdateShipmentCommandHandler> _logger;
     public UpdateShipmentCommandHandler(IShipmentsRepository shipmentsRepository,
          IInstallationsRepository installationsRepository,
          IShipmentPartsRepository shipmentPartsRepository,
-         IUnitOfWork unitOfWork)
+         IUnitOfWork unitOfWork,
+         ILogger<UpdateShipmentCommandHandler> logger)
     {
         _shipmentsRepository = shipmentsRepository;
         _installationsRepository = installationsRepository;
         _shipmentPartsRepository = shipmentPartsRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<Result<UpdateShipmentResult>> HandleAsync(UpdateShipmentCommand command, CancellationToken cancellationToken = default)
@@ -98,6 +102,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         _shipmentsRepository.Update(shipment);
         //Note: Should we change the status to "Changed" when updating a shipment?
         await _unitOfWork.CommitChangesAsync(cancellationToken);
+        _logger.LogInformation("Shipment updated with id: {ShipmentId}", shipment.Id);
         UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment, shipmentPartsToAdd);
         return Result<UpdateShipmentResult>.Success(updateShipmentResult);
     }
