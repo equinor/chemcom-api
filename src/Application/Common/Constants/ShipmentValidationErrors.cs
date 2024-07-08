@@ -24,4 +24,5 @@ public static class ShipmentValidationErrors
     public const string ShipmentChemicalNotFoundText = "Shipment chemical not found";
     public const string ChemicalAlreadyAddedText = "Chemical already added to shipment";
     public const string InvalidMeasureUnitText = "Invalid measure unit";
+    public const string ShipmentNoAccessUserToEvaluateText = "User don't have access to evaluate this shipment";
 }
