@@ -44,6 +44,16 @@ public sealed record GetShipmentByIdQueryResult
     public string Precautions { get; set; }
     public bool WaterHasBeenAnalyzed { get; set; }
     public bool HasBeenOpened { get; set; }
+    public bool? EvalCapacityOk { get; set; }
+    public string EvalCapacityOkUpdatedBy { get; set; }
+    public bool? EvalContaminationRisk { get; set; }
+    public string EvalContaminationRiskUpdatedBy { get; set; }
+    public bool? EvalAmountOk { get; set; }
+    public string EvalAmountOkUpdatedBy { get; set; }
+    public bool? EvalBiocidesOk { get; set; }
+    public string EvalBiocidesOkUpdatedBy { get; set; }
+    public string EvalEnvImpact { get; set; }
+    public string EvalComments { get; set; }
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
@@ -85,6 +95,16 @@ public sealed record GetShipmentByIdQueryResult
             Precautions = shipment.Precautions,
             WaterHasBeenAnalyzed = shipment.WaterHasBeenAnalyzed,
             HasBeenOpened = shipment.HasBeenOpened,
+            EvalAmountOk = shipment.EvalAmountOk,
+            EvalAmountOkUpdatedBy= shipment.EvalAmountOkUpdatedBy,
+            EvalBiocidesOk= shipment.EvalBiocidesOk,
+            EvalBiocidesOkUpdatedBy= shipment.EvalBiocidesOkUpdatedBy,
+            EvalCapacityOk = shipment.EvalCapacityOk,
+            EvalCapacityOkUpdatedBy= shipment.EvalCapacityOkUpdatedBy,
+            EvalContaminationRisk = shipment.EvalContaminationRisk,
+            EvalContaminationRiskUpdatedBy= shipment.EvalContaminationRiskUpdatedBy,
+            EvalEnvImpact = shipment.EvalEnvImpact,
+            EvalComments = shipment.EvalComments,
             Updated = shipment.Updated,
             UpdatedBy = shipment.UpdatedBy,
             UpdatedByName = shipment.UpdatedByName
