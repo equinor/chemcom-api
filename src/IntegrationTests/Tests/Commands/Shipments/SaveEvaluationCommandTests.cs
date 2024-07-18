@@ -41,11 +41,11 @@ public sealed class SaveEvaluationCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
         SaveEvaluationCommand saveEvaluationCommand = new SaveEvaluationCommand()
         {
-            ShipmentId = createResult.Data.Id,
+            ShipmentId = createResult.Data,
             EvalAmountOk = true,
             EvalBiocidesOk = true,
             EvalCapacityOk = true,

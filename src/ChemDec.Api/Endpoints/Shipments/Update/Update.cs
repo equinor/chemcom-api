@@ -36,7 +36,7 @@ public class Update : ControllerBase
     [SwaggerOperation(Description = "Update shipment",
                         Summary = "Update shipment",
                         Tags = ["Shipments - new"])]
-    [ProducesResponseType(typeof(Result<UpdateShipmentResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateShipmentRequest request)
@@ -79,8 +79,8 @@ public class Update : ControllerBase
             User = user
         };
 
-        Result<UpdateShipmentResult> result = await _commandDispatcher
-            .DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(command, HttpContext.RequestAborted);
+        Result<Guid> result = await _commandDispatcher
+            .DispatchAsync<UpdateShipmentCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {

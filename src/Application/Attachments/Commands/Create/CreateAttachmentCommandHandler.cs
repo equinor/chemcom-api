@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Attachments.Commands.Create;
 
-public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttachmentCommand, Result<CreateAttachmentResult>>
+public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttachmentCommand, Result<Guid>>
 {
     private readonly IAttachmentsRepository _attachmentsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
@@ -33,12 +33,12 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
         _logger = logger;
     }
 
-    public async Task<Result<CreateAttachmentResult>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateAttachmentCommand command, CancellationToken cancellationToken = default)
     {
         Shipment shipment = await _shipmentsRepository.GetByIdAsync(command.ShipmentId, cancellationToken);
         if (shipment is null)
         {
-            return Result<CreateAttachmentResult>.NotFound(new List<string> { ShipmentValidationErrors.ShipmentNotFoundText });
+            return Result<Guid>.NotFound(new List<string> { ShipmentValidationErrors.ShipmentNotFoundText });
         }
 
         bool isFileUploadSuccessful = await _fileUploadService.UploadAsync(
@@ -48,7 +48,7 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
                                                 cancellationToken);
         if (!isFileUploadSuccessful)
         {
-            return Result<CreateAttachmentResult>.Failed(new List<string> { ShipmentValidationErrors.FileUploadFailedText });
+            return Result<Guid>.Failed(new List<string> { ShipmentValidationErrors.FileUploadFailedText });
         }
 
         Attachment attachment = new(command.ShipmentId,
@@ -62,6 +62,6 @@ public sealed class CreateAttachmentCommandHandler : ICommandHandler<CreateAttac
         await _attachmentsRepository.InsertAsync(attachment, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         _logger.LogInformation("Attachment for shipment {shipmentId} added successfully", shipment.Id);
-        return Result<CreateAttachmentResult>.Success(new CreateAttachmentResult(attachment.Id, shipment.Id));
+        return Result<Guid>.Success(attachment.Id);
     }
 }

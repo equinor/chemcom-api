@@ -44,8 +44,8 @@ public sealed class DeleteShipmentChemicalTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createShipmentResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createShipmentResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
         CreateChemicalCommand createChemicalCommand = new CreateChemicalCommand
         {
@@ -59,14 +59,14 @@ public sealed class DeleteShipmentChemicalTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createChemicalResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createChemicalCommand);
+        Result<Guid> createChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createChemicalCommand);
 
         List<ShipmentChemicalItem> shipmentChemicalItems =
         [
             new ShipmentChemicalItem
             {
-                ChemicalId = createChemicalResult.Data.Id,
+                ChemicalId = createChemicalResult.Data,
                 Amount = 10,
                 MeasureUnit = "kg",
             },
@@ -74,7 +74,7 @@ public sealed class DeleteShipmentChemicalTests
 
         AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
-            ShipmentId = createShipmentResult.Data.Id,
+            ShipmentId = createShipmentResult.Data,
             ShipmentChemicalItems = shipmentChemicalItems,
             User = user
         };
@@ -82,7 +82,7 @@ public sealed class DeleteShipmentChemicalTests
         Result<List<Guid>> addShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<List<Guid>>>(addShipmentChemicalCommand);
 
-        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(addShipmentChemicalResult.Data.First(), createShipmentResult.Data.Id, user);
+        DeleteShipmentChemicalCommand deleteShipmentChemicalCommand = new(addShipmentChemicalResult.Data.First(), createShipmentResult.Data, user);
         Result<bool> deleteShipmentChemicalResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteShipmentChemicalCommand, Result<bool>>(deleteShipmentChemicalCommand);
 

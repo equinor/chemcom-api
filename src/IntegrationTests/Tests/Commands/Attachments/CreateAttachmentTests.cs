@@ -43,16 +43,16 @@ public class CreateAttachmentTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> createResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
-        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], user);
-        Result<CreateAttachmentResult> createAttachmentResult = await _testSetupFixture
+        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data, "C:/", "jpg", "image/jpeg", new byte['f'], user);
+        Result<Guid> createAttachmentResult = await _testSetupFixture
             .CommandDispatcher
-            .DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
+            .DispatchAsync<CreateAttachmentCommand, Result<Guid>>(createAttachmentCommand);
 
         Assert.True(createAttachmentResult.Status == ResultStatusConstants.Success);
-        Assert.True(createAttachmentResult.Data is not null);
+        Assert.True(createAttachmentResult.Data != Guid.Empty);
         Assert.True(createAttachmentResult.Errors is null);
     }
 
@@ -61,12 +61,12 @@ public class CreateAttachmentTests
     {
         User user = await _testSetupFixture.UserProvider.GetUserAsync(_testSetupFixture.ClaimsPrincipal);
         CreateAttachmentCommand createAttachmentCommand = new(Guid.NewGuid(), "C:/", "jpg", "image/jpeg", new byte['f'], user);
-        Result<CreateAttachmentResult> createAttachmentResult = await _testSetupFixture
+        Result<Guid> createAttachmentResult = await _testSetupFixture
                     .CommandDispatcher
-                    .DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
+                    .DispatchAsync<CreateAttachmentCommand, Result<Guid>>(createAttachmentCommand);
 
         Assert.True(createAttachmentResult.Status == ResultStatusConstants.NotFound);
-        Assert.True(createAttachmentResult.Data is null);
+        Assert.True(createAttachmentResult.Data == Guid.Empty);
         Assert.True(createAttachmentResult.Errors is not null);
         Assert.Contains(ShipmentValidationErrors.ShipmentNotFoundText, createAttachmentResult.Errors);
     }

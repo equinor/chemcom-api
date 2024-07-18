@@ -41,10 +41,10 @@ public sealed class CreateShipmentComandTests
             User = user
         };
 
-        Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
         Assert.True(result.Status == ResultStatusConstants.Success);
-        Assert.True(result.Data is not null);
+        Assert.True(result.Data != Guid.Empty);
         Assert.True(result.Errors is null);
     }
 
@@ -68,10 +68,10 @@ public sealed class CreateShipmentComandTests
             User = user,
         };
 
-        Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
         Assert.True(result.Status == ResultStatusConstants.Failed);
-        Assert.True(result.Data is null);
+        Assert.True(result.Data == Guid.Empty);
         Assert.True(result.Errors is not null);
         Assert.Contains(ShipmentValidationErrors.SenderRequiredText, result.Errors);
         //Assert.Contains(ShipmentValidationErrors.PlannedExecutionFromDateRequiredText, result.Errors);
@@ -98,10 +98,10 @@ public sealed class CreateShipmentComandTests
             User = user
         };
 
-        Result<CreateShipmentResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
         Assert.True(result.Status == ResultStatusConstants.Failed);
-        Assert.True(result.Data is null);
+        Assert.True(result.Data == Guid.Empty);
         Assert.Contains(ShipmentValidationErrors.ShipmentPartsDaysDoesNotMatchText, result.Errors);
     }
 }

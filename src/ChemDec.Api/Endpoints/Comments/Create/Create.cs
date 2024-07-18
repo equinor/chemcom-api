@@ -34,20 +34,20 @@ public class Create : ControllerBase
     [SwaggerOperation(Description = "Create new comment",
                                Summary = "Create new comment",
                                Tags = new[] { "Shipments - new" })]
-    [ProducesResponseType(typeof(Result<CreateCommentResult>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, [FromBody] CreateCommentRequest request)
     {
         User user = await _userProvider.GetUserAsync(User);
         CreateCommentCommand command = new CreateCommentCommand(request.CommentText, shipmentId, user);
-        Result<CreateCommentResult> result = await _commandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(command, HttpContext.RequestAborted);
+        Result<Guid> result = await _commandDispatcher.DispatchAsync<CreateCommentCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
 
-        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data.Id}";
+        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data}";
         return Created(createdAt, result);
     }
 }

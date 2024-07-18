@@ -42,12 +42,12 @@ public sealed class SubmitShipmentCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
 
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
-            ShipmentId = createResult.Data.Id,
+            ShipmentId = createResult.Data,
             User = user,
             TakePrecaution = false,
             HeightenedLra = false,
@@ -80,12 +80,12 @@ public sealed class SubmitShipmentCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
 
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
-            ShipmentId = createResult.Data.Id,
+            ShipmentId = createResult.Data,
             User = user,
             TakePrecaution = false,
             HeightenedLra = true,
@@ -141,12 +141,12 @@ public sealed class SubmitShipmentCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
 
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
-            ShipmentId = createResult.Data.Id,
+            ShipmentId = createResult.Data,
             User = user,
             TakePrecaution = false,
             HeightenedLra = false,
@@ -182,12 +182,12 @@ public sealed class SubmitShipmentCommandTests
             User = user,
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
 
         SubmitShipmentCommand submitShipmentCommand = new SubmitShipmentCommand
         {
-            ShipmentId = createResult.Data.Id,
+            ShipmentId = createResult.Data,
             User = user,
             TakePrecaution = true,
             Precautions = "Test precautions",

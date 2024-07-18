@@ -6,7 +6,7 @@ using Domain.ShipmentChemicals;
 
 namespace Application.Chemicals.Commands.Update;
 
-public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemicalCommand, Result<UpdateChemicalResult>>
+public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemicalCommand, Result<Guid>>
 {
     private readonly IChemicalsRepository _chemicalsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
@@ -18,13 +18,13 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
         _unitOfWork = unitOfWork;
         _shipmentsRepository = shipmentsRepository;
     }
-    public async Task<Result<UpdateChemicalResult>> HandleAsync(UpdateChemicalCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(UpdateChemicalCommand command, CancellationToken cancellationToken = default)
     {
         Chemical chemical = await _chemicalsRepository.GetByIdAsync(command.Id, cancellationToken);
 
         if (chemical is null)
         {
-            return Result<UpdateChemicalResult>.NotFound(new List<string> { "Chemical not found" });
+            return Result<Guid>.NotFound(new List<string> { "Chemical not found" });
         }
 
         List<string> errors = new();
@@ -48,11 +48,11 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
         {
             errors.Add("Chemical description cannot contain semicolons");
         }
-       
+
         if (errors.Any())
         {
-            return Result<UpdateChemicalResult>.Failed(errors);
-        }        
+            return Result<Guid>.Failed(errors);
+        }
 
         List<ShipmentChemical> shipmentChemicals = await _chemicalsRepository.GetShipmentChemicalsByChemicalIdAsync(command.Id, cancellationToken);
 
@@ -97,6 +97,6 @@ public sealed class UpdateChemicalCommandHandler : ICommandHandler<UpdateChemica
         chemical = UpdateChemicalCommand.Map(command, chemical);
         _chemicalsRepository.Update(chemical);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
-        return Result<UpdateChemicalResult>.Success(UpdateChemicalResult.Map(chemical));
+        return Result<Guid>.Success(chemical.Id);
     }
 }

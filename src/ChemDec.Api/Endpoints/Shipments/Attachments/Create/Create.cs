@@ -33,7 +33,7 @@ public sealed class Create : ControllerBase
     [SwaggerOperation(Description = "Create attachment in shipment",
                         Summary = "Create new attachment in shipment",
                           Tags = ["Shipments - new"])]
-    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid shipmentId, IFormFile attachment)
@@ -46,7 +46,7 @@ public sealed class Create : ControllerBase
             var fileContents = stream.ToArray();
             string extension = Path.GetExtension(attachment.FileName);
             CreateAttachmentCommand command = new(shipmentId, attachment.FileName, extension, attachment.ContentType, fileContents, user);
-            Result<CreateAttachmentResult> result = await _commandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(command, HttpContext.RequestAborted);
+            Result<Guid> result = await _commandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
             if (result.Status == ResultStatusConstants.NotFound)
             {

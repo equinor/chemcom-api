@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.Comments.Commands.Create;
 
-public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentCommand, Result<CreateCommentResult>>
+public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentCommand, Result<Guid>>
 {
     private readonly ICommentsRepository _commentsRepository;
     private readonly IShipmentsRepository _shipmentsRepository;
@@ -28,7 +28,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
         _logger = logger;
     }
 
-    public async Task<Result<CreateCommentResult>> HandleAsync(CreateCommentCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateCommentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
 
@@ -37,7 +37,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
         if (shipment is null)
         {
             errors.Add("Shipment not found");
-            return Result<CreateCommentResult>.NotFound(errors);
+            return Result<Guid>.NotFound(errors);
         }
 
         if (string.IsNullOrWhiteSpace(command.CommentText))
@@ -47,7 +47,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
 
         if (errors.Any())
         {
-            return Result<CreateCommentResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         Comment comment = new(command.CommentText, command.ShipmentId, command.User);
@@ -59,13 +59,6 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
         _shipmentsRepository.Update(shipment);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         _logger.LogInformation("Comment with id {commentId} for shipment {shipmentId} has been created", comment.Id, shipment.Id);
-        return Result<CreateCommentResult>.Success(
-            new CreateCommentResult(
-                comment.Id,
-                comment.CommentText,
-                comment.ShipmentId.Value,
-                comment.Updated,
-                comment.UpdatedBy,
-                comment.UpdatedByName));
+        return Result<Guid>.Success(comment.Id);
     }
 }

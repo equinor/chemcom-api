@@ -36,7 +36,7 @@ public class Create : ControllerBase
     [SwaggerOperation(Description = "Create new shipment",
                         Summary = "Create new shipment",
                          Tags = ["Shipments - new"])]
-    [ProducesResponseType(typeof(Result<CreateShipmentResult>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateShipmentRequest request)
     {
@@ -77,15 +77,15 @@ public class Create : ControllerBase
             User = user
         };
 
-        Result<CreateShipmentResult> result = await _commandDispatcher.
-            DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command, HttpContext.RequestAborted);
+        Result<Guid> result = await _commandDispatcher.
+            DispatchAsync<CreateShipmentCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
 
-        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data.Id}";
+        string createdAt = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}{HttpContext.Request.Path.ToUriComponent()}/{result.Data}";
 
         return Created(createdAt, result);
     }

@@ -40,11 +40,11 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createCommand);
 
         UpdateChemicalCommand updateCommand = new()
         {
-            Id = createResult.Data.Id,
+            Id = createResult.Data,
             Name = "Test Chemical",
             Description = "Test Description",
             Tentative = true,
@@ -55,10 +55,10 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<UpdateChemicalResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
-        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Data != Guid.Empty);
         Assert.True(updateResult.Errors is null);
     }
 
@@ -81,7 +81,7 @@ public sealed class UpdateChemicalCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createShipment = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> createShipment = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
         CreateChemicalCommand createCommand = new()
         {
@@ -95,13 +95,13 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
+        Result<Guid> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createCommand);
 
         List<ShipmentChemicalItem> shipmentChemicalItems =
        [
            new ShipmentChemicalItem
             {
-                ChemicalId = createChemicalResult.Data.Id,
+                ChemicalId = createChemicalResult.Data,
                 Amount = 10,
                 MeasureUnit = "kg",
             },
@@ -109,17 +109,16 @@ public sealed class UpdateChemicalCommandTests
 
         AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
-            ShipmentId = createShipment.Data.Id,
+            ShipmentId = createShipment.Data,
             ShipmentChemicalItems = shipmentChemicalItems,
             User = user
         };
 
         Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<Guid>>(addShipmentChemicalCommand);
 
-
         UpdateChemicalCommand updateCommand = new()
         {
-            Id = createChemicalResult.Data.Id,
+            Id = createChemicalResult.Data,
             Name = "Test Chemical",
             Description = "Test Description",
             Tentative = true,
@@ -130,10 +129,10 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<UpdateChemicalResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
-        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Data != Guid.Empty);
         Assert.True(updateResult.Errors is null);
     }
 }

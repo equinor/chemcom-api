@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Application.Shipments.Commands.Create;
 
-public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmentCommand, Result<CreateShipmentResult>>
+public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmentCommand, Result<Guid>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IInstallationsRepository _installationsRepository;
@@ -37,7 +37,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
-    public async Task<Result<CreateShipmentResult>> HandleAsync(CreateShipmentCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateShipmentCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
         //TODO: Add fluent validation  
@@ -53,7 +53,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         if (role is null)
         {
             errors.Add(ShipmentValidationErrors.UserAccessForInstallationText);
-            return Result<CreateShipmentResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         if (command.PlannedExecutionFrom is null)
@@ -82,7 +82,7 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
 
         if (errors.Any())
         {
-            return Result<CreateShipmentResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         ShipmentDetails shipmentDetails = CreateShipmentCommand.Map(command);
@@ -96,8 +96,6 @@ public sealed class CreateShipmentCommandHandler : ICommandHandler<CreateShipmen
         await _shipmentPartsRepository.InsertManyAsync(shipmentParts, cancellationToken);
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         _logger.LogInformation("Shipment created with id: {ShipmentId}", shipment.Id);
-
-        CreateShipmentResult createShipmentResult = CreateShipmentResult.Map(shipment, shipmentParts);
-        return Result<CreateShipmentResult>.Success(createShipmentResult);
+        return Result<Guid>.Success(shipment.Id);
     }
 }
