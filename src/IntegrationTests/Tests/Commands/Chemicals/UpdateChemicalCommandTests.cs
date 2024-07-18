@@ -81,7 +81,7 @@ public sealed class UpdateChemicalCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createShipment = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> createShipment = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
         CreateChemicalCommand createCommand = new()
         {
@@ -109,7 +109,7 @@ public sealed class UpdateChemicalCommandTests
 
         AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
-            ShipmentId = createShipment.Data.Id,
+            ShipmentId = createShipment.Data,
             ShipmentChemicalItems = shipmentChemicalItems,
             User = user
         };

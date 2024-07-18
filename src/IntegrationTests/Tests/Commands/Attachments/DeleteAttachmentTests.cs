@@ -43,9 +43,9 @@ public class DeleteAttachmentTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
-        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], user);
+        Result<Guid> createResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
+        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data, "C:/", "jpg", "image/jpeg", new byte['f'], user);
         Result<CreateAttachmentResult> createAttachmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
 
@@ -64,8 +64,7 @@ public class DeleteAttachmentTests
     public async Task DispatchShouldNotDeleteAttachmentReturnsAttachmentNotFound()
     {
         DeleteAttachmentCommand deleteAttachmentCommand = new(Guid.NewGuid(), Guid.NewGuid(), "ABCD@equinor.com", "ABCD");
-        Result<bool> result = await _testSetupFixture.
-                                                        CommandDispatcher.
+        Result<bool> result = await _testSetupFixture.CommandDispatcher.
                                                         DispatchAsync<DeleteAttachmentCommand, Result<bool>>(deleteAttachmentCommand);
 
         Assert.True(result.Status == ResultStatusConstants.NotFound);

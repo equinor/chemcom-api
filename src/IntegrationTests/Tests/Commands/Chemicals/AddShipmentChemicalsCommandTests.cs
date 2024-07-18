@@ -44,8 +44,8 @@ public sealed class AddShipmentChemicalsCommandTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createShipmentResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createShipmentResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
         CreateChemicalCommand createChemicalCommand = new CreateChemicalCommand
         {
@@ -74,7 +74,7 @@ public sealed class AddShipmentChemicalsCommandTests
 
         AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
-            ShipmentId = createShipmentResult.Data.Id,
+            ShipmentId = createShipmentResult.Data,
             ShipmentChemicalItems = shipmentChemicalItems,
             User = user
         };
@@ -152,8 +152,8 @@ public sealed class AddShipmentChemicalsCommandTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createShipmentResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createShipmentCommand);
+        Result<Guid> createShipmentResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createShipmentCommand);
 
         CreateChemicalCommand createChemicalCommand = new CreateChemicalCommand
         {
@@ -182,7 +182,7 @@ public sealed class AddShipmentChemicalsCommandTests
 
         AddShipmentChemicalsCommand addShipmentChemicalCommand = new()
         {
-            ShipmentId = createShipmentResult.Data.Id,
+            ShipmentId = createShipmentResult.Data,
             ShipmentChemicalItems = shipmentChemicalItems,
             User = user
         };

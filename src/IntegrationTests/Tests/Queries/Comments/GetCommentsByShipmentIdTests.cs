@@ -43,15 +43,15 @@ public sealed class GetCommentsByShipmentIdTests
             User = user,
         };
 
-        Result<CreateShipmentResult> createShipmentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> createShipmentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
 
         await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
-            new CreateCommentCommand("Test comment A", createShipmentResult.Data.Id, user));
+            new CreateCommentCommand("Test comment A", createShipmentResult.Data, user));
         await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
-          new CreateCommentCommand("Test comment B", createShipmentResult.Data.Id, user));
+          new CreateCommentCommand("Test comment B", createShipmentResult.Data, user));
 
-        GetCommentsByShipmentIdQuery query = new GetCommentsByShipmentIdQuery(createShipmentResult.Data.Id);
+        GetCommentsByShipmentIdQuery query = new GetCommentsByShipmentIdQuery(createShipmentResult.Data);
         Result<GetCommentsByShipmentIdResult> getCommentsResult = await _testSetupFixture.QueryDispatcher.DispatchAsync<GetCommentsByShipmentIdQuery, Result<GetCommentsByShipmentIdResult>>(query);
 
         Assert.True(getCommentsResult.Status == ResultStatusConstants.Success);

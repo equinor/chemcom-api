@@ -43,11 +43,11 @@ public sealed class UpdateShipmentCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createCommand);
 
         UpdateShipmentCommand updateCommand = new()
         {
-            Id = createResult.Data.Id,
+            Id = createResult.Data,
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Constants.SenderId,
@@ -61,10 +61,10 @@ public sealed class UpdateShipmentCommandTests
             User = user
         };
 
-        Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
-        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Data != Guid.Empty);
         Assert.True(updateResult.Errors is null);
     }
 
@@ -88,7 +88,7 @@ public sealed class UpdateShipmentCommandTests
             User = user
         };
 
-        Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.NotFound);
         Assert.True(updateResult.Errors is not null);
@@ -114,11 +114,11 @@ public sealed class UpdateShipmentCommandTests
             User = user
         };
 
-        Result<CreateShipmentResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(createCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(createCommand);
 
         UpdateShipmentCommand updateCommand = new()
         {
-            Id = createResult.Data.Id,
+            Id = createResult.Data,
             Code = "pov",
             Title = "Test bon integration test",
             SenderId = Guid.Empty,
@@ -132,10 +132,10 @@ public sealed class UpdateShipmentCommandTests
             User = user
         };
 
-        Result<UpdateShipmentResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<UpdateShipmentResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateShipmentCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Failed);
         Assert.True(updateResult.Errors is not null);
-        Assert.Contains(ShipmentValidationErrors.SenderRequiredText, updateResult.Errors); 
+        Assert.Contains(ShipmentValidationErrors.SenderRequiredText, updateResult.Errors);
     }
 }

@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace Application.Shipments.Commands.Update;
 
-public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmentCommand, Result<UpdateShipmentResult>>
+public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmentCommand, Result<Guid>>
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IInstallationsRepository _installationsRepository;
@@ -37,7 +37,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         _logger = logger;
     }
 
-    public async Task<Result<UpdateShipmentResult>> HandleAsync(UpdateShipmentCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(UpdateShipmentCommand command, CancellationToken cancellationToken = default)
     {
         //TODO: Validate receiver?
         List<string> errors = new();
@@ -45,18 +45,18 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
         if (shipment is null)
         {
-            return Result<UpdateShipmentResult>.NotFound([ShipmentValidationErrors.ShipmentNotFoundText]);
+            return Result<Guid>.NotFound([ShipmentValidationErrors.ShipmentNotFoundText]);
         }
-          
+
         if (command.SenderId == Guid.Empty)
-        {           
-            return Result<UpdateShipmentResult>.Failed([ShipmentValidationErrors.SenderRequiredText]);
+        {
+            return Result<Guid>.Failed([ShipmentValidationErrors.SenderRequiredText]);
         }
 
         Role role = command.User.Roles.FirstOrDefault(r => r.Installation != null && r.Installation.Id == command.SenderId);
         if (role is null)
-        {           
-            return Result<UpdateShipmentResult>.Failed([ShipmentValidationErrors.UserAccessForInstallationText]);
+        {
+            return Result<Guid>.Failed([ShipmentValidationErrors.UserAccessForInstallationText]);
         }
 
         if (command.PlannedExecutionFrom is null)
@@ -67,11 +67,11 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         if (command.PlannedExecutionTo is null)
         {
             errors.Add(ShipmentValidationErrors.PlannedExecutionToDateRequiredText);
-        }       
+        }
 
         if (errors.Any())
         {
-            return Result<UpdateShipmentResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         Installation installation = await _installationsRepository.GetByIdAsync(command.SenderId, cancellationToken);
@@ -90,7 +90,7 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
 
         if (errors.Any())
         {
-            return Result<UpdateShipmentResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         ShipmentDetails shipmentDetails = UpdateShipmentCommand.Map(command);
@@ -103,7 +103,6 @@ public sealed class UpdateShipmentCommandHandler : ICommandHandler<UpdateShipmen
         //Note: Should we change the status to "Changed" when updating a shipment?
         await _unitOfWork.CommitChangesAsync(cancellationToken);
         _logger.LogInformation("Shipment updated with id: {ShipmentId}", shipment.Id);
-        UpdateShipmentResult updateShipmentResult = UpdateShipmentResult.Map(shipment, shipmentPartsToAdd);
-        return Result<UpdateShipmentResult>.Success(updateShipmentResult);
+        return Result<Guid>.Success(shipment.Id);
     }
 }

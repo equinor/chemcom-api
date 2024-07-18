@@ -43,10 +43,10 @@ public class CreateAttachmentTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<CreateShipmentResult> createResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<CreateShipmentResult>>(command);
+        Result<Guid> createResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
-        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data.Id, "C:/", "jpg", "image/jpeg", new byte['f'], user);
+        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data, "C:/", "jpg", "image/jpeg", new byte['f'], user);
         Result<CreateAttachmentResult> createAttachmentResult = await _testSetupFixture
             .CommandDispatcher
             .DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
