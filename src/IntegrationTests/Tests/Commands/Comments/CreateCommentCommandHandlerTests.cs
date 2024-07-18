@@ -43,11 +43,11 @@ public sealed class CreateCommentCommandHandlerTests
         };
 
         Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
-        Result<CreateCommentResult> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
+        Result<Guid> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<Guid>>(
             new CreateCommentCommand("Test comment", createResult.Data, user));
 
         Assert.True(createCommentResult.Status == ResultStatusConstants.Success);
-        Assert.True(createCommentResult.Data is not null);
+        Assert.True(createCommentResult.Data != Guid.Empty);
         Assert.True(createCommentResult.Errors is null);
     }
 }

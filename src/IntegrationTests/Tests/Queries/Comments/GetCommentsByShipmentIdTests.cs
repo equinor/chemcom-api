@@ -46,9 +46,9 @@ public sealed class GetCommentsByShipmentIdTests
         Result<Guid> createShipmentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
 
-        await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
+        await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<Guid>>(
             new CreateCommentCommand("Test comment A", createShipmentResult.Data, user));
-        await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
+        await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<Guid>>(
           new CreateCommentCommand("Test comment B", createShipmentResult.Data, user));
 
         GetCommentsByShipmentIdQuery query = new GetCommentsByShipmentIdQuery(createShipmentResult.Data);

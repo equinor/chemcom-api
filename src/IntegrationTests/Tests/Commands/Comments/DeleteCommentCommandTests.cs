@@ -46,10 +46,10 @@ public sealed class DeleteCommentCommandTests
 
         Result<Guid> createShipmentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
 
-        Result<CreateCommentResult> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<CreateCommentResult>>(
+        Result<Guid> createCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateCommentCommand, Result<Guid>>(
             new CreateCommentCommand("Test comment A", createShipmentResult.Data, user));
 
-        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data.Id, createShipmentResult.Data, user);
+        DeleteCommentCommand deleteCommentCommand = new DeleteCommentCommand(createCommentResult.Data, createShipmentResult.Data, user);
         Result<bool> deleteCommentResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<DeleteCommentCommand, Result<bool>>(deleteCommentCommand);
 
         Assert.True(deleteCommentResult.Status == ResultStatusConstants.Success);
