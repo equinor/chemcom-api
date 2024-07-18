@@ -55,10 +55,10 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<UpdateChemicalResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
-        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Data != Guid.Empty);
         Assert.True(updateResult.Errors is null);
     }
 
@@ -130,10 +130,10 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<UpdateChemicalResult> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(updateCommand);
+        Result<Guid> updateResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<Guid>>(updateCommand);
 
         Assert.True(updateResult.Status == ResultStatusConstants.Success);
-        Assert.True(updateResult.Data is not null);
+        Assert.True(updateResult.Data != Guid.Empty);
         Assert.True(updateResult.Errors is null);
     }
 }

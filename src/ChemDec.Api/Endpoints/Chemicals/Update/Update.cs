@@ -32,7 +32,7 @@ public class Update : ControllerBase
     [SwaggerOperation(Description = "Update chemical",
                        Summary = "Update chemical",
                        Tags = new[] { "Chemicals - new" })]
-    [ProducesResponseType(typeof(Result<UpdateChemicalResult>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromRoute] Guid id, [FromBody] UpdateChemicalRequest request)
@@ -62,7 +62,7 @@ public class Update : ControllerBase
             MeasureUnitDefault = request.MeasureUnitDefault
         };
 
-        Result<UpdateChemicalResult> result = await _commandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<UpdateChemicalResult>>(command, HttpContext.RequestAborted);
+        Result<Guid> result = await _commandDispatcher.DispatchAsync<UpdateChemicalCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.NotFound)
         {
