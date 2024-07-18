@@ -34,9 +34,9 @@ public sealed class CreateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command);
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(command);
         Assert.True(result.Status == ResultStatusConstants.Success);
-        Assert.True(result.Data is not null);
+        Assert.True(result.Data != Guid.Empty);
         Assert.True(result.Errors is null);
     }
 
@@ -56,10 +56,10 @@ public sealed class CreateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command);
-        
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(command);
+
         Assert.True(result.Status == ResultStatusConstants.Failed);
-        Assert.True(result.Data is null);
+        Assert.True(result.Data == Guid.Empty);
         Assert.True(result.Errors is not null);
         Assert.Contains(ChemicalValidationErrors.ChemicalNameRequiredText, result.Errors);
         Assert.Contains(ChemicalValidationErrors.ChemicalDescriptionRequiredText, result.Errors);
@@ -80,10 +80,10 @@ public sealed class CreateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command);
+        Result<Guid> result = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(command);
 
         Assert.True(result.Status == ResultStatusConstants.Failed);
-        Assert.True(result.Data is null);
+        Assert.True(result.Data == Guid.Empty);
         Assert.True(result.Errors is not null);
         Assert.Contains(ChemicalValidationErrors.ChemicalNameSemicolonNotAllowedText, result.Errors);
         Assert.Contains(ChemicalValidationErrors.ChemicalDescriptionSemicolonNotAllowedText, result.Errors);
@@ -104,7 +104,7 @@ public sealed class CreateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> resultA = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(commandA);
+        Result<Guid> resultA = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(commandA);
 
         CreateChemicalCommand commandB = new CreateChemicalCommand
         {
@@ -118,10 +118,10 @@ public sealed class CreateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> resultB = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(commandA);
+        Result<Guid> resultB = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(commandA);
 
         Assert.True(resultB.Status == ResultStatusConstants.Failed);
-        Assert.True(resultB.Data is null);
+        Assert.True(resultB.Data == Guid.Empty);
         Assert.True(resultB.Errors is not null);
         Assert.Contains(string.Format(ChemicalValidationErrors.ChemicalAlreadyExistsText, commandB.Name), resultB.Errors);
     }

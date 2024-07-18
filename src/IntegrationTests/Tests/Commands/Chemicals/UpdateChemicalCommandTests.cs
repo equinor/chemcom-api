@@ -40,11 +40,11 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
+        Result<Guid> createResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createCommand);
 
         UpdateChemicalCommand updateCommand = new()
         {
-            Id = createResult.Data.Id,
+            Id = createResult.Data,
             Name = "Test Chemical",
             Description = "Test Description",
             Tentative = true,
@@ -95,13 +95,13 @@ public sealed class UpdateChemicalCommandTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createCommand);
+        Result<Guid> createChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createCommand);
 
         List<ShipmentChemicalItem> shipmentChemicalItems =
        [
            new ShipmentChemicalItem
             {
-                ChemicalId = createChemicalResult.Data.Id,
+                ChemicalId = createChemicalResult.Data,
                 Amount = 10,
                 MeasureUnit = "kg",
             },
@@ -119,7 +119,7 @@ public sealed class UpdateChemicalCommandTests
 
         UpdateChemicalCommand updateCommand = new()
         {
-            Id = createChemicalResult.Data.Id,
+            Id = createChemicalResult.Data,
             Name = "Test Chemical",
             Description = "Test Description",
             Tentative = true,

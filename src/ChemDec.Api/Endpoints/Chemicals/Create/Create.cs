@@ -30,8 +30,8 @@ public class Create : ControllerBase
     [HttpPost]
     [SwaggerOperation(Description = "Create new chemical",
                                Summary = "Create new chemical",
-                               Tags = new[] { "Chemicals - new" })]
-    [ProducesResponseType(typeof(Result<CreateChemicalResult>), StatusCodes.Status201Created)]
+                               Tags = ["Chemicals - new"])]
+    [ProducesResponseType(typeof(Result<Guid>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ResultBase), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> HandleAsync([FromBody] CreateChemicalRequest request)
     {
@@ -59,15 +59,14 @@ public class Create : ControllerBase
             MeasureUnitDefault = request.MeasureUnitDefault
         };
 
-        Result<CreateChemicalResult> result = await _commandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(command,
-                                                                                                                                          HttpContext.RequestAborted);
+        Result<Guid> result = await _commandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(command, HttpContext.RequestAborted);
 
         if (result.Status == ResultStatusConstants.Failed)
         {
             return BadRequest(result);
         }
 
-        Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/chemicals/{result.Data.Id}");
+        Uri createdAt = new Uri($"{HttpContext.Request.Host}/api/chemicals/{result.Data}");
         return Created(createdAt, result);
     }
 }

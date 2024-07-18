@@ -59,14 +59,14 @@ public sealed class DeleteShipmentChemicalTests
             ProposedByEmail = "ABCD@equinor.com"
         };
 
-        Result<CreateChemicalResult> createChemicalResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<CreateChemicalResult>>(createChemicalCommand);
+        Result<Guid> createChemicalResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateChemicalCommand, Result<Guid>>(createChemicalCommand);
 
         List<ShipmentChemicalItem> shipmentChemicalItems =
         [
             new ShipmentChemicalItem
             {
-                ChemicalId = createChemicalResult.Data.Id,
+                ChemicalId = createChemicalResult.Data,
                 Amount = 10,
                 MeasureUnit = "kg",
             },

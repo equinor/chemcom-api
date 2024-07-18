@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.Chemicals.Commands.Create;
 
-public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemicalCommand, Result<CreateChemicalResult>>
+public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemicalCommand, Result<Guid>>
 {
     private readonly IChemicalsRepository _chemicalsRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -19,7 +19,7 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
         _chemicalsRepository = chemicalsRepository;
         _unitOfWork = unitOfWork;
     }
-    public async Task<Result<CreateChemicalResult>> HandleAsync(CreateChemicalCommand command, CancellationToken cancellationToken = default)
+    public async Task<Result<Guid>> HandleAsync(CreateChemicalCommand command, CancellationToken cancellationToken = default)
     {
         List<string> errors = new();
 
@@ -35,7 +35,7 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
 
         if (errors.Any())
         {
-            return Result<CreateChemicalResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         if (command.Name.Contains(';'))
@@ -57,14 +57,13 @@ public sealed class CreateChemicalCommandHandler : ICommandHandler<CreateChemica
 
         if (errors.Any())
         {
-            return Result<CreateChemicalResult>.Failed(errors);
+            return Result<Guid>.Failed(errors);
         }
 
         Chemical chemical = CreateChemicalCommand.Map(command);
         chemical.SetNewId();
         await _chemicalsRepository.InsertAsync(chemical, cancellationToken);
-        await _unitOfWork.CommitChangesAsync(cancellationToken);
-        CreateChemicalResult result = CreateChemicalResult.Map(chemical);
-        return Result<CreateChemicalResult>.Success(result);
+        await _unitOfWork.CommitChangesAsync(cancellationToken);       
+        return Result<Guid>.Success(chemical.Id);
     }
 }
