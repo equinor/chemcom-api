@@ -43,14 +43,14 @@ public class DeleteAttachmentTests
             ShipmentParts = new List<double> { 1 },
             User = user
         };
-        Result<Guid> createResult =
+        Result<Guid> createShipmentResult =
             await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateShipmentCommand, Result<Guid>>(command);
-        CreateAttachmentCommand createAttachmentCommand = new(createResult.Data, "C:/", "jpg", "image/jpeg", new byte['f'], user);
-        Result<CreateAttachmentResult> createAttachmentResult =
-            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<CreateAttachmentResult>>(createAttachmentCommand);
+        CreateAttachmentCommand createAttachmentCommand = new(createShipmentResult.Data, "C:/", "jpg", "image/jpeg", new byte['f'], user);
+        Result<Guid> createAttachmentResult =
+            await _testSetupFixture.CommandDispatcher.DispatchAsync<CreateAttachmentCommand, Result<Guid>>(createAttachmentCommand);
 
         DeleteAttachmentCommand deleteAttachmentCommand =
-            new(createAttachmentResult.Data.AttachmentId, createAttachmentResult.Data.ShipmentId, "ABCD@equinor.com", "ABCD");
+            new(createAttachmentResult.Data, createShipmentResult.Data, "ABCD@equinor.com", "ABCD");
         Result<bool> deleteAttachmentResult = await _testSetupFixture.
                                                         CommandDispatcher.
                                                         DispatchAsync<DeleteAttachmentCommand, Result<bool>>(deleteAttachmentCommand);

@@ -116,7 +116,6 @@ public sealed class UpdateChemicalCommandTests
 
         Result<Guid> addShipmentChemicalResult = await _testSetupFixture.CommandDispatcher.DispatchAsync<AddShipmentChemicalsCommand, Result<Guid>>(addShipmentChemicalCommand);
 
-
         UpdateChemicalCommand updateCommand = new()
         {
             Id = createChemicalResult.Data,
