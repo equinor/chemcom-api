@@ -159,38 +159,38 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IEnvironmentContext, EnvironmentContext>();
 builder.Services.AddScoped<IUserProvider, UserProvider>();
 
-builder.Services.AddQuartz(options =>
-{
-    JobKey jobKey = JobKey.Create(nameof(EmailNotificationJob));
-    options.AddJob<EmailNotificationJob>(jobKey)
-           .AddTrigger(trigger =>
-           {
-               trigger.ForJob(jobKey);
-               if (builder.Environment.IsDevelopment())
-               {
-                   int intervalInSeconds = 1000;
-                   trigger.WithSimpleSchedule(schedule =>
-                   {
-                       schedule.WithIntervalInSeconds(intervalInSeconds)
-                               .RepeatForever();
-                   });
-               }
-               else
-               {
-                   int intervalInMinutes = 5;
-                   trigger.ForJob(jobKey)
-                      .WithSimpleSchedule(schedule =>
-                      {
-                          schedule.WithIntervalInMinutes(intervalInMinutes)
-                                  .RepeatForever();
-                      });
-               }
-           });
-});
-builder.Services.AddQuartzHostedService(options =>
-{
-    options.WaitForJobsToComplete = true;
-});
+//builder.Services.AddQuartz(options =>
+//{
+//    JobKey jobKey = JobKey.Create(nameof(EmailNotificationJob));
+//    options.AddJob<EmailNotificationJob>(jobKey)
+//           .AddTrigger(trigger =>
+//           {
+//               trigger.ForJob(jobKey);
+//               if (builder.Environment.IsDevelopment())
+//               {
+//                   int intervalInSeconds = 1000;
+//                   trigger.WithSimpleSchedule(schedule =>
+//                   {
+//                       schedule.WithIntervalInSeconds(intervalInSeconds)
+//                               .RepeatForever();
+//                   });
+//               }
+//               else
+//               {
+//                   int intervalInMinutes = 5;
+//                   trigger.ForJob(jobKey)
+//                      .WithSimpleSchedule(schedule =>
+//                      {
+//                          schedule.WithIntervalInMinutes(intervalInMinutes)
+//                                  .RepeatForever();
+//                      });
+//               }
+//           });
+//});
+//builder.Services.AddQuartzHostedService(options =>
+//{
+//    options.WaitForJobsToComplete = true;
+//});
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(ICommandHandler<,>));
 CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(IQueryHandler<,>));
