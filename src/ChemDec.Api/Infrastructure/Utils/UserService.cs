@@ -80,6 +80,7 @@ namespace ChemDec.Api.Infrastructure.Utils
             if (codes.Any(w => w.ToLowerInvariant() == "admin"))
             {
                 res.Roles.Add(new Role { Id = "admin", Roletype = "Admin", Code = "Admin", Name = "Administrator" });
+                res.Roles.Add(new Role { Id = "chemical", Roletype = "Chemical", Code = "Chemical responsible", Name = "Chemical responsible" });
             }
             if (res.Roles.Any() == false)
             {
