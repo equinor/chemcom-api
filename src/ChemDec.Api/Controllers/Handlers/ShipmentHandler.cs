@@ -439,8 +439,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
         public async Task<List<ShipmentChemicalTableItem>> GetChemicalHistoryForPlant(
             Guid? toInstallationId, string timeZone, DateTime? from, DateTime? to)
-        {
-            //if (filter == null) filter = new Filter();
+        {            
             int timeDiff = GetTimeDiff(timeZone);
 
             //collect and filter data:
@@ -478,6 +477,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var groupedBySenderAndChemical = resShipmentChemicals
                 .Where(w => w.Shipment.Status != Statuses.Declined)
                 .Include(sc => sc.Chemical)
+                .Include(sp => sp.Shipment.ShipmentParts)
                 .Include(sc => sc.Shipment)
                 .ThenInclude(sh => sh.Sender)
                 .GroupBy(g => new { g.Shipment.SenderId, g.ChemicalId });
@@ -490,6 +490,9 @@ namespace ChemDec.Api.Controllers.Handlers
                    ChemicalName = scGroup.FirstOrDefault().Chemical.Name,
                    Description = scGroup.FirstOrDefault().Chemical.Description,
                    Density = scGroup.FirstOrDefault().Chemical.Density,
+                   ShipmentTitle = scGroup.FirstOrDefault().Shipment.Title,
+                   PlannedExecutionFromDate = scGroup.FirstOrDefault().Shipment.PlannedExecutionFrom,
+                   PlannedExecutionToDate = scGroup.FirstOrDefault().Shipment.PlannedExecutionTo,
                    HazardClass = scGroup.FirstOrDefault().Chemical.HazardClass,
                    MeasureUnitDefault = scGroup.FirstOrDefault().Chemical.MeasureUnitDefault,
                    FollowOilPhaseDefault = scGroup.FirstOrDefault().Chemical.FollowOilPhaseDefault,
@@ -498,9 +501,9 @@ namespace ChemDec.Api.Controllers.Handlers
                    Weight = scGroup.Sum(x => x.CalculatedWeight),
                    TocWeight = scGroup.Sum(x => x.CalculatedToc),
                    NitrogenWeight = scGroup.Sum(x => x.CalculatedNitrogen),
-                   BiocideWeight = scGroup.Sum(x => x.CalculatedBiocides)
+                   BiocideWeight = scGroup.Sum(x => x.CalculatedBiocides),
+                   Water = scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
                });
-            //var test3 = tableItems2.ToList();
 
 
             var shipmentChemicalTableItems = await tableItems.ToListAsync();
@@ -1113,7 +1116,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var subject = string.Empty;
             var change = string.Empty;
             var changedBy = status + " by " + user.Name + " on " + installation.Name + " (<a href=\"mailto:" + user.Email + "\">" + user.Email + "</>)";
-                       
+
             var portalLink = getEnvironmentSpecificPortalLink();
 
             if (initiator == Initiator.Offshore)
@@ -1189,7 +1192,7 @@ namespace ChemDec.Api.Controllers.Handlers
             switch (config["env"])
             {
                 case "Local": subject = "[Local] " + subject; break;
-                case "Dev": subject = "[Dev] " + subject; break;               
+                case "Dev": subject = "[Dev] " + subject; break;
                 case "QA": subject = "[QA] " + subject; break;
             }
 
