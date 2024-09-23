@@ -1,11 +1,15 @@
-﻿namespace ChemDec.Api.Model
+﻿using System;
+
+namespace ChemDec.Api.Model
 {
     public class ShipmentChemicalTableItem
     {
-        //public Datamodel.Chemical Chemical { get; set; }
         public string ChemicalName { get; set; }
         public double Weight { get; set; }
         public string Description { get; set; }
+        public string ShipmentTitle { get; set; }
+        public DateTime PlannedExecutionFromDate { get; set; }
+        public DateTime PlannedExecutionToDate { get; set; }
         public string FromInstallation { get; set; }
 
         public double TocWeight { get; set; }
@@ -17,6 +21,7 @@
         public string MeasureUnitDefault { get; set; } //kg,l,tonn,m3
         public bool FollowOilPhaseDefault { get; set; }
         public bool FollowWaterPhaseDefault { get; set; }
+        public double  Water { get; set; }
 
         //public DateTime FromDate { get; set; }
         //public DateTime ToDate { get; set; }
