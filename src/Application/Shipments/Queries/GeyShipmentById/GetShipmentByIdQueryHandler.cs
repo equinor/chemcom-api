@@ -1,5 +1,6 @@
 ﻿using Application.Common;
 using Application.Common.Repositories;
+using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
 using System;
@@ -14,12 +15,15 @@ public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQ
 {
     private readonly IShipmentsRepository _shipmentsRepository;
     private readonly IShipmentPartsRepository _shipmentPartsRepository;
+    private readonly IInstallationsRepository _installationsRepository;
 
-    public GetShipmentByIdQueryHandler(IShipmentsRepository shipmentsRepository, IShipmentPartsRepository shipmentPartsRepository)
+    public GetShipmentByIdQueryHandler(IShipmentsRepository shipmentsRepository,
+        IShipmentPartsRepository shipmentPartsRepository,
+        IInstallationsRepository installationsRepository)
     {
         _shipmentsRepository = shipmentsRepository;
         _shipmentPartsRepository = shipmentPartsRepository;
-
+        _installationsRepository = installationsRepository;
     }
 
     public async Task<Result<GetShipmentByIdQueryResult>> ExecuteAsync(GetShipmentByIdQuery query, CancellationToken cancellationToken = default)
@@ -33,8 +37,10 @@ public sealed class GetShipmentByIdQueryHandler : IQueryHandler<GetShipmentByIdQ
             return Result<GetShipmentByIdQueryResult>.NotFound(errors);
         }
 
+        Installation installation = await _installationsRepository.GetByIdAsync(shipment.SenderId, cancellationToken);
+
         List<ShipmentPart> shipmentParts = await _shipmentPartsRepository.GetByShipmentIdAsync(shipment.Id, cancellationToken);
-        GetShipmentByIdQueryResult queryResult = GetShipmentByIdQueryResult.Map(shipment, shipmentParts);
+        GetShipmentByIdQueryResult queryResult = GetShipmentByIdQueryResult.Map(shipment, installation, shipmentParts);
         return Result<GetShipmentByIdQueryResult>.Success(queryResult);
     }
 }

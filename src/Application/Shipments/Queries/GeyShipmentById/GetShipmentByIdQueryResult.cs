@@ -1,4 +1,5 @@
 ﻿using Application.Shipments.Commands.Create;
+using Domain.Installations;
 using Domain.ShipmentParts;
 using Domain.Shipments;
 using System;
@@ -15,7 +16,6 @@ public sealed record GetShipmentByIdQueryResult
     public string Code { get; set; }
     public string Title { get; set; }
     public string Status { get; set; }
-    public Guid SenderId { get; set; }
     public Guid ReceiverId { get; set; }
     public string Type { get; set; }
     public double RinsingOffshorePercent { get; set; }
@@ -57,8 +57,9 @@ public sealed record GetShipmentByIdQueryResult
     public DateTime Updated { get; set; }
     public string UpdatedBy { get; set; }
     public string UpdatedByName { get; set; }
+    public InstallationResult Sender { get; set; }
 
-    public static GetShipmentByIdQueryResult Map(Shipment shipment, List<ShipmentPart> shipmentParts = null)
+    public static GetShipmentByIdQueryResult Map(Shipment shipment, Installation installation, List<ShipmentPart> shipmentParts = null)
     {
         GetShipmentByIdQueryResult result = new()
         {
@@ -66,7 +67,7 @@ public sealed record GetShipmentByIdQueryResult
             Code = shipment.Code,
             Title = shipment.Title,
             Status = shipment.Status,
-            SenderId = shipment.SenderId,
+            Sender = new InstallationResult(installation.Id, installation.Name, installation.Code),
             ReceiverId = shipment.ReceiverId,
             Type = shipment.Type,
             RinsingOffshorePercent = shipment.RinsingOffshorePercent,
@@ -96,13 +97,13 @@ public sealed record GetShipmentByIdQueryResult
             WaterHasBeenAnalyzed = shipment.WaterHasBeenAnalyzed,
             HasBeenOpened = shipment.HasBeenOpened,
             EvalAmountOk = shipment.EvalAmountOk,
-            EvalAmountOkUpdatedBy= shipment.EvalAmountOkUpdatedBy,
-            EvalBiocidesOk= shipment.EvalBiocidesOk,
-            EvalBiocidesOkUpdatedBy= shipment.EvalBiocidesOkUpdatedBy,
+            EvalAmountOkUpdatedBy = shipment.EvalAmountOkUpdatedBy,
+            EvalBiocidesOk = shipment.EvalBiocidesOk,
+            EvalBiocidesOkUpdatedBy = shipment.EvalBiocidesOkUpdatedBy,
             EvalCapacityOk = shipment.EvalCapacityOk,
-            EvalCapacityOkUpdatedBy= shipment.EvalCapacityOkUpdatedBy,
+            EvalCapacityOkUpdatedBy = shipment.EvalCapacityOkUpdatedBy,
             EvalContaminationRisk = shipment.EvalContaminationRisk,
-            EvalContaminationRiskUpdatedBy= shipment.EvalContaminationRiskUpdatedBy,
+            EvalContaminationRiskUpdatedBy = shipment.EvalContaminationRiskUpdatedBy,
             EvalEnvImpact = shipment.EvalEnvImpact,
             EvalComments = shipment.EvalComments,
             Updated = shipment.Updated,
@@ -113,3 +114,5 @@ public sealed record GetShipmentByIdQueryResult
         return result;
     }
 }
+
+public sealed record InstallationResult(Guid Id, string Name, string Code);
