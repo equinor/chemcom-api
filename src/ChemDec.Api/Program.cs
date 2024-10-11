@@ -49,6 +49,12 @@ if (!builder.Environment.IsDevelopment())
     var secretClient = new SecretClient(new Uri(keyVaultUrl), chainedTokenCredential);
     builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
 }
+else
+{
+    var clientSecretCredential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    var secretClient = new SecretClient(new Uri(keyVaultUrl), clientSecretCredential);
+    builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+}
 
 var corsDomainsFromConfig = Utils.GetCommaSeparatedConfigValue(configuration, "AllowCorsDomains");
 builder.Services.AddControllers();
@@ -168,7 +174,7 @@ builder.Services.AddQuartz(options =>
                trigger.ForJob(jobKey);
                if (builder.Environment.IsDevelopment())
                {
-                   int intervalInSeconds = 1000;
+                   int intervalInSeconds = 10;
                    trigger.WithSimpleSchedule(schedule =>
                    {
                        schedule.WithIntervalInSeconds(intervalInSeconds)
