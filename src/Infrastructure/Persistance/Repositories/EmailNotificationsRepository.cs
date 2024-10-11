@@ -25,8 +25,19 @@ public class EmailNotificationsRepository : IEmailNotificationsRepository
     public async Task<List<EmailNotification>> GetUnProcessedEmailNotifications(int take = 5, CancellationToken cancellationToken = default)
     {
         return await _dbContext.EmailNotifications.
-                                Where(x => !x.IsSent).
-                                Take(take).
-                                ToListAsync(cancellationToken);
+                      Where(x => !x.IsSent).
+                      Take(take).
+                      Select(x => new EmailNotification
+                      {
+                          Id = x.Id,
+                          Subject = x.Subject,
+                          Body = x.Body,
+                          Recipients = x.Recipients,
+                          SentAt = x.SentAt,
+                          IsSent = x.IsSent,
+                          EmailNotificationType = Convert.ToInt32(x.EmailNotificationType),
+                          ErrorMessage = x.ErrorMessage,
+                      }).
+                      ToListAsync(cancellationToken);
     }
 }
