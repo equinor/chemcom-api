@@ -100,7 +100,7 @@ public sealed class SubmitShipmentCommandHandler : ICommandHandler<SubmitShipmen
     private string BuldEmailTemplate(string receiver, string destination, string updatedBy, string updatedByName)
     {
         StringBuilder template = new();
-        template.AppendLine($"{_environmentContext.GetEnvironmentPrefix}Shipment form was submitted to {receiver}");
+        template.AppendLine($"{_environmentContext.GetEnvironmentPrefix()}Shipment form was submitted to {receiver}");
         template.AppendLine($"Submitted by {updatedByName} on {destination} ({updatedBy})");
         return template.ToString();
     }
