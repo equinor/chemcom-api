@@ -37,6 +37,14 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
+          
+      - name: Wait for MSSQL to be ready
+        run: |
+          echo "Waiting for MSSQL to start..."
+          while ! nc -z localhost 1433; do
+            sleep 1
+          done
+          echo "MSSQL is up and running"
 
       - name: Test
         run: dotnet test ./src/IntegrationTests
