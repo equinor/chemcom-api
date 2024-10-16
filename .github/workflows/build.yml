@@ -29,6 +29,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
+        ports:
+          - 1433:1433
+        options: >-
+          --env SA_PASSWORD=MyMssqlPassword@12345
+          --env ACCEPT_EULA=Y
     steps:
       - name: Checkout
         uses: actions/checkout@v4
