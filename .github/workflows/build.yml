@@ -44,24 +44,8 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
-          
-      - name: Wait for MSSQL to be ready
-        run: |
-          echo "Waiting for MSSQL to start..."
-          for i in {1..60}; do
-            if nc -z localhost 1433; then
-              echo "MSSQL is up and running"
-              break
-            fi
-            echo "Waiting for MSSQL to start... ($i/60)"
-            sleep 5
-          done
-          if ! nc -z localhost 1433; then
-            echo "MSSQL failed to start"
-            exit 1
-          fi
-
+          dotnet-version: "8.0.x"        
+     
       - name: Print MSSQL logs
         run: docker logs $(docker ps -q --filter ancestor=mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04)
 
