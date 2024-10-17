@@ -38,5 +38,16 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Start Docker container
+        run: |
+          docker run -d --name test-container <your-docker-image>
+          docker ps -a
+
       - name: Test
         run: dotnet test ./src/IntegrationTests
+
+      - name: Get Docker container logs
+        run: docker logs test-container
+
+      - name: Cleanup Docker containers
+        run: docker rm -f $(docker ps -a -q)
