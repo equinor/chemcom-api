@@ -14,6 +14,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Abstractions;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -26,9 +27,9 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly IConfiguration config;
         private readonly MailSender mailSender;
         private readonly LoggerHelper loggerHelper;
-        private TelemetryClient telemetry = new TelemetryClient();
+        private readonly TelemetryClient telemetry;
 
-        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper)
+        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper, TelemetryClient telemetry)
         {
             this.db = db;
             this.mapper = mapper;
@@ -37,6 +38,7 @@ namespace ChemDec.Api.Controllers.Handlers
             this.config = config;
             this.mailSender = mailSender;
             this.loggerHelper = loggerHelper;
+            this.telemetry = telemetry;
         }
 
         public IQueryable<Shipment> GetShipments()
@@ -1208,7 +1210,7 @@ namespace ChemDec.Api.Controllers.Handlers
             return "https://frontend-chemcom-dev.radix.equinor.com";
         }
 
-        private IEnumerable<LogEntry> FindGeneralDifferences(Shipment dto, Db.Shipment dbObject)
+        private IEnumerable<ChemDec.Api.Model.LogEntry> FindGeneralDifferences(Shipment dto, Db.Shipment dbObject)
         {
             // Fill in when logging is approved
             return null;
@@ -1304,38 +1306,35 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 var shipmentChemical = await db.ShipmentChemicals.FirstOrDefaultAsync(c => c.ChemicalId == item.Id && c.ShipmentId == dto.Id);
 
+                // Fetch the chemical from the database
+                var chemical = await db.Chemicals.FirstOrDefaultAsync(c => c.Id == item.Id);
+
                 if (shipmentChemical == null)
                 {
+                    // Create new ShipmentChemical
                     var newShipmentChemical = new Db.ShipmentChemical
                     {
                         Id = Guid.NewGuid(),
                         ChemicalId = item.Id,
                         MeasureUnit = item.MeasureUnit,
                         Amount = item.Amount,
-                        ShipmentId = dbObject.Id,
-                        CalculatedWeightUnrinsed = item.CalculatedWeightUnrinsed,
-                        CalculatedBiocides = item.CalculatedBiocides,
-                        CalculatedBiocidesUnrinsed = item.CalculatedBiocidesUnrinsed,
-                        CalculatedNitrogen = item.CalculatedNitrogen,
-                        CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed,
-                        CalculatedToc = item.CalculatedToc,
-                        CalculatedTocUnrinsed = item.CalculatedTocUnrinsed,
-                        CalculatedWeight = item.CalculatedWeight
+                        ShipmentId = dbObject.Id
                     };
+
+                    // Perform calculations
+                    CalculateChemicals(dbObject.RinsingOffshorePercent, newShipmentChemical, chemical);
+
                     db.ShipmentChemicals.Add(newShipmentChemical);
                 }
                 else
                 {
+                    // Update existing ShipmentChemical
                     shipmentChemical.MeasureUnit = item.MeasureUnit;
                     shipmentChemical.Amount = item.Amount;
-                    shipmentChemical.CalculatedWeightUnrinsed = item.CalculatedWeightUnrinsed;
-                    shipmentChemical.CalculatedBiocides = item.CalculatedBiocides;
-                    shipmentChemical.CalculatedBiocidesUnrinsed = item.CalculatedBiocidesUnrinsed;
-                    shipmentChemical.CalculatedNitrogen = item.CalculatedNitrogen;
-                    shipmentChemical.CalculatedNitrogenUnrinsed = item.CalculatedNitrogenUnrinsed;
-                    shipmentChemical.CalculatedToc = item.CalculatedToc;
-                    shipmentChemical.CalculatedTocUnrinsed = item.CalculatedTocUnrinsed;
-                    shipmentChemical.CalculatedWeight = item.CalculatedWeight;
+
+                    // Perform calculations
+                    CalculateChemicals(dbObject.RinsingOffshorePercent, shipmentChemical, chemical);
+
                     db.ShipmentChemicals.Update(shipmentChemical);
                 }
             }

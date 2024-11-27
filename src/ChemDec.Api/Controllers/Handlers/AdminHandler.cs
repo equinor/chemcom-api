@@ -54,7 +54,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             var user = userResolver.GetCurrentUserId();
             //from, to (opt), notificationType, message
-            if(notification.FromDate == null)
+            if(notification.FromDate == default(DateTime))
             {
                 validationErrors.Add("From date must be set");
             }

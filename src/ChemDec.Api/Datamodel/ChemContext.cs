@@ -121,7 +121,7 @@ namespace ChemDec.Api.Datamodel
 
             foreach (var audit in auditable)
             {
-                if (((IAudit)audit.Entity).Id == null) ((IAudit)audit.Entity).Id = Guid.NewGuid();
+                if (((IAudit)audit.Entity).Id == Guid.Empty) ((IAudit)audit.Entity).Id = Guid.NewGuid();
                 ((IAudit)audit.Entity).Updated = DateTime.Now;
                 ((IAudit)audit.Entity).UpdatedBy = currentUsername;
                 ((IAudit)audit.Entity).UpdatedByName = currentUserDisplayName;

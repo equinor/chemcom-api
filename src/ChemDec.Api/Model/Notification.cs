@@ -41,7 +41,7 @@ namespace ChemDec.Api.Model
         public DateTime? ToDate
         {
             get { return _notification.ToDate != null ? DateTime.SpecifyKind(_notification.ToDate.Value, DateTimeKind.Utc) : _notification.ToDate; }
-            set { _notification.ToDate = (value != null && value.Value != null) ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value; }
+            set { _notification.ToDate = (value != null && value.Value != default(DateTime)) ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc) : value; }
         }
         public NotificationType NotificationType
         {

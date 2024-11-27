@@ -26,7 +26,7 @@ public HomeController(ICacheHelper cacheHelper, IUserUtils userUtils, SptsContex
 
         [HttpGet]
        // [Authorize(AuthenticationSchemes = Program.Schemes)]
-        public async Task<IActionResult> Index()
+        public  IActionResult Index()
         {
            // var user = await userResolver.GetUser(User);
             //var isAdmin = user.Roles.Any(w => w.Code == "Appl_SPTS_Internal_Coordinator");

@@ -19,14 +19,15 @@ namespace ChemDec.Api.Infrastructure.Services
         private readonly LoggerHelper _loggerHelper;
         private readonly UserService _userService;
         private readonly IMapper _mapper;
-        private TelemetryClient telemetry = new TelemetryClient();
+        private readonly TelemetryClient telemetry;
 
-        public CommentsService(ChemContext dbContext, UserService userService, IMapper mapper, LoggerHelper loggerHelper)
+        public CommentsService(ChemContext dbContext, UserService userService, IMapper mapper, LoggerHelper loggerHelper, TelemetryClient telemetryClient)
         {
             _dbContext = dbContext;
             _loggerHelper = loggerHelper;
             _userService = userService;
             _mapper = mapper;
+            telemetry = telemetryClient;
         }
 
         //NOTE: Initial implementation of the project has lot of code smells and rookie errors.

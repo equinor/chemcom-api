@@ -25,7 +25,6 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly UserService _userService;
         private readonly MailSender _mailSender;
         private readonly IConfiguration _config;
-        private TelemetryClient telemetry = new TelemetryClient();
 
         public ChemicalHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, MailSender mailSender, IConfiguration config)
         {
