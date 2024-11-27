@@ -8,7 +8,6 @@ namespace ChemDec.Api.Infrastructure.Security
 {
     public class ChemAuthenticationHandler : AuthorizationHandler<ChemAuthenticationRequirement>
     {
-        private readonly UserResolver userResolver;
         private readonly UserService userService;
         private readonly IConfiguration config;
         private readonly ChemContext db;

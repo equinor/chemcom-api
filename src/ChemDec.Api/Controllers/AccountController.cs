@@ -40,7 +40,7 @@ namespace ChemDec.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult SignOut()
+        public new IActionResult  SignOut()
         {
             //var callbackUrl = Url.Action(nameof(SignedOut), "Account", values: null, protocol: Request.Scheme);
             return SignOut(

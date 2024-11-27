@@ -14,6 +14,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Abstractions;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -26,9 +27,9 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly IConfiguration config;
         private readonly MailSender mailSender;
         private readonly LoggerHelper loggerHelper;
-        private TelemetryClient telemetry = new TelemetryClient();
+        private readonly TelemetryClient telemetry;
 
-        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper)
+        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper, TelemetryClient telemetry)
         {
             this.db = db;
             this.mapper = mapper;
@@ -37,6 +38,7 @@ namespace ChemDec.Api.Controllers.Handlers
             this.config = config;
             this.mailSender = mailSender;
             this.loggerHelper = loggerHelper;
+            this.telemetry = telemetry;
         }
 
         public IQueryable<Shipment> GetShipments()
@@ -1208,7 +1210,7 @@ namespace ChemDec.Api.Controllers.Handlers
             return "https://frontend-chemcom-dev.radix.equinor.com";
         }
 
-        private IEnumerable<LogEntry> FindGeneralDifferences(Shipment dto, Db.Shipment dbObject)
+        private IEnumerable<ChemDec.Api.Model.LogEntry> FindGeneralDifferences(Shipment dto, Db.Shipment dbObject)
         {
             // Fill in when logging is approved
             return null;
@@ -1306,10 +1308,6 @@ namespace ChemDec.Api.Controllers.Handlers
 
                 // Fetch the chemical from the database
                 var chemical = await db.Chemicals.FirstOrDefaultAsync(c => c.Id == item.Id);
-                if (chemical == null)
-                {
-                    throw new Exception($"Chemical with ID {item.Id} not found.");
-                }
 
                 if (shipmentChemical == null)
                 {

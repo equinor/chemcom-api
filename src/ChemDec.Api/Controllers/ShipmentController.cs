@@ -184,6 +184,10 @@ namespace ChemDec.Api.Controllers
             };
 
             var shipment = JsonConvert.DeserializeObject<Shipment>(request.Shipment);
+            if (shipment.Chemicals != null && shipment.Chemicals.Any(c => c.Id == Guid.Empty))
+            {
+                return BadRequest(new { error = "Each chemical in the shipment must have a valid, non-empty ID." });
+            }
             Shipment savedShipment;
             IEnumerable<string> validationErrors;
             if (operationEnum == ShipmentHandler.Operation.SaveEvaluation)
