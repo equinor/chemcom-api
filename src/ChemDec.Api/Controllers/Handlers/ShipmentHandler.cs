@@ -672,7 +672,7 @@ namespace ChemDec.Api.Controllers.Handlers
             var savedShipment = this.GetShipment(shipment.Id);
             var operation = Operation.SaveEvaluation; //checks same as approval
             var details = DetailedOperation.SavedEvaluation;
-
+            shipment.Receiver = db.Installations.Where(w => w.Id == savedShipment.ReceiverId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefault();
             var validationErrors = CheckIfUserCanSaveEvaluation(savedShipment, shipment, user);
             if (validationErrors != null && validationErrors.Any()) return (null, validationErrors);
 
@@ -776,7 +776,8 @@ namespace ChemDec.Api.Controllers.Handlers
         public async Task<(Shipment, IEnumerable<string>)> SaveOrUpdate(Shipment shipment, Initiator initiator, Operation operation, DetailedOperation details, string comment, string attachment, List<IFormFile> attachments = null, Guid? deleteAttachmentId = null)
         {
             var validationErrors = new List<string>();
-
+            var recSender = db.Installations.FirstOrDefault(w => w.Id == shipment.SenderId);
+            shipment.Receiver = db.Installations.Where(w => w.Id == recSender.ShipsToId).ProjectTo<PlantReference>(mapper.ConfigurationProvider).FirstOrDefault();
             var user = await userService.GetCurrentUser();
             if (user == null)
             {
