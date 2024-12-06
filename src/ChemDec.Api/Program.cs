@@ -93,7 +93,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         var defaultBackChannel = new HttpClient();
         defaultBackChannel.DefaultRequestHeaders.Add("Origin", "chemcom");
         optionsB.Backchannel = defaultBackChannel;
-    })
+    });
     //.EnableTokenAcquisitionToCallDownstreamApi(e => { }) this require caching and there is no downstream api
     //.AddInMemoryTokenCaches();
 
