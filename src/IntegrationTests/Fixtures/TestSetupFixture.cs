@@ -151,9 +151,9 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
 
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-
+        return Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
