@@ -153,7 +153,7 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
 
     public async Task InitializeAsync()
     {
-        await Task.CompletedTask;
+        await Task.Delay(1).ConfigureAwait(false);
     }
 
     public async Task DisposeAsync()
