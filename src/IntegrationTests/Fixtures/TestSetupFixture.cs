@@ -1,11 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Application.Common;
@@ -18,7 +13,6 @@ using IntegrationTests.Fakes;
 using IntegrationTests.Common;
 using Testcontainers.MsSql;
 using System.Security.Claims;
-using Domain.Users;
 
 namespace IntegrationTests.Fixtures;
 
@@ -156,8 +150,8 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
         await _msSqlContainer.StopAsync();
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        throw new NotImplementedException();
+
     }
 }
