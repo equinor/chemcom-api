@@ -151,13 +151,13 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
 
     }
 
-    public async Task InitializeAsync()
-    {
-
-    }
-
     public async Task DisposeAsync()
     {
         await _msSqlContainer.StopAsync();
+    }
+
+    public Task InitializeAsync()
+    {
+        throw new NotImplementedException();
     }
 }
