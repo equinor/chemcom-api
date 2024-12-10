@@ -27,8 +27,15 @@ jobs:
         run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
-    runs-on: ubuntu-latest
-    needs: build
+    strategy:
+      matrix:
+        config:
+          - os: ubuntu-latest
+            image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
+          - os: windows-latest
+            image: mcr.microsoft.com/mssql/server:2019-latest
+
+    runs-on: ${{ matrix.config.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,7 +47,9 @@ jobs:
 
       - name: Start Docker container
         run: |
-          docker run -d --name test-container mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
+          echo "Running on OS: ${{ matrix.config.os }}"
+          echo "Using image: ${{ matrix.config.image }}"
+          docker run -d --name test-container ${{ matrix.config.image }}
           docker ps -a
 
       - name: Test
