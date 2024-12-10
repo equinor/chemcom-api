@@ -19,6 +19,7 @@ using IntegrationTests.Common;
 using Testcontainers.MsSql;
 using System.Security.Claims;
 using Domain.Users;
+using System.Runtime.InteropServices;
 
 namespace IntegrationTests.Fixtures;
 
@@ -32,13 +33,29 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
     public IUserProvider UserProvider { get; private set; }
 
     private readonly ApplicationDbContext _dbContext;
-    private readonly MsSqlContainer _msSqlContainer
-        = new MsSqlBuilder().Build();
+    private readonly MsSqlContainer _msSqlContainer;
+        //= new MsSqlBuilder().Build();
 
     //TODO: Add Faker
     //TODO: Refactor to use IClassFixture<>
     public TestSetupFixture()
     {
+        // Workaround to fix issue with Testcontainers.MsSql on Linux
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            _msSqlContainer = new MsSqlBuilder()
+                .WithImage(
+                    "mcr.microsoft.com/mssql/server:2022-latest"
+                )
+                .WithPortBinding(1433, true)
+                .Build();
+        }
+        else
+        {
+            _msSqlContainer = new MsSqlBuilder()
+                .WithPortBinding(1433, true)
+                .Build();
+        }
         _msSqlContainer.StartAsync().Wait();
         ConfigurationBuilder configurationBuilder = new();
         Configuration = configurationBuilder
@@ -151,9 +168,9 @@ public class TestSetupFixture : IAsyncLifetime, IDisposable
 
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-
+        return Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
