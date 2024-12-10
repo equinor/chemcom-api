@@ -27,8 +27,7 @@ jobs:
         run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
-    needs: build
-    runs-on: ${{ matrix.os }}
+    needs: build  # Ensure test runs only after build is successful
     strategy:
       matrix:
         config:
@@ -36,7 +35,7 @@ jobs:
             image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
           - os: windows-latest
             image: mcr.microsoft.com/mssql/server:2019-latest
-
+    runs-on: ${{ matrix.config.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
