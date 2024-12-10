@@ -27,6 +27,7 @@ jobs:
         run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
+    needs: build
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
