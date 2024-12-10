@@ -27,6 +27,7 @@ jobs:
         run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         config:
@@ -35,7 +36,6 @@ jobs:
           - os: windows-latest
             image: mcr.microsoft.com/mssql/server:2019-latest
 
-    runs-on: ${{ matrix.config.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
