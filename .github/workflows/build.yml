@@ -42,7 +42,7 @@ jobs:
         id: set-image
         run: |
           if [[ "$(uname -s)" == "Linux" ]]; then
-            echo "image=mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04" >> $GITHUB_ENV
+            echo "image=mcr.microsoft.com/mssql/server:2022-latest" >> $GITHUB_ENV
           else
             echo "image=mcr.microsoft.com/mssql/server:2019-latest" >> $GITHUB_ENV
           fi
