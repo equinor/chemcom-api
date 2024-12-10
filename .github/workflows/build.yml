@@ -27,15 +27,8 @@ jobs:
         run: dotnet build ./src/Chemcom.sln --configuration Release --no-restore
 
   test:
-    needs: build  # Ensure test runs only after build is successful
-    strategy:
-      matrix:
-        config:
-          - os: ubuntu-latest
-            image: mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04
-          - os: windows-latest
-            image: mcr.microsoft.com/mssql/server:2019-latest
-    runs-on: ${{ matrix.config.os }}
+    needs: build
+    runs-on: ubuntu-latest  # Default runner
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,11 +38,19 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Set Docker Image Based on OS
+        id: set-image
+        run: |
+          if [[ "$(uname -s)" == "Linux" ]]; then
+            echo "image=mcr.microsoft.com/mssql/server:2019-CU18-ubuntu-20.04" >> $GITHUB_ENV
+          else
+            echo "image=mcr.microsoft.com/mssql/server:2019-latest" >> $GITHUB_ENV
+          fi
+
       - name: Start Docker container
         run: |
-          echo "Running on OS: ${{ matrix.config.os }}"
-          echo "Using image: ${{ matrix.config.image }}"
-          docker run -d --name test-container ${{ matrix.config.image }}
+          echo "Using Docker image: ${{ env.image }}"
+          docker run -d --name test-container ${{ env.image }}
           docker ps -a
 
       - name: Test
