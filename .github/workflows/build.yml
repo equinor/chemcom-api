@@ -50,7 +50,7 @@ jobs:
       - name: Start Docker container
         run: |
           echo "Using Docker image: ${{ env.image }}"
-          docker run -d --name test-container 1433:1433 ${{ env.image }}
+          docker run -d --name test-container -p 1433:1433 ${{ env.image }}
           docker ps -a
 
       - name: Test
