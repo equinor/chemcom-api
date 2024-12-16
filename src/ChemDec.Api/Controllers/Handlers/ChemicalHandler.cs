@@ -10,10 +10,6 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Microsoft.ApplicationInsights.Channel;
-using System.Reflection;
-using Microsoft.ApplicationInsights;
-using ChemDec.Api.Datamodel;
 
 namespace ChemDec.Api.Controllers.Handlers
 {

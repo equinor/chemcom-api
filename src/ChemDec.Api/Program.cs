@@ -16,7 +16,6 @@ using Microsoft.Identity.Web;
 using System.Net.Http;
 using ChemDec.Api;
 using ChemDec.Api.Infrastructure.Services;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -31,6 +30,7 @@ using Infrastructure.EmailService;
 using Quartz;
 using ChemDec.Api.BackgroundJobs;
 using ChemDec.Api.Infrastructure;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -205,8 +205,10 @@ CommandAndQueryHandlersSetup.AddCommandOrQueryHandlers(builder.Services, typeof(
 
 // The following line enables Application Insights telemetry collection.
 var appinsightConnStr = configuration["ApplicationInsights:ConnectionString"];
-var optionsAppInsight = new ApplicationInsightsServiceOptions { ConnectionString = configuration["ApplicationInsights:ConnectionString"] };
-builder.Services.AddApplicationInsightsTelemetry(options: optionsAppInsight);
+builder.Services.AddOpenTelemetry().UseAzureMonitor(options =>
+{
+    options.ConnectionString = appinsightConnStr;
+});
 
 SwaggerSetup.ConfigureServices(builder.Configuration, builder.Services);
 
