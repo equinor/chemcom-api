@@ -9,12 +9,10 @@ using ChemDec.Api.Model;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.ApplicationInsights;
 using Azure.Storage.Blobs;
 using Azure.Storage;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Abstractions;
 
 namespace ChemDec.Api.Controllers.Handlers
 {
@@ -27,9 +25,8 @@ namespace ChemDec.Api.Controllers.Handlers
         private readonly IConfiguration config;
         private readonly MailSender mailSender;
         private readonly LoggerHelper loggerHelper;
-        private readonly TelemetryClient telemetry;
 
-        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper, TelemetryClient telemetry)
+        public ShipmentHandler(Db.ChemContext db, IMapper mapper, UserResolver userResolver, UserService userService, IConfiguration config, MailSender mailSender, LoggerHelper loggerHelper)
         {
             this.db = db;
             this.mapper = mapper;
@@ -38,7 +35,6 @@ namespace ChemDec.Api.Controllers.Handlers
             this.config = config;
             this.mailSender = mailSender;
             this.loggerHelper = loggerHelper;
-            this.telemetry = telemetry;
         }
 
         public IQueryable<Shipment> GetShipments()
@@ -692,7 +688,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 savedShipment.Updated = DateTime.Now;
                 await db.SaveChangesAsync();
 
-                loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentEvaluationSaved", shipment);
+                loggerHelper.LogEvent(user, sender, plant, operation, details, "ShipmentEvaluationSaved", shipment);
                 await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, null, savedShipment.Status, sender, plant);
             }
             return (await db.Shipments.ProjectTo<Shipment>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == shipment.Id), null);
@@ -986,7 +982,7 @@ namespace ChemDec.Api.Controllers.Handlers
 
             await db.SaveChangesAsync();
 
-            loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "ShipmentSaved", shipment);
+            loggerHelper.LogEvent(user, sender, plant, operation, details, "ShipmentSaved", shipment);
 
             //TODO: Remove this code
             await SendShipmentChangedMail(shipment, initiator, operation, details, comment, attachment, user, newChemicals, status, sender, plant);
@@ -1002,7 +998,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 {
                     (var subject, var html, var plainText) = buildEmailContentForChemicalResponsible(initiator, sender, plant, user, newChemicals);
                     await mailSender.SendMail(to, subject, html);
-                    loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "EmailNotificationNewChemical", new { To = to, Subject = subject });
+                    loggerHelper.LogEvent(user, sender, plant, operation, details, "EmailNotificationNewChemical", new { To = to, Subject = subject });
                 }
 
             }
@@ -1017,7 +1013,7 @@ namespace ChemDec.Api.Controllers.Handlers
                     if (recipients != null && recipients.Any())
                     {
                         await mailSender.SendMail(recipients, subject, html);
-                        loggerHelper.LogEvent(telemetry, user, plant, sender, operation, details, "EmailNotificationFromOnshore", new { To = recipients, Subject = subject });
+                        loggerHelper.LogEvent(user, plant, sender, operation, details, "EmailNotificationFromOnshore", new { To = recipients, Subject = subject });
 
                     }
                 }
@@ -1027,7 +1023,7 @@ namespace ChemDec.Api.Controllers.Handlers
                     if (recipients != null && recipients.Any())
                     {
                         await mailSender.SendMail(recipients, subject, html);
-                        loggerHelper.LogEvent(telemetry, user, sender, plant, operation, details, "EmailNotificationFromOffshore", new { To = recipients, Subject = subject });
+                        loggerHelper.LogEvent(user, sender, plant, operation, details, "EmailNotificationFromOffshore", new { To = recipients, Subject = subject });
                     }
                 }
             }

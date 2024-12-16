@@ -1,6 +1,6 @@
 ﻿using ChemDec.Api.Model;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -18,19 +18,24 @@ namespace ChemDec.Api.Infrastructure.Utils
             this.logger = logger;
         }
 
-        public void LogEvent<T>(TelemetryClient telemetry, User user, PlantReference from, PlantReference to, Operation? operation, DetailedOperation? details, string eventName, T payload)
+ 
+        public void LogEvent<T>(User user, PlantReference from, PlantReference to, Operation? operation, DetailedOperation? details, string eventName, T payload)
         {
             try
             {
                 var jPayload = (JObject)JToken.FromObject(payload);
                 var flattened = Flatten(jPayload, user, from, to, operation, details);
-                telemetry.TrackEvent(eventName, flattened);
+
+                var flattenedJson = JsonConvert.SerializeObject(flattened);
+
+                logger.LogInformation("Event: {EventName} | Flattened Data: {FlattenedData}", eventName, flattenedJson);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                logger.LogError(new EventId(1), ex, "Tracking failed");
+                logger.LogError(new EventId(1), ex, "Tracking failed for event {EventName}", eventName);
             }
         }
+
         public Dictionary<string, string> Flatten(JObject jsonObject, User user, PlantReference from, PlantReference to, Operation? operation, DetailedOperation? details)
         {
             var prefix = user == null ? null : user + ".";

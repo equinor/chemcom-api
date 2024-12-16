@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using ChemDec.Api.Datamodel;
 using ChemDec.Api.Infrastructure.Utils;
-using ChemDec.Api.Model;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -19,15 +16,13 @@ namespace ChemDec.Api.Infrastructure.Services
         private readonly LoggerHelper _loggerHelper;
         private readonly UserService _userService;
         private readonly IMapper _mapper;
-        private readonly TelemetryClient telemetry;
 
-        public CommentsService(ChemContext dbContext, UserService userService, IMapper mapper, LoggerHelper loggerHelper, TelemetryClient telemetryClient)
+        public CommentsService(ChemContext dbContext, UserService userService, IMapper mapper, LoggerHelper loggerHelper)
         {
             _dbContext = dbContext;
             _loggerHelper = loggerHelper;
             _userService = userService;
             _mapper = mapper;
-            telemetry = telemetryClient;
         }
 
         //NOTE: Initial implementation of the project has lot of code smells and rookie errors.
