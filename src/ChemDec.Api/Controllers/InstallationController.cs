@@ -84,6 +84,21 @@ namespace ChemDec.Api.Controllers
             return Ok(new { Res = reservoirData });
         }
 
+        [HttpGet]
+        [Route("reservoirinkg/{plantId}")]
+        public async Task<ActionResult> GetReservoirDataInKg(Guid plantId)
+        {
+
+            (var reservoirData, var validationErrors) = await handler.GetReservoirDataInKg(plantId);
+
+            if (validationErrors != null)
+            {
+                return BadRequest(new { error = validationErrors });
+            }
+
+            return Ok(new { Res = reservoirData });
+        }
+
         [HttpPost]
         [Route("")]
         public async Task<ActionResult<Installation>> SaveInstallation([FromBody] Installation installation)
