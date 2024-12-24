@@ -89,6 +89,78 @@ namespace ChemDec.Api.Controllers.Handlers
             return (reservoirData, null);
         }
 
+        public async Task<(ReservoirData, IEnumerable<string>)> GetReservoirDataInKg(Guid plantId)
+        {
+            var user = await userService.GetCurrentUser();
+            if (user.Roles.Any(a => a.Installation?.Id == plantId) == false)
+                return (new ReservoirData(), new List<string> { "User don't have access to change this shipment" });
+
+            var installation = await db.Installations.FirstOrDefaultAsync(w => w.Id == plantId);
+            if (installation == null)
+                return (new ReservoirData(), new List<string> { "Plant does not exist" });
+
+            // Query shipment chemicals and parts
+            var res = db.ShipmentChemicals.Include(c => c.Chemical).AsQueryable(); // Include Chemical for density
+            var resWater = db.ShipmentParts.AsQueryable();
+
+            // Filter shipments
+            var pending = res.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.PlannedExecutionFrom.Date >= DateTime.Now.Date && w.Shipment.ReceiverId == plantId);
+            var pendingTotalWater = resWater.Where(w => w.Shipment.Status != Statuses.Approved && w.Shipment.Status != Statuses.Declined && w.Shipment.PlannedExecutionFrom.Date >= DateTime.Now.Date && w.Shipment.ReceiverId == plantId);
+            var approved = res.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.PlannedExecutionFrom.Date >= DateTime.Now.Date && w.Shipment.ReceiverId == plantId);
+            var approvedTotalWater = resWater.Where(w => w.Shipment.Status == Statuses.Approved && w.Shipment.PlannedExecutionFrom.Date >= DateTime.Now.Date && w.Shipment.ReceiverId == plantId);
+
+            var tocApproved = await approved.SumAsync(s => s.CalculatedToc);
+            var nitrogenApproved = await approved.SumAsync(s => s.CalculatedNitrogen);
+            var waterApproved = await approvedTotalWater.SumAsync(s => s.Water);
+            var waterApprovedInKg = ConvertToKg(waterApproved, "m3", 1, 1);
+
+            var tocPending = await pending.SumAsync(s => s.CalculatedToc);
+            var nitrogenPending = await pending.SumAsync(s => s.CalculatedNitrogen);
+            var waterPending = await pendingTotalWater.SumAsync(s => s.Water);
+            var waterPendingInKg = ConvertToKg(waterPending, "m3", 1, 1);
+
+            // Convert installation values to kg
+            var tocInstallation = ConvertToKg(installation.Toc, "ppm",1, installation.Water); 
+            var nitrogenInstallation = ConvertToKg(installation.Nitrogen, "ppm",1, installation.Water);
+            var waterInstallation = ConvertToKg(installation.Water, "m3", 1, 1);
+
+            var reservoirData = new ReservoirData
+            {
+                Toc = tocInstallation,
+                Nitrogen = nitrogenInstallation,
+                Water = waterInstallation,
+                TocApproved = tocApproved,
+                NitrogenApproved = nitrogenApproved,
+                WaterApproved = waterApproved,
+                TocPending = tocPending,
+                NitrogenPending = nitrogenPending,
+                WaterPending = waterPending
+            };
+
+            return (reservoirData, null);
+        }
+
+        private double ConvertToKg(double value, string unit, double density, double referenceWaterVolume)
+        {
+            switch (unit.ToLower())
+            {
+                case "kg":
+                    return value;
+                case "tonn":
+                    return value * 1_000; // 1 tonn = 1,000 kg
+                case "m3":
+                    return value * density * 1000;
+                case "l":
+                    return value * density; // 1 l = density / 1,000 kg
+                case "ppm":
+                    return value * referenceWaterVolume * 1_000 * 1e-6; // ppm to kg: value * waterVolume(m³) * 1e-6
+                default:
+                    return value;
+            }
+        }
+
+
+
         public async Task<(Installation, IEnumerable<string>)> SaveOrUpdate(Installation installation)
         {
             var validationErrors = new List<string>();
