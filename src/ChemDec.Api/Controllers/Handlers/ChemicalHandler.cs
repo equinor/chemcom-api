@@ -39,8 +39,34 @@ namespace ChemDec.Api.Controllers.Handlers
 
         public async Task<(Model.Chemical, IEnumerable<string>)> SaveOrUpdate(Model.Chemical chemical)
         {
-            var validationErrors = new List<string>();
+            var validationErrors = ValidateChemical(chemical);
+            if (validationErrors.Any()) return (null, validationErrors);
+
             var user = await _userService.GetCurrentUser();
+            var dbObject = await GetExistingChemical(chemical);
+
+            if (dbObject != null)
+            {
+                await UpdateChemical(chemical, dbObject);
+            }
+            else
+            {
+                await AddNewChemical(chemical, user);
+            }
+
+            var savedChemical = await db.Chemicals
+                .ProjectTo<Model.Chemical>(mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync(ps => ps.Id == chemical.Id);
+
+            return (savedChemical, null);
+        }
+
+        private List<string> ValidateChemical(Model.Chemical chemical)
+        {
+            var validationErrors = new List<string>();
+
+            chemical.Name = chemical.Name.Trim();
+            chemical.Description = chemical.Description.Trim();
 
             if (string.IsNullOrEmpty(chemical.Name))
             {
@@ -54,78 +80,82 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 validationErrors.Add("Chemical description cannot contain semicolons.");
             }
-
             if (string.IsNullOrEmpty(chemical.Description))
             {
                 validationErrors.Add("Chemical description must be set");
             }
 
+            var existingChemical = db.Chemicals
+                .FirstOrDefaultAsync(ps => ps.Name.Trim() == chemical.Name && ps.Id != chemical.Id).Result;
 
-            Db.Chemical dbObject = null;
+            if (existingChemical != null)
+            {
+                validationErrors.Add("Chemical with name " + chemical.Name + " already exists!");
+            }
+
+            return validationErrors;
+        }
+
+        private async Task<Db.Chemical> GetExistingChemical(Model.Chemical chemical)
+        {
             if (chemical.Id != Guid.Empty)
             {
-                dbObject = await db.Chemicals
+                return await db.Chemicals
                     .FirstOrDefaultAsync(ps => ps.Id == chemical.Id);
             }
-            else
+            return null;
+        }
+
+        private async Task UpdateChemical(Model.Chemical chemical, Db.Chemical dbObject)
+        {
+            var tentative = dbObject.Tentative;
+            var tocWeight = dbObject.TocWeight;
+            var nWeight = dbObject.NitrogenWeight;
+            var density = dbObject.Density;
+
+            mapper.Map(chemical, dbObject);
+            dbObject.Tentative = tentative; // can only be approved through Approve-method
+            dbObject = HandleRelations(chemical, dbObject);
+
+            if (dbObject.TocWeight != tocWeight || dbObject.NitrogenWeight != nWeight || dbObject.Density != density)
             {
-                dbObject = await db.Chemicals
-                    .FirstOrDefaultAsync(ps => ps.Name == chemical.Name);
+                await RecalculateShipments(dbObject);
             }
 
-            if (chemical.Id == Guid.Empty && dbObject != null)
+            await db.SaveChangesAsync();
+        }
+
+        private async Task RecalculateShipments(Db.Chemical dbObject)
+        {
+            var shipmentsToUpdate = await db.ShipmentChemicals
+                .Include(i => i.Shipment)
+                .Where(w => w.ChemicalId == dbObject.Id)
+                .ToListAsync();
+
+            foreach (var shipment in shipmentsToUpdate)
             {
-                validationErrors.Add("Chemical with name " + chemical.Name + " already exist");
+                ShipmentHandler.CalculateChemicals(shipment.Shipment.RinsingOffshorePercent, shipment, dbObject);
             }
+        }
 
-            if (validationErrors.Any()) return (null, validationErrors);
+        private async Task AddNewChemical(Model.Chemical chemical, User user)
+        {
+            var newDbObject = mapper.Map<Db.Chemical>(chemical);
 
+            if (newDbObject.Id == Guid.Empty)
+                newDbObject.Id = Guid.NewGuid();
 
-            if (dbObject != null)
-            {
-                // User check to see if user can update chemicals
+            newDbObject = HandleRelations(chemical, newDbObject);
+            newDbObject.ProposedBy = user.Email;
+            newDbObject.ProposedByEmail = user.Email;
+            newDbObject.ProposedByName = user.Name;
+            newDbObject.Proposed = DateTime.Now;
 
-                chemical.Id = dbObject.Id;
-                var tentative = dbObject.Tentative;
-                var tocWeight = dbObject.TocWeight;
-                var nWeight = dbObject.NitrogenWeight;
-                var density = dbObject.Density;
+            db.Chemicals.Add(newDbObject);
+            chemical.Id = newDbObject.Id;
 
-                mapper.Map(chemical, dbObject);
-                dbObject.Tentative = tentative; // can only be approved through Approve-method
-                dbObject = HandleRelations(chemical, dbObject);
-                if (dbObject.TocWeight != tocWeight || dbObject.NitrogenWeight != nWeight || dbObject.Density != density)
-                {
-                    // Recalculate shipments
-                    var shipmentsToUpdate = await db.ShipmentChemicals.Include(i => i.Shipment).Where(w => w.ChemicalId == dbObject.Id).ToListAsync();
-                    foreach (var shipment in shipmentsToUpdate)
-                    {
-                        ShipmentHandler.CalculateChemicals(shipment.Shipment.RinsingOffshorePercent, shipment, dbObject);
-                    }
-                }
-
-                await db.SaveChangesAsync();
-            }
-            else
-            {
-                // User check. Only chem administrator can add non-tentative chemicals
-                var newDbObject = mapper.Map<Db.Chemical>(chemical);
-
-                if (newDbObject.Id == Guid.Empty)
-                    newDbObject.Id = Guid.NewGuid();
-                newDbObject = HandleRelations(chemical, newDbObject);
-                newDbObject.ProposedBy = user.Email;
-                newDbObject.ProposedByEmail = user.Email;
-                newDbObject.ProposedByName = user.Name;
-                newDbObject.Proposed = DateTime.Now;
-                db.Chemicals.Add(newDbObject);
-                chemical.Id = newDbObject.Id;
-
-                await db.SaveChangesAsync();
-                await SendNewChemicalEmail(user, newDbObject);
-            }
-
-            return (await db.Chemicals.ProjectTo<Model.Chemical>(mapper.ConfigurationProvider).FirstOrDefaultAsync(ps => ps.Id == chemical.Id), null);
+            await db.SaveChangesAsync();
+            await SendNewChemicalEmail(user, newDbObject);
         }
 
         public async Task<(bool, IEnumerable<string>)> Approve(Guid chemicalId)
