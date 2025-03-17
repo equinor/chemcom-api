@@ -86,7 +86,7 @@ namespace ChemDec.Api.Controllers.Handlers
             }
 
             var existingChemical = db.Chemicals
-                .FirstOrDefaultAsync(ps => ps.Name.Trim() == chemical.Name && ps.Id != chemical.Id).Result;
+                .FirstOrDefaultAsync(ps => ps.Name.Trim().ToLower().Equals(chemical.Name.Trim().ToLower(), StringComparison.InvariantCultureIgnoreCase) && ps.Id != chemical.Id).Result;
 
             if (existingChemical != null)
             {
