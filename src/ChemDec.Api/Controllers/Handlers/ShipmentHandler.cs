@@ -1228,12 +1228,12 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (toBeUpdated.MeasureUnit == "l")
             {
-                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * chemical.Density;
+                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * (chemical.Density == 0 ? 1 : chemical.Density);
             }
 
             if (toBeUpdated.MeasureUnit == "m3")
             {
-                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * chemical.Density * 1000;
+                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * (chemical.Density == 0 ? 1 : chemical.Density) * 1000;
             }
 
             toBeUpdated.CalculatedWeightUnrinsed = toBeUpdated.CalculatedWeight;

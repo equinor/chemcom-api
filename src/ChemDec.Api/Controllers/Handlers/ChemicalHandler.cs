@@ -84,6 +84,10 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 validationErrors.Add("Chemical description must be set");
             }
+            if (chemical.TocWeight != 0 && chemical.Density == 0)
+            {
+                validationErrors.Add("Density must be set if TOC is provided");
+            }
 
             var existingChemical = db.Chemicals
                 .FirstOrDefaultAsync(ps => ps.Name.Trim().ToLower().Equals(chemical.Name.Trim().ToLower(), StringComparison.InvariantCultureIgnoreCase) && ps.Id != chemical.Id).Result;
@@ -219,7 +223,7 @@ namespace ChemDec.Api.Controllers.Handlers
                 portalLink = "https://frontend-chemcom-dev.radix.equinor.com/";
             }
 
-           
+
             var change = $"New chemical added {chemical.Name}";
             var link = "<a href=\"" + portalLink + "\">" + change + "</a>"; ;
 
