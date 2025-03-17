@@ -475,7 +475,8 @@ namespace ChemDec.Api.Controllers.Handlers
             var groupedBySenderAndChemical = resShipmentChemicals
                 .Where(w => w.Shipment.Status != Statuses.Declined)
                 .Include(sc => sc.Chemical)
-                .Include(sp => sp.Shipment.ShipmentParts)
+                .Include(sc => sc.Shipment)
+                .ThenInclude(sp => sp.ShipmentParts)
                 .Include(sc => sc.Shipment)
                 .ThenInclude(sh => sh.Sender)
                 .GroupBy(g => new { g.Shipment.SenderId, g.ChemicalId });
@@ -500,7 +501,9 @@ namespace ChemDec.Api.Controllers.Handlers
                    TocWeight = scGroup.Sum(x => x.CalculatedToc),
                    NitrogenWeight = scGroup.Sum(x => x.CalculatedNitrogen),
                    BiocideWeight = scGroup.Sum(x => x.CalculatedBiocides),
-                   Water = scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
+                   Water = scGroup.FirstOrDefault().Shipment.ShipmentParts != null && scGroup.FirstOrDefault().Shipment.ShipmentParts.Any()
+                    ? scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
+                    : 0
                });
 
 
