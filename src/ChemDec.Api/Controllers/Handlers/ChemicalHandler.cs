@@ -222,8 +222,6 @@ namespace ChemDec.Api.Controllers.Handlers
                 subject = $"[Dev] {subject}";
                 portalLink = "https://frontend-chemcom-dev.radix.equinor.com/";
             }
-
-
             var change = $"New chemical added {chemical.Name}";
             var link = "<a href=\"" + portalLink + "\">" + change + "</a>"; ;
 
