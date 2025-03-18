@@ -475,7 +475,8 @@ namespace ChemDec.Api.Controllers.Handlers
             var groupedBySenderAndChemical = resShipmentChemicals
                 .Where(w => w.Shipment.Status != Statuses.Declined)
                 .Include(sc => sc.Chemical)
-                .Include(sp => sp.Shipment.ShipmentParts)
+                .Include(sc => sc.Shipment)
+                .ThenInclude(sp => sp.ShipmentParts)
                 .Include(sc => sc.Shipment)
                 .ThenInclude(sh => sh.Sender)
                 .GroupBy(g => new { g.Shipment.SenderId, g.ChemicalId });
@@ -493,6 +494,7 @@ namespace ChemDec.Api.Controllers.Handlers
                    PlannedExecutionToDate = scGroup.FirstOrDefault().Shipment.PlannedExecutionTo,
                    HazardClass = scGroup.FirstOrDefault().Chemical.HazardClass,
                    MeasureUnitDefault = scGroup.FirstOrDefault().Chemical.MeasureUnitDefault,
+                   MeasureUnit = scGroup.FirstOrDefault().MeasureUnit,
                    FollowOilPhaseDefault = scGroup.FirstOrDefault().Chemical.FollowOilPhaseDefault,
                    FollowWaterPhaseDefault = scGroup.FirstOrDefault().Chemical.FollowWaterPhaseDefault,
                    FromInstallation = scGroup.FirstOrDefault().Shipment.Sender.Name,
@@ -500,7 +502,10 @@ namespace ChemDec.Api.Controllers.Handlers
                    TocWeight = scGroup.Sum(x => x.CalculatedToc),
                    NitrogenWeight = scGroup.Sum(x => x.CalculatedNitrogen),
                    BiocideWeight = scGroup.Sum(x => x.CalculatedBiocides),
-                   Water = scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
+                   Amount = scGroup.Sum(x=> x.Amount),
+                   Water = scGroup.FirstOrDefault().Shipment.ShipmentParts != null && scGroup.FirstOrDefault().Shipment.ShipmentParts.Any()
+                    ? scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
+                    : 0
                });
 
 
@@ -1216,6 +1221,20 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         public static void CalculateChemicals(double rinsedBeforeShipment, Db.ShipmentChemical toBeUpdated, Db.Chemical chemical)
         {
+            //if density is not provided then we are assuming all the calculated field value null or N/A.
+            if(chemical.Density == 0)
+            {
+                toBeUpdated.CalculatedWeight = -1;
+                toBeUpdated.CalculatedWeightUnrinsed = -1;
+                toBeUpdated.CalculatedNitrogenUnrinsed = -1;
+                toBeUpdated.CalculatedTocUnrinsed = -1;
+                toBeUpdated.CalculatedBiocidesUnrinsed = -1;
+                toBeUpdated.CalculatedNitrogen = -1;
+                toBeUpdated.CalculatedToc = -1;
+                toBeUpdated.CalculatedBiocides = -1;
+                return;
+            }
+
             if (toBeUpdated.MeasureUnit == "kg")
             {
                 //=HVIS(C45="kg";D45*N45/100;HVIS(C45="tonn";D45*1000*N45/100;HVIS(C45="L";D45*O45*N45/100;HVIS(C45="m3";D45*1000*O45*N45/100;""))))
