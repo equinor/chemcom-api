@@ -494,6 +494,7 @@ namespace ChemDec.Api.Controllers.Handlers
                    PlannedExecutionToDate = scGroup.FirstOrDefault().Shipment.PlannedExecutionTo,
                    HazardClass = scGroup.FirstOrDefault().Chemical.HazardClass,
                    MeasureUnitDefault = scGroup.FirstOrDefault().Chemical.MeasureUnitDefault,
+                   MeasureUnit = scGroup.FirstOrDefault().MeasureUnit,
                    FollowOilPhaseDefault = scGroup.FirstOrDefault().Chemical.FollowOilPhaseDefault,
                    FollowWaterPhaseDefault = scGroup.FirstOrDefault().Chemical.FollowWaterPhaseDefault,
                    FromInstallation = scGroup.FirstOrDefault().Shipment.Sender.Name,
@@ -501,6 +502,7 @@ namespace ChemDec.Api.Controllers.Handlers
                    TocWeight = scGroup.Sum(x => x.CalculatedToc),
                    NitrogenWeight = scGroup.Sum(x => x.CalculatedNitrogen),
                    BiocideWeight = scGroup.Sum(x => x.CalculatedBiocides),
+                   Amount = scGroup.Sum(x=> x.Amount),
                    Water = scGroup.FirstOrDefault().Shipment.ShipmentParts != null && scGroup.FirstOrDefault().Shipment.ShipmentParts.Any()
                     ? scGroup.FirstOrDefault().Shipment.ShipmentParts.Sum(x => x.Water)
                     : 0

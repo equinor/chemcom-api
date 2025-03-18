@@ -16,9 +16,11 @@ namespace ChemDec.Api.Model
         public double NitrogenWeight { get; set; }
         public double BiocideWeight { get; set; }
         public double Density { get; set; }
+        public double Amount { get; set; }
         public string HazardClass { get; set; }//green,yellow,red,black
 
         public string MeasureUnitDefault { get; set; } //kg,l,tonn,m3
+        public string MeasureUnit { get; set; }
         public bool FollowOilPhaseDefault { get; set; }
         public bool FollowWaterPhaseDefault { get; set; }
         public double  Water { get; set; }
