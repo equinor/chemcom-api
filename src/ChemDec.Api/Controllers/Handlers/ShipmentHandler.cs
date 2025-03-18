@@ -1221,6 +1221,20 @@ namespace ChemDec.Api.Controllers.Handlers
         }
         public static void CalculateChemicals(double rinsedBeforeShipment, Db.ShipmentChemical toBeUpdated, Db.Chemical chemical)
         {
+            //if density is not provided then we are assuming all the calculated field value null or N/A.
+            if(chemical.Density == 0)
+            {
+                toBeUpdated.CalculatedWeight = -1;
+                toBeUpdated.CalculatedWeightUnrinsed = -1;
+                toBeUpdated.CalculatedNitrogenUnrinsed = -1;
+                toBeUpdated.CalculatedTocUnrinsed = -1;
+                toBeUpdated.CalculatedBiocidesUnrinsed = -1;
+                toBeUpdated.CalculatedNitrogen = -1;
+                toBeUpdated.CalculatedToc = -1;
+                toBeUpdated.CalculatedBiocides = -1;
+                return;
+            }
+
             if (toBeUpdated.MeasureUnit == "kg")
             {
                 //=HVIS(C45="kg";D45*N45/100;HVIS(C45="tonn";D45*1000*N45/100;HVIS(C45="L";D45*O45*N45/100;HVIS(C45="m3";D45*1000*O45*N45/100;""))))
@@ -1233,12 +1247,12 @@ namespace ChemDec.Api.Controllers.Handlers
 
             if (toBeUpdated.MeasureUnit == "l")
             {
-                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * (chemical.Density == 0 ? 1 : chemical.Density);
+                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * chemical.Density;
             }
 
             if (toBeUpdated.MeasureUnit == "m3")
             {
-                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * (chemical.Density == 0 ? 1 : chemical.Density) * 1000;
+                toBeUpdated.CalculatedWeight = toBeUpdated.Amount * chemical.Density * 1000;
             }
 
             toBeUpdated.CalculatedWeightUnrinsed = toBeUpdated.CalculatedWeight;
