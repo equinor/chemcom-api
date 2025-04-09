@@ -489,58 +489,14 @@ namespace ChemDec.Api.Controllers.Handlers
             // Separate those with varying MeasureUnits
             var separateDensityZeroRecords = densityZeroGroups
                 .Where(g => g.Select(sc => sc.MeasureUnit).Distinct().Count() > 1)
-                .SelectMany(g => g.Select(sc => new ShipmentChemicalTableItem
-                {
-                    ChemicalName = sc.Chemical.Name,
-                    Description = sc.Chemical.Description,
-                    Density = sc.Chemical.Density,
-                    ShipmentTitle = sc.Shipment.Title,
-                    PlannedExecutionFromDate = sc.Shipment.PlannedExecutionFrom,
-                    PlannedExecutionToDate = sc.Shipment.PlannedExecutionTo,
-                    HazardClass = sc.Chemical.HazardClass,
-                    MeasureUnitDefault = sc.Chemical.MeasureUnitDefault,
-                    MeasureUnit = sc.MeasureUnit,
-                    FollowOilPhaseDefault = sc.Chemical.FollowOilPhaseDefault,
-                    FollowWaterPhaseDefault = sc.Chemical.FollowWaterPhaseDefault,
-                    FromInstallation = sc.Shipment.Sender.Name,
+                .SelectMany(g => g.Select(sc => CreateShipmentChemicalTableItem(sc, "N/A", "N/A", "N/A", "N/A")))
+                .ToList();
 
-                    Weight = "N/A",
-                    TocWeight = "N/A",
-                    NitrogenWeight = "N/A",
-                    BiocideWeight = "N/A",
-                    Amount = sc.Amount,
-                    Water = sc.Shipment.ShipmentParts != null && sc.Shipment.ShipmentParts.Any()
-                        ? sc.Shipment.ShipmentParts.Sum(x => x.Water)
-                        : 0
-                })).ToList();
-
+            // Same MeasureUnit, so group them
             var groupedDensityZeroRecords = densityZeroGroups
-                .Where(g => g.Select(sc => sc.MeasureUnit).Distinct().Count() == 1) // Same MeasureUnit, so group them
-                .Select(g => new ShipmentChemicalTableItem
-                {
-                    ChemicalName = g.First().Chemical.Name,
-                    Description = g.First().Chemical.Description,
-                    Density = g.First().Chemical.Density,
-                    ShipmentTitle = g.First().Shipment.Title,
-                    PlannedExecutionFromDate = g.First().Shipment.PlannedExecutionFrom,
-                    PlannedExecutionToDate = g.First().Shipment.PlannedExecutionTo,
-                    HazardClass = g.First().Chemical.HazardClass,
-                    MeasureUnitDefault = g.First().Chemical.MeasureUnitDefault,
-                    MeasureUnit = g.First().MeasureUnit, // Since they are the same
-                    FollowOilPhaseDefault = g.First().Chemical.FollowOilPhaseDefault,
-                    FollowWaterPhaseDefault = g.First().Chemical.FollowWaterPhaseDefault,
-                    FromInstallation = g.First().Shipment.Sender.Name,
-
-                    Weight = "N/A",
-                    TocWeight = "N/A",
-                    NitrogenWeight = "N/A",
-                    BiocideWeight = "N/A",
-                    Amount = g.Sum(x => x.Amount),
-
-                    Water = g.First().Shipment.ShipmentParts != null && g.First().Shipment.ShipmentParts.Any()
-                        ? g.First().Shipment.ShipmentParts.Sum(x => x.Water)
-                        : 0
-                }).ToList();
+                .Where(g => g.Select(sc => sc.MeasureUnit).Distinct().Count() == 1)
+                .Select(g => CreateShipmentChemicalTableItem(g.First(), "N/A", "N/A", "N/A", "N/A", g.Sum(x => x.Amount)))
+                .ToList();
 
             var groupedRecords = shipmentChemicals
                 .Where(sc => sc.Chemical.Density != 0)
@@ -579,6 +535,34 @@ namespace ChemDec.Api.Controllers.Handlers
 
 
             return shipmentChemicalTableItems;
+        }
+
+
+        private static ShipmentChemicalTableItem CreateShipmentChemicalTableItem(Db.ShipmentChemical sc, string weight, string tocWeight, string nitrogenWeight, string biocideWeight, double? amount = null)
+        {
+            return new ShipmentChemicalTableItem
+            {
+                ChemicalName = sc.Chemical.Name,
+                Description = sc.Chemical.Description,
+                Density = sc.Chemical.Density,
+                ShipmentTitle = sc.Shipment.Title,
+                PlannedExecutionFromDate = sc.Shipment.PlannedExecutionFrom,
+                PlannedExecutionToDate = sc.Shipment.PlannedExecutionTo,
+                HazardClass = sc.Chemical.HazardClass,
+                MeasureUnitDefault = sc.Chemical.MeasureUnitDefault,
+                MeasureUnit = sc.MeasureUnit,
+                FollowOilPhaseDefault = sc.Chemical.FollowOilPhaseDefault,
+                FollowWaterPhaseDefault = sc.Chemical.FollowWaterPhaseDefault,
+                FromInstallation = sc.Shipment.Sender.Name,
+                Weight = weight,
+                TocWeight = tocWeight,
+                NitrogenWeight = nitrogenWeight,
+                BiocideWeight = biocideWeight,
+                Amount = amount ?? sc.Amount,
+                Water = sc.Shipment.ShipmentParts != null && sc.Shipment.ShipmentParts.Any()
+                    ? sc.Shipment.ShipmentParts.Sum(x => x.Water)
+                    : 0
+            };
         }
 
 
