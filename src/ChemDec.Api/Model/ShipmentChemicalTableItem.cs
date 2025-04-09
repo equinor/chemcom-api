@@ -5,16 +5,16 @@ namespace ChemDec.Api.Model
     public class ShipmentChemicalTableItem
     {
         public string ChemicalName { get; set; }
-        public double Weight { get; set; }
+        public string Weight { get; set; }
         public string Description { get; set; }
         public string ShipmentTitle { get; set; }
         public DateTime PlannedExecutionFromDate { get; set; }
         public DateTime PlannedExecutionToDate { get; set; }
         public string FromInstallation { get; set; }
 
-        public double TocWeight { get; set; }
-        public double NitrogenWeight { get; set; }
-        public double BiocideWeight { get; set; }
+        public string TocWeight { get; set; }
+        public string NitrogenWeight { get; set; }
+        public string BiocideWeight { get; set; }
         public double Density { get; set; }
         public double Amount { get; set; }
         public string HazardClass { get; set; }//green,yellow,red,black
