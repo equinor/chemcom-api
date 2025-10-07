@@ -1,6 +1,6 @@
 # Contributing
 
-When contributing to this repository, please first contact Vegard Helland (<vehe@equinor.com>) via email or an issue.
+When contributing to this repository, please first contact Aleksandar Sunjic(<ASUNJ@equinor.com>) via email or an issue.
 
 ## Pull Request Process
 
