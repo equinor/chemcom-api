@@ -1,18 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.Chemicals.Commands.AddShipmentChemical;
+using AutoMapper;
 using ChemDec.Api.Controllers.Handlers;
 using ChemDec.Api.Infrastructure.Services;
 using ChemDec.Api.Infrastructure.Utils;
 using ChemDec.Api.Model;
+using ChemDec.Api.Model.mapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using Db = ChemDec.Api.Datamodel;
 
 namespace ChemDec.Api.Controllers
@@ -110,12 +113,12 @@ namespace ChemDec.Api.Controllers
             }
 
             var chemicalShipmentsToPlant = await handler.GetChemicalHistoryForPlant(toInstallationId, timeZone, from, to);
-
+            var shipmentChemicalDto = chemicalShipmentsToPlant.Select(ShipmentChemicalExportTableDtoMapper.ToDto).ToList();
             Stream stream = new MemoryStream();
 
             using (var file = new StreamWriter(stream, Encoding.UTF8, bufferSize: 1024, leaveOpen: true))
             {
-                var csv = new CsvGenerator().ToString(chemicalShipmentsToPlant, createHeader: true);
+                var csv = new CsvGenerator().ToString(shipmentChemicalDto, createHeader: true);
                 await file.WriteAsync(csv);
             }
 
