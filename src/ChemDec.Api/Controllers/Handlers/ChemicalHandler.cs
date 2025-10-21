@@ -84,9 +84,13 @@ namespace ChemDec.Api.Controllers.Handlers
             {
                 validationErrors.Add("Chemical description must be set");
             }
-            if (chemical.TocWeight != 0 && (chemical.Density <= 0 || chemical.Density > 23))
+            if (chemical.Density < 0)
             {
-                validationErrors.Add("Density must be between 0 and 23 when TOC is provided.");
+                validationErrors.Add("Density cannot be negative.");
+            }
+            if (chemical.TocWeight != 0 && (chemical.Density <= 0 || chemical.Density > 22))
+            {
+                validationErrors.Add("Density must be between 1 and 22(inclusive) when TOC is provided.");
             }
             var existingChemical = db.Chemicals
                 .FirstOrDefaultAsync(ps => ps.Name.Trim().ToLower().Equals(chemical.Name.Trim().ToLower()) && ps.Id != chemical.Id).Result;
