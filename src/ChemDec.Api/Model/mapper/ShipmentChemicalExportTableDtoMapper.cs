@@ -21,7 +21,6 @@ namespace ChemDec.Api.Model.mapper
                 Density = item.Density,
                 Amount = item.Amount,
                 HazardClass = item.HazardClass,
-                MeasureUnitDefault = item.MeasureUnitDefault,
                 MeasureUnit = item.MeasureUnit,
                 FollowOilPhaseDefault = item.FollowOilPhaseDefault,
                 FollowWaterPhaseDefault = item.FollowWaterPhaseDefault,
